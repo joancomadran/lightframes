@@ -158,8 +158,99 @@ async function decodeWithLibRaw(bytes: Uint8Array, fileName: string): Promise<Bl
 }
 
 /**
- * Decode a camera RAW into a JPEG blob for the canvas preview / export pipeline.
- * Prefers the camera's embedded full-size JPEG (fast), then LibRaw demosaic.
+ * Scene-linear RGB decoded from the sensor data: camera white balance, sRGB
+ * primaries, no tone curve, sensor clipping at `65535 * scale = 1`.
+ */
+export type LinearImage = {
+  kind: 'linear'
+  width: number
+  height: number
+  /** Interleaved RGB. */
+  data: Uint16Array
+  scale: number
+  /** Size of the full-resolution original when this is a half-size decode. */
+  fullWidth?: number
+  fullHeight?: number
+}
+
+/**
+ * Demosaic a RAW with LibRaw into linear 16-bit RGB — the same starting point
+ * Lightroom develops from, with highlight headroom the embedded JPEG lacks.
+ * `halfSize` skips demosaicing (2×2 binning): fast and plenty for previews.
+ */
+export async function decodeRawLinear(
+  file: Blob,
+  opts: { halfSize: boolean },
+): Promise<LinearImage> {
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  const raw = new LibRaw()
+  try {
+    await raw.open(bytes, {
+      useCameraWb: true,
+      outputColor: 1,
+      outputBps: 16,
+      gamm: [1, 1],
+      noAutoBright: true,
+      userQual: 3,
+      halfSize: opts.halfSize,
+    })
+    const image = await raw.imageData()
+    if (!image?.data || image.width <= 0 || image.height <= 0 || image.colors < 3) {
+      throw new Error('LibRaw returned no RGB image')
+    }
+    const n = image.width * image.height
+    let data: Uint16Array
+    if (image.bits === 16 && image.colors === 3 && image.data instanceof Uint16Array) {
+      data = image.data
+    } else {
+      const max = (1 << image.bits) - 1
+      data = new Uint16Array(n * 3)
+      for (let i = 0; i < n; i++) {
+        for (let c = 0; c < 3; c++) {
+          data[i * 3 + c] = Math.round(((image.data[i * image.colors + c] ?? 0) / max) * 65535)
+        }
+      }
+    }
+    const binning = opts.halfSize ? 2 : 1
+    return {
+      kind: 'linear',
+      width: image.width,
+      height: image.height,
+      data,
+      scale: 1 / 65535,
+      fullWidth: image.width * binning,
+      fullHeight: image.height * binning,
+    }
+  } finally {
+    raw.dispose()
+  }
+}
+
+const PREVIEW_CACHE_SIZE = 3
+const previewCache = new Map<Blob, Promise<LinearImage>>()
+
+/** Half-size RAW decode for the editor preview; the last few photos stay cached. */
+export function loadRawPreview(file: Blob): Promise<LinearImage> {
+  const cached = previewCache.get(file)
+  if (cached) {
+    previewCache.delete(file)
+    previewCache.set(file, cached)
+    return cached
+  }
+  const pending = decodeRawLinear(file, { halfSize: true })
+  previewCache.set(file, pending)
+  pending.catch(() => previewCache.delete(file))
+  while (previewCache.size > PREVIEW_CACHE_SIZE) {
+    const oldest = previewCache.keys().next().value
+    if (oldest === undefined) break
+    previewCache.delete(oldest)
+  }
+  return pending
+}
+
+/**
+ * Decode a camera RAW into a JPEG blob for thumbnails (and as a fallback when
+ * LibRaw cannot develop the file). Prefers the camera's embedded full-size JPEG.
  */
 export async function decodeRawToJpegBlob(file: File): Promise<Blob> {
   const bytes = new Uint8Array(await file.arrayBuffer())

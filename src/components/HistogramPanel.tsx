@@ -31,21 +31,25 @@ export function HistogramPanel({
 
   return (
     <section className="panel histogram-panel" aria-label="Histogram">
-      <div className="panel__header">
-        <h2 className="panel__title">Histogram</h2>
+      <div className="histogram-frame">
+        <canvas ref={canvasRef} className="histogram-canvas" aria-hidden="true" />
+        <span className="histogram-stat histogram-stat--shadows" title="Pixels clipped to black">
+          ◀ {shadowPct}%
+        </span>
+        <span className="histogram-stat histogram-stat--highlights" title="Pixels clipped to white">
+          {hiPct}% ▶
+        </span>
         <button
           type="button"
-          className={showClipping ? 'btn btn--sm btn--accent' : 'btn btn--ghost btn--sm'}
+          className={
+            showClipping ? 'histogram-clip histogram-clip--active' : 'histogram-clip'
+          }
           onClick={onToggleClipping}
-          title="Toggle clipping overlay (J)"
+          aria-pressed={showClipping}
+          title="Show clipped pixels on the image (J)"
         >
-          Clip
+          Clipping
         </button>
-      </div>
-      <canvas ref={canvasRef} className="histogram-canvas" aria-hidden="true" />
-      <div className="histogram-stats">
-        <span>Shadows {shadowPct}%</span>
-        <span>Highlights {hiPct}%</span>
       </div>
     </section>
   )

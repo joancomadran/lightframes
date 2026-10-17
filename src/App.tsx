@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { AdSlot } from './components/AdSlot'
 import { AdjustmentsPanel } from './components/AdjustmentsPanel'
 import { CropPanel } from './components/CropPanel'
 import { ExportDialog } from './components/ExportDialog'
@@ -6,11 +7,14 @@ import { Filmstrip } from './components/Filmstrip'
 import { HistogramPanel } from './components/HistogramPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import { PresetsPanel } from './components/PresetsPanel'
-import { PreviewCanvas } from './components/PreviewCanvas'
+import { PreviewCanvas, type Size } from './components/PreviewCanvas'
+import { Toast } from './components/Toast'
 import { ToneCurvePanel } from './components/ToneCurvePanel'
 import { Toolbar } from './components/Toolbar'
 import { useEditorSession } from './hooks/useEditorSession'
+import { aspectRatioFor } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
+import { isRawFile } from './lib/rawDecode'
 import { DEFAULT_EDITS } from './types/edits'
 
 export default function App() {
@@ -22,6 +26,24 @@ export default function App() {
     clipping: ClippingStats
   } | null>(null)
   const [scrubbing, setScrubbing] = useState(false)
+  const [cropAspect, setCropAspect] = useState({ id: 'free', flipped: false })
+  const [frameSize, setFrameSize] = useState<Size | null>(null)
+  const [selectedRadialId, setSelectedRadialId] = useState<string | null>(null)
+
+  // Select a radial as soon as it is added; fall back to the last one if the selection disappears.
+  const radialIds = edits.localAdjustments.map((r) => r.id)
+  const radialKey = radialIds.join('|')
+  const prevRadialIds = useRef<string[]>(radialIds)
+  useEffect(() => {
+    const prev = prevRadialIds.current
+    prevRadialIds.current = radialIds
+    const added = radialIds.find((id) => !prev.includes(id))
+    if (added) setSelectedRadialId(added)
+    else if (!selectedRadialId || !radialIds.includes(selectedRadialId)) {
+      setSelectedRadialId(radialIds[radialIds.length - 1] ?? null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [radialKey])
 
   const onHistogram = useCallback((bins: HistogramBins, clipping: ClippingStats) => {
     setHistogram({ bins, clipping })
@@ -76,6 +98,11 @@ export default function App() {
         <main className="stage">
           <PreviewCanvas
             src={session.activePhoto?.objectUrl ?? null}
+            rawFile={
+              session.activePhoto && isRawFile(session.activePhoto.file)
+                ? session.activePhoto.file
+                : null
+            }
             edits={edits}
             name={session.activePhoto?.name}
             compareMode={session.compareMode}
@@ -87,6 +114,30 @@ export default function App() {
                 : undefined
             }
             onHistogram={onHistogram}
+            onFrameSize={setFrameSize}
+            cropOverlay={
+              canEdit && session.panelFocus === 'crop' && session.cropMode
+                ? {
+                    crop: edits.crop,
+                    aspect: aspectRatioFor(cropAspect.id, cropAspect.flipped, frameSize),
+                    onChange: (crop) => session.updateEdits({ crop }),
+                    onBegin: begin,
+                    onCommit: commit,
+                  }
+                : null
+            }
+            radialOverlay={
+              canEdit && session.panelFocus === 'local'
+                ? {
+                    items: edits.localAdjustments,
+                    selectedId: selectedRadialId,
+                    onSelect: setSelectedRadialId,
+                    onChange: session.updateRadial,
+                    onBegin: begin,
+                    onCommit: commit,
+                  }
+                : null
+            }
           />
         </main>
 
@@ -94,11 +145,11 @@ export default function App() {
           <div className="panel-tabs" role="tablist" aria-label="Panels">
             {(
               [
-                ['adjust', '1 Adjust'],
-                ['curve', '2 Curve'],
-                ['crop', '3 Crop'],
-                ['local', '4 Local'],
-                ['presets', '5 Presets'],
+                ['adjust', 'Adjust'],
+                ['curve', 'Curve'],
+                ['crop', 'Crop'],
+                ['local', 'Local'],
+                ['presets', 'Presets'],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -119,73 +170,85 @@ export default function App() {
             ))}
           </div>
 
-          <HistogramPanel
-            bins={histogram?.bins ?? null}
-            clipping={histogram?.clipping ?? null}
-            showClipping={session.showClipping}
-            onToggleClipping={() => session.setShowClipping(!session.showClipping)}
-          />
-
-          {session.panelFocus === 'adjust' && (
-            <AdjustmentsPanel
-              edits={edits}
-              disabled={!canEdit}
-              onChange={session.updateEdits}
-              onReset={session.resetEdits}
-              onBegin={begin}
-              onCommit={commit}
+          <div className="sidebar__scroll">
+            <HistogramPanel
+              bins={histogram?.bins ?? null}
+              clipping={histogram?.clipping ?? null}
+              showClipping={session.showClipping}
+              onToggleClipping={() => session.setShowClipping(!session.showClipping)}
             />
-          )}
 
-          {session.panelFocus === 'curve' && (
-            <ToneCurvePanel
-              edits={edits}
-              disabled={!canEdit}
-              onChange={session.updateEdits}
-              onBegin={begin}
-              onCommit={commit}
-            />
-          )}
+            {session.panelFocus === 'adjust' && (
+              <AdjustmentsPanel
+                edits={edits}
+                disabled={!canEdit}
+                onChange={session.updateEdits}
+                onReset={session.resetEdits}
+                onBegin={begin}
+                onCommit={commit}
+              />
+            )}
 
-          {session.panelFocus === 'crop' && (
-            <CropPanel
-              edits={edits}
-              disabled={!canEdit}
-              cropMode={session.cropMode}
-              onToggleCropMode={() => session.setCropMode(!session.cropMode)}
-              onChange={session.updateEdits}
-              onBegin={begin}
-              onCommit={commit}
-            />
-          )}
+            {session.panelFocus === 'curve' && (
+              <ToneCurvePanel
+                edits={edits}
+                disabled={!canEdit}
+                histogram={histogram?.bins.lum ?? null}
+                onChange={session.updateEdits}
+                onBegin={begin}
+                onCommit={commit}
+              />
+            )}
 
-          {session.panelFocus === 'local' && (
-            <LocalAdjustPanel
-              edits={edits}
-              disabled={!canEdit}
-              onAdd={session.addRadial}
-              onUpdate={session.updateRadial}
-              onRemove={session.removeRadial}
-              onBegin={begin}
-              onCommit={commit}
-            />
-          )}
+            {session.panelFocus === 'crop' && (
+              <CropPanel
+                edits={edits}
+                disabled={!canEdit}
+                cropMode={session.cropMode}
+                onToggleCropMode={() => session.setCropMode(!session.cropMode)}
+                aspectId={cropAspect.id}
+                aspectFlipped={cropAspect.flipped}
+                onAspectChange={(id, flipped) => setCropAspect({ id, flipped })}
+                frameSize={frameSize}
+                onChange={session.updateEdits}
+                onBegin={begin}
+                onCommit={commit}
+              />
+            )}
 
-          {session.panelFocus === 'presets' && (
-            <PresetsPanel
-              presets={session.presets}
-              selectedPresetId={session.selectedPresetId}
-              intensity={session.presetIntensity}
-              disabled={!canEdit}
-              onSave={session.savePreset}
-              onUpdateSelected={session.updateSelectedPreset}
-              onApply={session.applyPreset}
-              onIntensityChange={session.setPresetIntensity}
-              onDelete={session.deletePreset}
-              onExport={session.exportPreset}
-              onImport={session.importPreset}
-            />
-          )}
+            {session.panelFocus === 'local' && (
+              <LocalAdjustPanel
+                edits={edits}
+                disabled={!canEdit}
+                selectedId={selectedRadialId}
+                onSelect={setSelectedRadialId}
+                onAdd={session.addRadial}
+                onUpdate={session.updateRadial}
+                onRemove={session.removeRadial}
+                onBegin={begin}
+                onCommit={commit}
+              />
+            )}
+
+            {session.panelFocus === 'presets' && (
+              <PresetsPanel
+                presets={session.presets}
+                selectedPresetId={session.selectedPresetId}
+                intensity={session.presetIntensity}
+                disabled={!canEdit}
+                onSave={session.savePreset}
+                onUpdateSelected={session.updateSelectedPreset}
+                onApply={session.applyPreset}
+                onIntensityChange={session.setPresetIntensity}
+                onDelete={session.deletePreset}
+                onExport={session.exportPreset}
+                onExportAll={session.exportAllPresets}
+                onImport={session.importPreset}
+              />
+            )}
+          </div>
+
+          <AdSlot id="sidebar" height={250} />
         </aside>
       </div>
 
@@ -196,6 +259,8 @@ export default function App() {
         onClose={() => session.setExportOpen(false)}
         onExport={session.runExport}
       />
+
+      <Toast toast={session.toast} onDismiss={session.dismissToast} />
     </div>
   )
 }

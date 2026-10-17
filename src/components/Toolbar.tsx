@@ -49,13 +49,63 @@ export function Toolbar({
         >
           Open
         </button>
-        <button type="button" className="btn" onClick={onUndo} disabled={!canUndo}>
-          Undo
+        <button
+          type="button"
+          className="btn btn--icon"
+          onClick={onUndo}
+          disabled={!canUndo}
+          title="Undo (⌘Z)"
+          aria-label="Undo"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M9 14 4 9l5-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4 9h10a6 6 0 0 1 0 12h-3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
-        <button type="button" className="btn" onClick={onRedo} disabled={!canRedo}>
-          Redo
+        <button
+          type="button"
+          className="btn btn--icon"
+          onClick={onRedo}
+          disabled={!canRedo}
+          title="Redo (⇧⌘Z)"
+          aria-label="Redo"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="m15 14 5-5-5-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M20 9H10a6 6 0 0 0 0 12h3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
-        <button type="button" className="btn" onClick={onCopy} disabled={!canEdit}>
+        <button
+          type="button"
+          className="btn"
+          onClick={onCopy}
+          disabled={!canEdit}
+          title="Copy edits (⌘C)"
+        >
           Copy
         </button>
         <button
@@ -63,6 +113,7 @@ export function Toolbar({
           className="btn"
           onClick={onPaste}
           disabled={!canEdit || !hasClipboard}
+          title="Paste edits (⌘V)"
         >
           Paste
         </button>
@@ -71,7 +122,7 @@ export function Toolbar({
           className="btn"
           onClick={onSync}
           disabled={!canEdit || selectionCount < 2}
-          title="Sync active edits to selected photos"
+          title="Sync active edits to selected photos (⌘S)"
         >
           Sync
         </button>

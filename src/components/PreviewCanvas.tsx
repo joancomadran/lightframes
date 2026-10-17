@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -11,11 +12,16 @@ import {
   type ClippingStats,
   type HistogramBins,
 } from '../lib/histogram'
-import { renderEditedImage } from '../lib/imageProcessing'
+import { renderEditedImage, type RenderSource } from '../lib/imageProcessing'
+import { loadRawPreview } from '../lib/rawDecode'
 import { stepRotate, type EditParams } from '../types/edits'
+import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
+import { RadialOverlay, type RadialOverlayConfig } from './RadialOverlay'
 
 type PreviewCanvasProps = {
   src: string | null
+  /** RAW original: developed from sensor data; `src` is only the fallback. */
+  rawFile?: Blob | null
   edits: EditParams
   name?: string
   compareMode?: boolean
@@ -23,9 +29,15 @@ type PreviewCanvasProps = {
   scrubbing?: boolean
   onRotate?: (next: EditParams['rotate']) => void
   onHistogram?: (bins: HistogramBins, clipping: ClippingStats) => void
+  /** When set, show the uncropped frame with an editable crop box. */
+  cropOverlay?: CropOverlayConfig | null
+  /** When set, draw editable radial masks over the image. */
+  radialOverlay?: RadialOverlayConfig | null
+  /** Full-resolution size of the uncropped (rotated + straightened) frame. */
+  onFrameSize?: (size: Size) => void
 }
 
-type Size = { w: number; h: number }
+export type Size = { w: number; h: number }
 type Pan = { x: number; y: number }
 
 const MIN_ZOOM = 0.1
@@ -33,6 +45,17 @@ const MAX_ZOOM = 8
 const ZOOM_STEP = 1.25
 const PREVIEW_FAST = 960
 const PREVIEW_IDLE = 1800
+const BACKGROUND_KEY = 'lightframes:preview-background'
+
+type PreviewBackground = 'black' | 'white'
+
+function loadBackground(): PreviewBackground {
+  try {
+    return localStorage.getItem(BACKGROUND_KEY) === 'white' ? 'white' : 'black'
+  } catch {
+    return 'black'
+  }
+}
 
 function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n))
@@ -74,8 +97,18 @@ function panAfterZoom(args: {
   }
 }
 
+/** Pixel size of the original, before any preview downscaling. */
+function sourceSize(source: RenderSource): Size {
+  if ('kind' in source) {
+    return { w: source.fullWidth ?? source.width, h: source.fullHeight ?? source.height }
+  }
+  if (source instanceof HTMLImageElement) return { w: source.naturalWidth, h: source.naturalHeight }
+  return { w: source.width, h: source.height }
+}
+
 export function PreviewCanvas({
   src,
+  rawFile = null,
   edits,
   name,
   compareMode = false,
@@ -83,11 +116,15 @@ export function PreviewCanvas({
   scrubbing = false,
   onRotate,
   onHistogram,
+  cropOverlay = null,
+  radialOverlay = null,
+  onFrameSize,
 }: PreviewCanvasProps) {
+  const rootRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const clipRef = useRef<HTMLCanvasElement>(null)
-  const imageRef = useRef<HTMLImageElement | null>(null)
+  const sourceRef = useRef<RenderSource | null>(null)
   const frameRef = useRef(0)
   const idleTimerRef = useRef(0)
   const viewRef = useRef({
@@ -109,6 +146,21 @@ export function PreviewCanvas({
   const [contentSize, setContentSize] = useState<Size>({ w: 0, h: 0 })
   const [viewportSize, setViewportSize] = useState<Size>({ w: 0, h: 0 })
   const [maxEdge, setMaxEdge] = useState(PREVIEW_IDLE)
+  const [background, setBackground] = useState<PreviewBackground>(loadBackground)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [sourceVersion, setSourceVersion] = useState(0)
+  const [developingRaw, setDevelopingRaw] = useState(false)
+
+  const cropActive = cropOverlay != null
+  // While cropping, render the whole frame (keeping straighten) so the box can move freely.
+  const renderEdits = useMemo<EditParams>(
+    () =>
+      cropActive
+        ? { ...edits, crop: { x: 0, y: 0, width: 1, height: 1, straighten: edits.crop.straighten } }
+        : edits,
+    [edits, cropActive],
+  )
+  const frameSizeRef = useRef<Size>({ w: 0, h: 0 })
 
   viewRef.current = {
     zoom,
@@ -151,6 +203,78 @@ export function PreviewCanvas({
     [applyZoom],
   )
 
+  const reportFrameSize = (source: RenderSource) => {
+    if (!onFrameSize) return
+    const turn = edits.rotate ?? 0
+    const quarter = turn === 90 || turn === 270
+    const size = sourceSize(source)
+    const ow = quarter ? size.h : size.w
+    const oh = quarter ? size.w : size.h
+    const rad = (edits.crop.straighten * Math.PI) / 180
+    const cos = Math.abs(Math.cos(rad))
+    const sin = Math.abs(Math.sin(rad))
+    const next = { w: Math.round(ow * cos + oh * sin), h: Math.round(ow * sin + oh * cos) }
+    const prev = frameSizeRef.current
+    if (prev.w === next.w && prev.h === next.h) return
+    frameSizeRef.current = next
+    onFrameSize(next)
+  }
+
+  const toggleBackground = useCallback(() => {
+    setBackground((prev) => {
+      const next = prev === 'black' ? 'white' : 'black'
+      try {
+        localStorage.setItem(BACKGROUND_KEY, next)
+      } catch {
+        // Storage unavailable — keep the choice for this session only.
+      }
+      return next
+    })
+  }, [])
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen()
+    } else {
+      void rootRef.current?.requestFullscreen()
+    }
+  }, [])
+
+  useEffect(() => {
+    const onChange = () => setFullscreen(document.fullscreenElement === rootRef.current)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  useEffect(() => {
+    if (!src) return
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        (target &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT' ||
+            target.isContentEditable))
+      ) {
+        return
+      }
+      const key = e.key.toLowerCase()
+      if (key === 'f') {
+        e.preventDefault()
+        toggleFullscreen()
+      } else if (key === 'b') {
+        e.preventDefault()
+        toggleBackground()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [src, toggleFullscreen, toggleBackground])
+
   useEffect(() => {
     if (scrubbing) {
       setMaxEdge(PREVIEW_FAST)
@@ -178,7 +302,7 @@ export function PreviewCanvas({
 
   useEffect(() => {
     if (!src) {
-      imageRef.current = null
+      sourceRef.current = null
       setContentSize({ w: 0, h: 0 })
       const canvas = canvasRef.current
       if (canvas) {
@@ -192,37 +316,46 @@ export function PreviewCanvas({
 
     let cancelled = false
     resetView()
-    const img = new Image()
-    img.src = src
-    img.decode().then(() => {
+    sourceRef.current = null
+    // Rendering happens in the effect below once the source is ready.
+    const showSource = (source: RenderSource) => {
       if (cancelled) return
-      imageRef.current = img
-      const canvas = canvasRef.current
-      if (!canvas) return
-      const imageData = renderEditedImage(img, edits, canvas, {
-        maxEdge,
-        bypassColor: compareMode,
-      })
-      setContentSize({ w: canvas.width, h: canvas.height })
-      if (imageData && onHistogram) {
-        const { bins, clipping } = computeHistogram(imageData)
-        onHistogram(bins, clipping)
-      }
-    })
+      sourceRef.current = source
+      setSourceVersion((v) => v + 1)
+    }
+    const loadImage = () => {
+      const img = new Image()
+      img.src = src
+      return img.decode().then(() => showSource(img))
+    }
+
+    if (rawFile) {
+      setDevelopingRaw(true)
+      loadRawPreview(rawFile)
+        .then(showSource)
+        // LibRaw could not develop this file: fall back to the embedded JPEG.
+        .catch(loadImage)
+        .finally(() => {
+          if (!cancelled) setDevelopingRaw(false)
+        })
+    } else {
+      setDevelopingRaw(false)
+      void loadImage()
+    }
 
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, resetView])
+  }, [src, rawFile, resetView])
 
   useEffect(() => {
     cancelAnimationFrame(frameRef.current)
     frameRef.current = requestAnimationFrame(() => {
-      const img = imageRef.current
+      const source = sourceRef.current
       const canvas = canvasRef.current
-      if (!img || !canvas || !src) return
-      const imageData = renderEditedImage(img, edits, canvas, {
+      if (!source || !canvas || !src) return
+      reportFrameSize(source)
+      const imageData = renderEditedImage(source, renderEdits, canvas, {
         maxEdge,
         bypassColor: compareMode,
       })
@@ -242,13 +375,14 @@ export function PreviewCanvas({
       }
     })
     return () => cancelAnimationFrame(frameRef.current)
-  }, [edits, src, maxEdge, compareMode, showClipping, onHistogram])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderEdits, src, sourceVersion, maxEdge, compareMode, showClipping, onHistogram])
 
   const rotate = edits.rotate ?? 0
   useEffect(() => {
     if (!src) return
     resetView()
-  }, [rotate, src, resetView])
+  }, [rotate, src, cropActive, resetView])
 
   useEffect(() => {
     const el = viewportRef.current
@@ -325,10 +459,23 @@ export function PreviewCanvas({
   }
 
   const zoomPercent = Math.round(zoom * 100)
+  const overlayFrame = {
+    left: tx,
+    top: ty,
+    width: contentSize.w * scale,
+    height: contentSize.h * scale,
+  }
 
   return (
-    <div className="preview">
-      {compareMode && <div className="preview__badge">Before</div>}
+    <div
+      ref={rootRef}
+      className={`preview preview--bg-${background}${fullscreen ? ' preview--fullscreen' : ''}`}
+    >
+      {developingRaw ? (
+        <div className="preview__badge">Developing RAW…</div>
+      ) : (
+        compareMode && <div className="preview__badge">Before</div>
+      )}
       <div
         ref={viewportRef}
         className="preview__viewport"
@@ -357,28 +504,62 @@ export function PreviewCanvas({
             aria-hidden="true"
           />
         </div>
+        {cropOverlay && contentSize.w > 0 && (
+          <CropOverlay frame={overlayFrame} config={cropOverlay} />
+        )}
+        {radialOverlay && !compareMode && contentSize.w > 0 && (
+          <RadialOverlay frame={overlayFrame} config={radialOverlay} />
+        )}
       </div>
 
       <div className="preview__controls" role="toolbar" aria-label="View and rotate">
         <button
           type="button"
-          className="btn btn--ghost btn--sm"
+          className="btn btn--ghost btn--sm btn--icon"
           disabled={!onRotate}
           onClick={() => onRotate?.(stepRotate(edits.rotate ?? 0, -90))}
           title="Rotate left"
           aria-label="Rotate left"
         >
-          ↺
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M2.5 12a9.5 9.5 0 1 0 3.2-7.1"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M2.5 5.5v4.2h4.2"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
         <button
           type="button"
-          className="btn btn--ghost btn--sm"
+          className="btn btn--ghost btn--sm btn--icon"
           disabled={!onRotate}
           onClick={() => onRotate?.(stepRotate(edits.rotate ?? 0, 90))}
           title="Rotate right"
           aria-label="Rotate right"
         >
-          ↻
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M21.5 12a9.5 9.5 0 1 1-3.2-7.1"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M21.5 5.5v4.2h-4.2"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
         <span className="preview__controls-sep" aria-hidden="true" />
         <button
@@ -412,6 +593,49 @@ export function PreviewCanvas({
           title="Fit entire image"
         >
           Fit
+        </button>
+        <span className="preview__controls-sep" aria-hidden="true" />
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm btn--icon"
+          onClick={toggleBackground}
+          title={`Background: ${background} (B)`}
+          aria-label={`Switch to ${background === 'black' ? 'white' : 'black'} background`}
+        >
+          <span
+            className={`preview__bg-swatch preview__bg-swatch--${background}`}
+            aria-hidden="true"
+          />
+        </button>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm btn--icon"
+          onClick={toggleFullscreen}
+          title={fullscreen ? 'Exit full screen (F / Esc)' : 'Full screen (F)'}
+          aria-label={fullscreen ? 'Exit full screen' : 'Full screen'}
+          aria-pressed={fullscreen}
+        >
+          {fullscreen ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </button>
       </div>
     </div>
