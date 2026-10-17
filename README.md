@@ -6,9 +6,10 @@ Runs entirely in the browser. Edits stay non-destructive until you export.
 
 ## Features (MVP)
 
-- Open JPEG / PNG images (folder picker when the File System Access API is available)
+- Open JPEG / PNG / Sony ARW images (file picker by default; Option/Alt+Open for a folder). ARW uses the embedded full-size JPEG when present, otherwise LibRaw WASM
 - Non-destructive tonal + color sliders with live canvas preview
-- Save / apply custom presets; import and export as JSON
+- HSL editor (Hue / Saturation / Luminance per color band)
+- Save / update custom presets; dial intensity 0–100%; import JSON, Lightroom XMP, or `.cube` LUTs; export as JSON
 - Copy and paste edits between photos (`Ctrl/Cmd+C` / `Ctrl/Cmd+V`)
 - Export edited JPEG
 - Works fully offline after the app is loaded
@@ -45,7 +46,12 @@ npm run preview
 
 ## Presets
 
-Presets are named `EditParams` stacks stored in `localStorage` and exportable as JSON:
+Presets are named `EditParams` stacks stored in `localStorage` and exportable as JSON. Import also accepts:
+
+- **XMP** — Lightroom / Camera Raw develop settings mapped onto the basic + HSL sliders
+- **CUBE** — 3D LUT applied after parametric edits (stored on the preset as `edits.lut`)
+
+Example JSON:
 
 ```json
 {
@@ -61,7 +67,10 @@ Presets are named `EditParams` stacks stored in `localStorage` and exportable as
     "temperature": 25,
     "tint": 5,
     "vibrance": 15,
-    "saturation": 5
+    "saturation": 5,
+    "hsl": {
+      "oranges": { "hue": -10, "saturation": 15, "luminance": 5 }
+    }
   },
   "createdAt": "2026-10-16T00:00:00.000Z"
 }

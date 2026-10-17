@@ -8,16 +8,26 @@ import {
   readPresetFromFile,
   savePresetsToStorage,
 } from '../lib/presets'
+import { decodeRawToJpegBlob, isRawFile } from '../lib/rawDecode'
 import {
   DEFAULT_EDITS,
+  blendEdits,
   cloneEdits,
+  mergeEdits,
   type EditParams,
   type PhotoSession,
   type Preset,
 } from '../types/edits'
 
-function makePhoto(file: File): PhotoSession {
-  const objectUrl = URL.createObjectURL(file)
+async function makePhoto(file: File): Promise<PhotoSession> {
+  let objectUrl: string
+  if (isRawFile(file)) {
+    const jpeg = await decodeRawToJpegBlob(file)
+    objectUrl = URL.createObjectURL(jpeg)
+  } else {
+    objectUrl = URL.createObjectURL(file)
+  }
+
   return {
     id: crypto.randomUUID(),
     name: file.name,
@@ -33,9 +43,13 @@ export function useEditorSession() {
   const [photos, setPhotos] = useState<PhotoSession[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [presets, setPresets] = useState<Preset[]>(() => loadPresetsFromStorage())
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
+  const [presetIntensity, setPresetIntensityState] = useState(100)
   const [clipboard, setClipboard] = useState<EditParams | null>(null)
-  const [status, setStatus] = useState('Open JPEG or PNG files to begin')
+  const [status, setStatus] = useState('Open JPEG, PNG, or ARW files to begin')
   const photosRef = useRef(photos)
+  const presetsRef = useRef(presets)
+  const intensityRef = useRef(presetIntensity)
 
   const activePhoto = useMemo(
     () => photos.find((p) => p.id === activeId) ?? null,
@@ -45,6 +59,14 @@ export function useEditorSession() {
   useEffect(() => {
     photosRef.current = photos
   }, [photos])
+
+  useEffect(() => {
+    presetsRef.current = presets
+  }, [presets])
+
+  useEffect(() => {
+    intensityRef.current = presetIntensity
+  }, [presetIntensity])
 
   useEffect(() => {
     savePresetsToStorage(presets)
@@ -58,17 +80,33 @@ export function useEditorSession() {
     }
   }, [])
 
-  const handleOpen = useCallback(async () => {
-    const files = await openImages()
+  const handleOpen = useCallback(async (opts?: { folder?: boolean }) => {
+    const files = await openImages(opts)
     if (files.length === 0) return
 
-    setPhotos((prev) => {
-      for (const p of prev) URL.revokeObjectURL(p.objectUrl)
-      const next = files.map(makePhoto)
+    const rawCount = files.filter(isRawFile).length
+    setStatus(
+      rawCount > 0
+        ? `Opening ${rawCount} ARW file${rawCount === 1 ? '' : 's'}…`
+        : 'Loading images…',
+    )
+
+    const next: PhotoSession[] = []
+    try {
+      for (const file of files) {
+        next.push(await makePhoto(file))
+      }
+      setPhotos((prev) => {
+        for (const p of prev) URL.revokeObjectURL(p.objectUrl)
+        return next
+      })
       setActiveId(next[0]?.id ?? null)
       setStatus(`Loaded ${next.length} image${next.length === 1 ? '' : 's'}`)
-      return next
-    })
+    } catch (err) {
+      for (const photo of next) URL.revokeObjectURL(photo.objectUrl)
+      const message = err instanceof Error ? err.message : 'Failed to open images'
+      setStatus(message)
+    }
   }, [])
 
   const selectPhoto = useCallback((id: string) => {
@@ -78,21 +116,40 @@ export function useEditorSession() {
   const updateEdits = useCallback((patch: Partial<EditParams>) => {
     setPhotos((prev) =>
       prev.map((photo) =>
-        photo.id === activeId
-          ? { ...photo, edits: { ...photo.edits, ...patch } }
-          : photo,
+        photo.id === activeId ? { ...photo, edits: mergeEdits(photo.edits, patch) } : photo,
       ),
     )
   }, [activeId])
 
   const resetEdits = useCallback(() => {
     setPhotos((prev) =>
-      prev.map((photo) =>
-        photo.id === activeId ? { ...photo, edits: cloneEdits(DEFAULT_EDITS) } : photo,
-      ),
+      prev.map((photo) => {
+        if (photo.id !== activeId) return photo
+        const next = cloneEdits(DEFAULT_EDITS)
+        next.rotate = photo.edits.rotate
+        return { ...photo, edits: next }
+      }),
     )
+    setSelectedPresetId(null)
     setStatus('Edits reset')
   }, [activeId])
+
+  const applyPresetAtIntensity = useCallback(
+    (preset: Preset, intensity: number) => {
+      if (!activeId) return
+      const amount = Math.min(100, Math.max(0, intensity)) / 100
+      const current = photosRef.current.find((p) => p.id === activeId)
+      const blended = blendEdits(DEFAULT_EDITS, preset.edits, amount)
+      // Keep canvas orientation independent of develop presets
+      blended.rotate = current?.edits.rotate ?? 0
+      setPhotos((prev) =>
+        prev.map((photo) =>
+          photo.id === activeId ? { ...photo, edits: blended } : photo,
+        ),
+      )
+    },
+    [activeId],
+  )
 
   const copyEdits = useCallback(() => {
     const photo = photosRef.current.find((p) => p.id === activeId)
@@ -117,26 +174,57 @@ export function useEditorSession() {
       if (!photo) return
       const preset = createPreset(name, photo.edits)
       setPresets((prev) => [preset, ...prev])
-      setStatus(`Saved preset “${preset.name}”`)
+      setSelectedPresetId(preset.id)
+      setPresetIntensityState(100)
+      setStatus(`Saved custom preset “${preset.name}”`)
     },
     [activeId],
   )
+
+  const updateSelectedPreset = useCallback(() => {
+    if (!selectedPresetId || !activeId) return
+    const photo = photosRef.current.find((p) => p.id === activeId)
+    if (!photo) return
+    let updatedName = ''
+    setPresets((prev) =>
+      prev.map((preset) => {
+        if (preset.id !== selectedPresetId) return preset
+        updatedName = preset.name
+        return {
+          ...preset,
+          edits: cloneEdits(photo.edits),
+        }
+      }),
+    )
+    setPresetIntensityState(100)
+    setStatus(updatedName ? `Updated “${updatedName}” with current edits` : 'Preset updated')
+  }, [selectedPresetId, activeId])
 
   const applyPreset = useCallback(
     (preset: Preset) => {
       if (!activeId) return
-      setPhotos((prev) =>
-        prev.map((photo) =>
-          photo.id === activeId ? { ...photo, edits: cloneEdits(preset.edits) } : photo,
-        ),
-      )
-      setStatus(`Applied “${preset.name}”`)
+      setSelectedPresetId(preset.id)
+      applyPresetAtIntensity(preset, intensityRef.current)
+      setStatus(`Applied “${preset.name}” at ${intensityRef.current}%`)
     },
-    [activeId],
+    [activeId, applyPresetAtIntensity],
+  )
+
+  const setPresetIntensity = useCallback(
+    (intensity: number) => {
+      const next = Math.min(100, Math.max(0, Math.round(intensity)))
+      setPresetIntensityState(next)
+      const preset = presetsRef.current.find((p) => p.id === selectedPresetId)
+      if (!preset || !activeId) return
+      applyPresetAtIntensity(preset, next)
+      setStatus(`“${preset.name}” intensity ${next}%`)
+    },
+    [selectedPresetId, activeId, applyPresetAtIntensity],
   )
 
   const deletePreset = useCallback((id: string) => {
     setPresets((prev) => prev.filter((p) => p.id !== id))
+    setSelectedPresetId((prev) => (prev === id ? null : prev))
     setStatus('Preset removed')
   }, [])
 
@@ -149,9 +237,10 @@ export function useEditorSession() {
     try {
       const preset = await readPresetFromFile(file)
       setPresets((prev) => [preset, ...prev])
+      setSelectedPresetId(preset.id)
       setStatus(`Imported “${preset.name}”`)
     } catch {
-      setStatus('Could not import preset JSON')
+      setStatus('Could not import preset (JSON, XMP, or CUBE)')
     }
   }, [])
 
@@ -202,6 +291,8 @@ export function useEditorSession() {
     activePhoto,
     activeId,
     presets,
+    selectedPresetId,
+    presetIntensity,
     clipboard,
     status,
     handleOpen,
@@ -211,7 +302,9 @@ export function useEditorSession() {
     copyEdits,
     pasteEdits,
     savePreset,
+    updateSelectedPreset,
     applyPreset,
+    setPresetIntensity,
     deletePreset,
     exportPreset,
     importPreset,

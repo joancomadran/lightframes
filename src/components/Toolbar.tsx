@@ -2,7 +2,7 @@ type ToolbarProps = {
   canEdit: boolean
   hasClipboard: boolean
   status: string
-  onOpen: () => void
+  onOpen: (opts?: { folder?: boolean }) => void
   onCopy: () => void
   onPaste: () => void
   onExport: () => void
@@ -25,7 +25,12 @@ export function Toolbar({
       </div>
 
       <div className="toolbar__actions">
-        <button type="button" className="btn" onClick={onOpen}>
+        <button
+          type="button"
+          className="btn"
+          title="Open images. Hold Option/Alt to open a folder."
+          onClick={(e) => onOpen({ folder: e.altKey })}
+        >
           Open images
         </button>
         <button type="button" className="btn" onClick={onCopy} disabled={!canEdit}>

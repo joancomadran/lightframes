@@ -9,6 +9,7 @@ import { DEFAULT_EDITS } from './types/edits'
 export default function App() {
   const session = useEditorSession()
   const canEdit = Boolean(session.activePhoto)
+  const edits = session.activePhoto?.edits ?? DEFAULT_EDITS
 
   return (
     <div className="app">
@@ -33,23 +34,30 @@ export default function App() {
         <main className="stage">
           <PreviewCanvas
             src={session.activePhoto?.objectUrl ?? null}
-            edits={session.activePhoto?.edits ?? DEFAULT_EDITS}
+            edits={edits}
             name={session.activePhoto?.name}
+            onRotate={
+              canEdit ? (rotate) => session.updateEdits({ rotate }) : undefined
+            }
           />
         </main>
 
         <aside className="sidebar" aria-label="Editor panels">
           <AdjustmentsPanel
-            edits={session.activePhoto?.edits ?? DEFAULT_EDITS}
+            edits={edits}
             disabled={!canEdit}
             onChange={session.updateEdits}
             onReset={session.resetEdits}
           />
           <PresetsPanel
             presets={session.presets}
+            selectedPresetId={session.selectedPresetId}
+            intensity={session.presetIntensity}
             disabled={!canEdit}
             onSave={session.savePreset}
+            onUpdateSelected={session.updateSelectedPreset}
             onApply={session.applyPreset}
+            onIntensityChange={session.setPresetIntensity}
             onDelete={session.deletePreset}
             onExport={session.exportPreset}
             onImport={session.importPreset}

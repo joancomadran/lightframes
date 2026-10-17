@@ -5,7 +5,7 @@ type FilmstripProps = {
   photos: PhotoSession[]
   activeId: string | null
   onSelect: (id: string) => void
-  onOpen: () => void
+  onOpen: (opts?: { folder?: boolean }) => void
 }
 
 export function Filmstrip({ photos, activeId, onSelect, onOpen }: FilmstripProps) {
@@ -13,7 +13,12 @@ export function Filmstrip({ photos, activeId, onSelect, onOpen }: FilmstripProps
     <aside className="filmstrip" aria-label="Filmstrip">
       <div className="filmstrip__header">
         <span className="filmstrip__title">Filmstrip</span>
-        <button type="button" className="btn btn--ghost btn--sm" onClick={onOpen}>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          title="Open images. Hold Option/Alt to open a folder."
+          onClick={(e) => onOpen({ folder: e.altKey })}
+        >
           Open
         </button>
       </div>

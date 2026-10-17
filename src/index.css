@@ -296,8 +296,8 @@ button:disabled {
   min-width: 0;
   min-height: 0;
   display: grid;
-  place-items: center;
-  padding: 1rem;
+  padding: 0;
+  overflow: hidden;
   background:
     linear-gradient(rgba(200, 245, 96, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(200, 245, 96, 0.03) 1px, transparent 1px),
@@ -306,37 +306,95 @@ button:disabled {
 }
 
 .preview {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: grid;
-  place-items: center;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   animation: preview-in 0.35s ease;
 }
 
 @keyframes preview-in {
   from {
     opacity: 0;
-    transform: scale(0.985);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
+.preview__viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.preview__viewport:active {
+  cursor: grabbing;
+}
+
+.preview__world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
 .preview__canvas {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  display: block;
+  width: 100%;
+  height: 100%;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
   border: 1px solid var(--line);
+  pointer-events: none;
+}
+
+.preview__controls {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(18, 24, 22, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+}
+
+.preview__controls-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0.2rem;
+  background: var(--line);
+}
+
+.preview__zoom-label {
+  min-width: 3.25rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .preview--empty {
+  display: grid;
+  place-items: center;
   text-align: center;
-  max-width: 22rem;
+  max-width: none;
   padding: 2rem;
+}
+
+.preview--empty .preview__empty-title,
+.preview--empty .preview__empty-copy {
+  max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .preview__empty-title {
@@ -362,7 +420,8 @@ button:disabled {
   min-height: 0;
   border-left: 1px solid var(--line);
   background: var(--bg-panel);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .panel {
@@ -371,12 +430,13 @@ button:disabled {
   min-height: 0;
   padding: 0.75rem;
   border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
 }
 
 .panel--presets {
   flex: 1;
   border-bottom: none;
-  min-height: 0;
+  min-height: 12rem;
 }
 
 .panel__header {
@@ -402,7 +462,129 @@ button:disabled {
   gap: 0.7rem;
   overflow-y: auto;
   padding-right: 0.15rem;
-  max-height: min(48vh, 420px);
+  max-height: min(52vh, 480px);
+}
+
+.slider-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.hsl-dropdown {
+  margin: 0.1rem 0 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.hsl-dropdown__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 550;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.hsl-dropdown__summary::-webkit-details-marker {
+  display: none;
+}
+
+.hsl-dropdown__summary::before {
+  content: '';
+  width: 0.35rem;
+  height: 0.35rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  opacity: 0.7;
+}
+
+.hsl-dropdown[open] > .hsl-dropdown__summary::before {
+  transform: rotate(45deg);
+}
+
+.hsl-dropdown__summary:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.hsl-dropdown__badge {
+  color: var(--accent);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.hsl-dropdown__body {
+  padding: 0 0.55rem 0.55rem;
+  border-top: 1px solid var(--line);
+}
+
+.hsl-dropdown__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.hsl-dropdown__toolbar .hsl-modes {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.sliders--hsl {
+  max-height: min(28vh, 260px);
+  gap: 0.55rem;
+  padding-right: 0;
+}
+
+.hsl-modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+}
+
+.hsl-modes__btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  border-radius: var(--radius);
+  padding: 0.3rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 550;
+  color: var(--text-muted);
+}
+
+.hsl-modes__btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.hsl-modes__btn--active {
+  border-color: rgba(200, 245, 96, 0.35);
+  background: rgba(200, 245, 96, 0.1);
+  color: var(--accent);
+}
+
+.hsl-channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hsl-channel__swatch {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
 }
 
 .slider {
@@ -428,10 +610,21 @@ button:disabled {
   height: 0.35rem;
 }
 
+.preset-intensity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.7rem;
+}
+
+.preset-intensity--idle {
+  opacity: 0.55;
+}
+
 .preset-save {
   display: flex;
   gap: 0.4rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.4rem;
 }
 
 .preset-save__input {
@@ -447,6 +640,12 @@ button:disabled {
 .preset-save__input:focus {
   outline: 1px solid var(--accent);
   border-color: transparent;
+}
+
+.preset-save-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
 }
 
 .preset-list {
@@ -476,6 +675,11 @@ button:disabled {
   padding: 0.15rem 0.2rem 0.15rem 0.35rem;
 }
 
+.preset-list__item--active {
+  outline: 1px solid rgba(200, 245, 96, 0.35);
+  background: rgba(200, 245, 96, 0.08);
+}
+
 .preset-list__apply {
   flex: 1;
   min-width: 0;
@@ -490,6 +694,10 @@ button:disabled {
 }
 
 .preset-list__apply:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.preset-list__item--active .preset-list__apply {
   color: var(--accent);
 }
 
