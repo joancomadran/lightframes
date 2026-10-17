@@ -1,13 +1,26 @@
 import LibRaw from 'libraw-wasm'
 
-const RAW_EXTENSIONS = ['.arw'] as const
+/** Common camera RAW extensions supported via embedded JPEG and/or LibRaw WASM. */
+export const RAW_EXTENSIONS = [
+  '.arw',
+  '.cr2',
+  '.cr3',
+  '.nef',
+  '.nrw',
+  '.dng',
+  '.raf',
+  '.orf',
+  '.rw2',
+  '.pef',
+  '.srw',
+] as const
 
 export function isRawFile(file: File): boolean {
   const name = file.name.toLowerCase()
   return RAW_EXTENSIONS.some((ext) => name.endsWith(ext))
 }
 
-/** Find the largest embedded JPEG preview inside a TIFF-based RAW (e.g. Sony ARW). */
+/** Find the largest embedded JPEG preview inside a TIFF-based RAW. */
 async function extractLargestEmbeddedJpeg(bytes: Uint8Array): Promise<Blob | null> {
   const candidates: { start: number; end: number; size: number }[] = []
 
@@ -24,7 +37,6 @@ async function extractLargestEmbeddedJpeg(bytes: Uint8Array): Promise<Blob | nul
     if (end < 0) continue
 
     const size = end - i
-    // Skip tiny EXIF thumbnails / false positives
     if (size < 50_000) continue
     candidates.push({ start: i, end, size })
   }
@@ -105,14 +117,13 @@ async function bitmapToJpegBlob(
 async function decodeWithLibRaw(bytes: Uint8Array, fileName: string): Promise<Blob> {
   const raw = new LibRaw()
   try {
-    // Copy before transfer — LibRaw's worker detaches the ArrayBuffer.
     const copy = bytes.slice()
     await raw.open(copy, {
       useCameraWb: true,
-      outputColor: 1, // sRGB
+      outputColor: 1,
       outputBps: 8,
       userQual: 3,
-      halfSize: true, // keep memory/CPU practical in-browser
+      halfSize: true,
     })
 
     try {
@@ -147,7 +158,7 @@ async function decodeWithLibRaw(bytes: Uint8Array, fileName: string): Promise<Bl
 }
 
 /**
- * Decode a Sony ARW into a JPEG blob for the canvas preview / export pipeline.
+ * Decode a camera RAW into a JPEG blob for the canvas preview / export pipeline.
  * Prefers the camera's embedded full-size JPEG (fast), then LibRaw demosaic.
  */
 export async function decodeRawToJpegBlob(file: File): Promise<Blob> {

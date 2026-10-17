@@ -1,20 +1,36 @@
 type ToolbarProps = {
   canEdit: boolean
   hasClipboard: boolean
+  canUndo: boolean
+  canRedo: boolean
+  compareMode: boolean
   status: string
+  selectionCount: number
   onOpen: (opts?: { folder?: boolean }) => void
+  onUndo: () => void
+  onRedo: () => void
   onCopy: () => void
   onPaste: () => void
+  onSync: () => void
+  onToggleCompare: () => void
   onExport: () => void
 }
 
 export function Toolbar({
   canEdit,
   hasClipboard,
+  canUndo,
+  canRedo,
+  compareMode,
   status,
+  selectionCount,
   onOpen,
+  onUndo,
+  onRedo,
   onCopy,
   onPaste,
+  onSync,
+  onToggleCompare,
   onExport,
 }: ToolbarProps) {
   return (
@@ -31,10 +47,16 @@ export function Toolbar({
           title="Open images. Hold Option/Alt to open a folder."
           onClick={(e) => onOpen({ folder: e.altKey })}
         >
-          Open images
+          Open
+        </button>
+        <button type="button" className="btn" onClick={onUndo} disabled={!canUndo}>
+          Undo
+        </button>
+        <button type="button" className="btn" onClick={onRedo} disabled={!canRedo}>
+          Redo
         </button>
         <button type="button" className="btn" onClick={onCopy} disabled={!canEdit}>
-          Copy edits
+          Copy
         </button>
         <button
           type="button"
@@ -42,10 +64,28 @@ export function Toolbar({
           onClick={onPaste}
           disabled={!canEdit || !hasClipboard}
         >
-          Paste edits
+          Paste
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={onSync}
+          disabled={!canEdit || selectionCount < 2}
+          title="Sync active edits to selected photos"
+        >
+          Sync
+        </button>
+        <button
+          type="button"
+          className={compareMode ? 'btn btn--accent' : 'btn'}
+          onClick={onToggleCompare}
+          disabled={!canEdit}
+          title="Before / after (\\)"
+        >
+          Before
         </button>
         <button type="button" className="btn btn--accent" onClick={onExport} disabled={!canEdit}>
-          Export JPEG
+          Export
         </button>
       </div>
 

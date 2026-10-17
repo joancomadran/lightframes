@@ -1,12 +1,23 @@
+import { RAW_EXTENSIONS } from './rawDecode'
+
 const IMAGE_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
   'image/png',
   'image/x-sony-arw',
   'image/arw',
+  'image/x-canon-cr2',
+  'image/x-canon-cr3',
+  'image/x-nikon-nef',
+  'image/x-adobe-dng',
+  'image/x-fuji-raf',
+  'image/x-olympus-orf',
+  'image/x-panasonic-rw2',
 ])
 
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.arw'] as const
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', ...RAW_EXTENSIONS] as const
+
+const RAW_ACCEPT = RAW_EXTENSIONS.flatMap((ext) => [ext, ext.toUpperCase()])
 
 export function isSupportedImage(file: File): boolean {
   const name = file.name.toLowerCase()
@@ -44,9 +55,9 @@ async function pickWithOpenFilePicker(): Promise<File[] | null> {
           accept: {
             'image/jpeg': ['.jpg', '.jpeg'],
             'image/png': ['.png'],
-            // Empty MIME + extension is the reliable way to surface Sony RAW
-            'application/octet-stream': ['.arw', '.ARW'],
+            'application/octet-stream': RAW_ACCEPT,
             'image/x-sony-arw': ['.arw', '.ARW'],
+            'image/x-adobe-dng': ['.dng', '.DNG'],
           },
         },
       ],
@@ -70,8 +81,14 @@ export async function pickImageFiles(): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
-    // Extension-first accept: MIME-only filters often hide .ARW on macOS
-    input.accept = '.jpg,.jpeg,.png,.arw,.ARW,image/jpeg,image/png'
+    input.accept = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      ...RAW_ACCEPT,
+      'image/jpeg',
+      'image/png',
+    ].join(',')
     input.multiple = true
 
     let settled = false
@@ -84,7 +101,6 @@ export async function pickImageFiles(): Promise<File[]> {
     input.onchange = () => {
       finish(Array.from(input.files ?? []).filter(isSupportedImage))
     }
-    // Cancel does not always fire change — settle on next focus either way
     window.addEventListener(
       'focus',
       () => {
@@ -119,7 +135,7 @@ async function pickImageFolder(): Promise<File[] | null> {
 }
 
 /**
- * Open images via multi-file picker (ARW-friendly).
+ * Open images via multi-file picker (RAW-friendly).
  * Hold Alt/Option while clicking to open a folder instead.
  */
 export async function openImages(opts?: { folder?: boolean }): Promise<File[]> {

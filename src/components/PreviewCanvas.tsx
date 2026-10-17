@@ -5,6 +5,12 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
+import {
+  computeHistogram,
+  drawClippingOverlay,
+  type ClippingStats,
+  type HistogramBins,
+} from '../lib/histogram'
 import { renderEditedImage } from '../lib/imageProcessing'
 import { stepRotate, type EditParams } from '../types/edits'
 
@@ -12,7 +18,11 @@ type PreviewCanvasProps = {
   src: string | null
   edits: EditParams
   name?: string
+  compareMode?: boolean
+  showClipping?: boolean
+  scrubbing?: boolean
   onRotate?: (next: EditParams['rotate']) => void
+  onHistogram?: (bins: HistogramBins, clipping: ClippingStats) => void
 }
 
 type Size = { w: number; h: number }
@@ -21,6 +31,8 @@ type Pan = { x: number; y: number }
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
 const ZOOM_STEP = 1.25
+const PREVIEW_FAST = 960
+const PREVIEW_IDLE = 1800
 
 function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n))
@@ -62,11 +74,22 @@ function panAfterZoom(args: {
   }
 }
 
-export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps) {
+export function PreviewCanvas({
+  src,
+  edits,
+  name,
+  compareMode = false,
+  showClipping = false,
+  scrubbing = false,
+  onRotate,
+  onHistogram,
+}: PreviewCanvasProps) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const clipRef = useRef<HTMLCanvasElement>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
   const frameRef = useRef(0)
+  const idleTimerRef = useRef(0)
   const viewRef = useRef({
     zoom: 1,
     pan: { x: 0, y: 0 },
@@ -81,11 +104,11 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
     originY: number
   } | null>(null)
 
-  /** 1 = fit entire image in the viewport */
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<Pan>({ x: 0, y: 0 })
   const [contentSize, setContentSize] = useState<Size>({ w: 0, h: 0 })
   const [viewportSize, setViewportSize] = useState<Size>({ w: 0, h: 0 })
+  const [maxEdge, setMaxEdge] = useState(PREVIEW_IDLE)
 
   viewRef.current = {
     zoom,
@@ -129,6 +152,17 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
   )
 
   useEffect(() => {
+    if (scrubbing) {
+      setMaxEdge(PREVIEW_FAST)
+      window.clearTimeout(idleTimerRef.current)
+      return
+    }
+    window.clearTimeout(idleTimerRef.current)
+    idleTimerRef.current = window.setTimeout(() => setMaxEdge(PREVIEW_IDLE), 180)
+    return () => window.clearTimeout(idleTimerRef.current)
+  }, [scrubbing, edits])
+
+  useEffect(() => {
     const el = viewportRef.current
     if (!el) return
 
@@ -165,14 +199,20 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
       imageRef.current = img
       const canvas = canvasRef.current
       if (!canvas) return
-      renderEditedImage(img, edits, canvas)
+      const imageData = renderEditedImage(img, edits, canvas, {
+        maxEdge,
+        bypassColor: compareMode,
+      })
       setContentSize({ w: canvas.width, h: canvas.height })
+      if (imageData && onHistogram) {
+        const { bins, clipping } = computeHistogram(imageData)
+        onHistogram(bins, clipping)
+      }
     })
 
     return () => {
       cancelled = true
     }
-    // Reload bitmap when source changes; edits handled below
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, resetView])
 
@@ -182,13 +222,28 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
       const img = imageRef.current
       const canvas = canvasRef.current
       if (!img || !canvas || !src) return
-      renderEditedImage(img, edits, canvas)
+      const imageData = renderEditedImage(img, edits, canvas, {
+        maxEdge,
+        bypassColor: compareMode,
+      })
       setContentSize({ w: canvas.width, h: canvas.height })
+      if (imageData && onHistogram && !compareMode) {
+        const { bins, clipping } = computeHistogram(imageData)
+        onHistogram(bins, clipping)
+      }
+      const clipCanvas = clipRef.current
+      if (clipCanvas) {
+        if (showClipping && imageData && !compareMode) {
+          drawClippingOverlay(clipCanvas, imageData)
+        } else {
+          clipCanvas.width = 0
+          clipCanvas.height = 0
+        }
+      }
     })
     return () => cancelAnimationFrame(frameRef.current)
-  }, [edits, src])
+  }, [edits, src, maxEdge, compareMode, showClipping, onHistogram])
 
-  // Re-fit when orientation flips canvas aspect
   const rotate = edits.rotate ?? 0
   useEffect(() => {
     if (!src) return
@@ -263,7 +318,7 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
       <div className="preview preview--empty">
         <p className="preview__empty-title">Drop light into a frame</p>
         <p className="preview__empty-copy">
-          Open JPEG, PNG, or Sony ARW files to preview edits live on the canvas.
+          Open JPEG, PNG, or camera RAW files to preview edits live on the canvas.
         </p>
       </div>
     )
@@ -273,6 +328,7 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
 
   return (
     <div className="preview">
+      {compareMode && <div className="preview__badge">Before</div>}
       <div
         ref={viewportRef}
         className="preview__viewport"
@@ -294,6 +350,11 @@ export function PreviewCanvas({ src, edits, name, onRotate }: PreviewCanvasProps
             ref={canvasRef}
             className="preview__canvas"
             aria-label={name ?? 'Preview'}
+          />
+          <canvas
+            ref={clipRef}
+            className="preview__clip"
+            aria-hidden="true"
           />
         </div>
       </div>
