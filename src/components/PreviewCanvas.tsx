@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import {
@@ -26,6 +27,7 @@ import {
 import { loadRawPreview } from '../lib/rawDecode'
 import { developBase } from '../lib/renderPipeline'
 import { stepRotate, type EditParams, type LocalAdjustment } from '../types/edits'
+import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
 import { MaskOverlay, type MaskOverlayConfig } from './MaskOverlay'
 
@@ -59,6 +61,8 @@ type PreviewCanvasProps = {
   apiRef?: { current: PreviewApi | null }
   /** Full-resolution size of the uncropped (rotated + straightened) frame. */
   onFrameSize?: (size: Size) => void
+  /** Shown as the primary action of the empty state. */
+  onOpen?: () => void
 }
 
 export type Size = { w: number; h: number }
@@ -67,6 +71,8 @@ type Pan = { x: number; y: number }
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
 const ZOOM_STEP = 1.25
+// iPhone Safari only supports fullscreen for <video>.
+const canFullscreen = typeof document !== 'undefined' && Boolean(document.fullscreenEnabled)
 const PREVIEW_FAST = 960
 const PREVIEW_IDLE = 1800
 const BACKGROUND_KEY = 'lightframes:preview-background'
@@ -146,7 +152,9 @@ export function PreviewCanvas({
   onPickWhiteBalance = null,
   apiRef,
   onFrameSize,
+  onOpen,
 }: PreviewCanvasProps) {
+  const coarsePointer = useMediaQuery(COARSE_QUERY)
   const rootRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -172,6 +180,15 @@ export function PreviewCanvas({
     originX: number
     originY: number
   } | null>(null)
+  // Touch gestures: every active pointer (viewport coords), the pinch baseline and the last tap.
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>())
+  const pinchRef = useRef<{
+    dist: number
+    mid: { x: number; y: number }
+    zoom: number
+    pan: Pan
+  } | null>(null)
+  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(null)
 
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<Pan>({ x: 0, y: 0 })
@@ -376,6 +393,7 @@ export function PreviewCanvas({
   }, [])
 
   const toggleFullscreen = useCallback(() => {
+    if (!canFullscreen) return
     if (document.fullscreenElement) {
       void document.exitFullscreen()
     } else {
@@ -539,6 +557,28 @@ export function PreviewCanvas({
     return () => el.removeEventListener('wheel', onWheel)
   }, [src, applyZoom])
 
+  const localPoint = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const startPinch = () => {
+    const [a, b] = [...pointersRef.current.values()]
+    if (!a || !b) return
+    dragRef.current = null
+    pinchRef.current = {
+      dist: Math.max(1, Math.hypot(b.x - a.x, b.y - a.y)),
+      mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+      zoom: viewRef.current.zoom,
+      pan: viewRef.current.pan,
+    }
+  }
+
+  const startDrag = (pointerId: number, clientX: number, clientY: number) => {
+    const { pan: current } = viewRef.current
+    dragRef.current = { pointerId, startX: clientX, startY: clientY, originX: current.x, originY: current.y }
+  }
+
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 || !src) return
     if (onPickWhiteBalance) {
@@ -551,17 +591,43 @@ export function PreviewCanvas({
       }
       return
     }
-    dragRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-      originX: pan.x,
-      originY: pan.y,
-    }
+    pointersRef.current.set(e.pointerId, localPoint(e))
     e.currentTarget.setPointerCapture(e.pointerId)
+    if (pointersRef.current.size === 2) {
+      startPinch()
+      lastTapRef.current = null
+    } else if (pointersRef.current.size === 1) {
+      startDrag(e.pointerId, e.clientX, e.clientY)
+    }
   }
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!pointersRef.current.has(e.pointerId)) return
+    pointersRef.current.set(e.pointerId, localPoint(e))
+
+    const pinch = pinchRef.current
+    if (pinch) {
+      const [a, b] = [...pointersRef.current.values()]
+      if (!a || !b) return
+      const view = viewRef.current
+      const z = clamp((pinch.zoom * Math.hypot(b.x - a.x, b.y - a.y)) / pinch.dist, MIN_ZOOM, MAX_ZOOM)
+      const zoomed = panAfterZoom({
+        prevZoom: pinch.zoom,
+        nextZoom: z,
+        prevPan: pinch.pan,
+        content: view.content,
+        viewport: view.viewport,
+        anchorX: pinch.mid.x,
+        anchorY: pinch.mid.y,
+      })
+      setZoom(z)
+      setPan({
+        x: zoomed.x + (a.x + b.x) / 2 - pinch.mid.x,
+        y: zoomed.y + (a.y + b.y) / 2 - pinch.mid.y,
+      })
+      return
+    }
+
     const drag = dragRef.current
     if (!drag || drag.pointerId !== e.pointerId) return
     setPan({
@@ -571,15 +637,40 @@ export function PreviewCanvas({
   }
 
   const onPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (dragRef.current?.pointerId === e.pointerId) {
-      dragRef.current = null
-      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-        e.currentTarget.releasePointerCapture(e.pointerId)
+    if (!pointersRef.current.delete(e.pointerId)) return
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    }
+
+    if (pinchRef.current) {
+      // Lifting one finger of a pinch keeps panning with the other.
+      pinchRef.current = null
+      const [rest] = [...pointersRef.current.entries()]
+      if (rest) {
+        const rect = e.currentTarget.getBoundingClientRect()
+        startDrag(rest[0], rest[1].x + rect.left, rest[1].y + rect.top)
       }
+      return
+    }
+
+    const drag = dragRef.current
+    dragRef.current = null
+    // Browsers don't reliably synthesize dblclick for touch, so detect a double tap here.
+    if (e.pointerType !== 'touch' || e.type === 'pointercancel' || !drag) return
+    if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) > 8) return
+    const now = e.timeStamp
+    const last = lastTapRef.current
+    if (last && now - last.time < 320 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 32) {
+      lastTapRef.current = null
+      const point = localPoint(e)
+      toggleZoom(point.x, point.y)
+    } else {
+      lastTapRef.current = { time: now, x: e.clientX, y: e.clientY }
     }
   }
 
-  const onDoubleClick = () => {
+  // Fit ↔ 100%: zooms in around the given point, or back out to fit.
+  const toggleZoom = (anchorX: number, anchorY: number) => {
     const view = viewRef.current
     const fitted =
       Math.abs(view.zoom - 1) < 0.02 &&
@@ -587,10 +678,17 @@ export function PreviewCanvas({
       Math.abs(view.pan.y) < 1
     if (fitted) {
       const fit = fitScaleFor(view.content, view.viewport)
-      applyZoom(fit > 0 ? 1 / fit : 1, view.viewport.w / 2, view.viewport.h / 2)
+      applyZoom(fit > 0 ? 1 / fit : 1, anchorX, anchorY)
     } else {
       resetView()
     }
+  }
+
+  const onDoubleClick = (e: ReactMouseEvent<HTMLDivElement>) => {
+    // Touch double taps are handled in onPointerUp.
+    if (coarsePointer) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    toggleZoom(e.clientX - rect.left, e.clientY - rect.top)
   }
 
   if (!src) {
@@ -600,6 +698,11 @@ export function PreviewCanvas({
         <p className="preview__empty-copy">
           Open JPEG, PNG, or camera RAW files to preview edits live on the canvas.
         </p>
+        {onOpen && (
+          <button type="button" className="btn btn--accent btn--lg preview__empty-cta" onClick={onOpen}>
+            Open photos
+          </button>
+        )}
       </div>
     )
   }
@@ -624,7 +727,9 @@ export function PreviewCanvas({
         compareMode && <div className="preview__badge">Before</div>
       )}
       {onPickWhiteBalance && (
-        <div className="preview__badge preview__badge--tool">Click a neutral grey or white area · Esc to cancel</div>
+        <div className="preview__badge preview__badge--tool">
+          {coarsePointer ? 'Tap a neutral grey or white area' : 'Click a neutral grey or white area · Esc to cancel'}
+        </div>
       )}
       <div
         ref={viewportRef}
@@ -691,7 +796,7 @@ export function PreviewCanvas({
       <div className="preview__controls" role="toolbar" aria-label="View and rotate">
         <button
           type="button"
-          className="btn btn--ghost btn--sm btn--icon"
+          className="btn btn--ghost btn--sm btn--icon preview__ctl--secondary"
           disabled={!onRotate}
           onClick={() => onRotate?.(stepRotate(edits.rotate ?? 0, -90))}
           title="Rotate left"
@@ -715,7 +820,7 @@ export function PreviewCanvas({
         </button>
         <button
           type="button"
-          className="btn btn--ghost btn--sm btn--icon"
+          className="btn btn--ghost btn--sm btn--icon preview__ctl--secondary"
           disabled={!onRotate}
           onClick={() => onRotate?.(stepRotate(edits.rotate ?? 0, 90))}
           title="Rotate right"
@@ -737,10 +842,10 @@ export function PreviewCanvas({
             />
           </svg>
         </button>
-        <span className="preview__controls-sep" aria-hidden="true" />
+        <span className="preview__controls-sep preview__ctl--secondary" aria-hidden="true" />
         <button
           type="button"
-          className="btn btn--ghost btn--sm"
+          className="btn btn--ghost btn--sm preview__ctl--secondary"
           onClick={() => zoomBy(1 / ZOOM_STEP)}
           aria-label="Zoom out"
         >
@@ -756,7 +861,7 @@ export function PreviewCanvas({
         </button>
         <button
           type="button"
-          className="btn btn--ghost btn--sm"
+          className="btn btn--ghost btn--sm preview__ctl--secondary"
           onClick={() => zoomBy(ZOOM_STEP)}
           aria-label="Zoom in"
         >
@@ -764,7 +869,7 @@ export function PreviewCanvas({
         </button>
         <button
           type="button"
-          className="btn btn--ghost btn--sm"
+          className="btn btn--ghost btn--sm preview__ctl--secondary"
           onClick={resetView}
           title="Fit entire image"
         >
@@ -798,36 +903,38 @@ export function PreviewCanvas({
             aria-hidden="true"
           />
         </button>
-        <button
-          type="button"
-          className="btn btn--ghost btn--sm btn--icon"
-          onClick={toggleFullscreen}
-          title={fullscreen ? 'Exit full screen (F / Esc)' : 'Full screen (F)'}
-          aria-label={fullscreen ? 'Exit full screen' : 'Full screen'}
-          aria-pressed={fullscreen}
-        >
-          {fullscreen ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </button>
+        {canFullscreen && (
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm btn--icon"
+            onClick={toggleFullscreen}
+            title={fullscreen ? 'Exit full screen (F / Esc)' : 'Full screen (F)'}
+            aria-label={fullscreen ? 'Exit full screen' : 'Full screen'}
+            aria-pressed={fullscreen}
+          >
+            {fullscreen ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </button>
+        )}
       </div>
     </div>
   )

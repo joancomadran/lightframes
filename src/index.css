@@ -31,7 +31,15 @@ body,
   margin: 0;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   font-family: var(--font-ui);
   background:
     radial-gradient(ellipse 90% 60% at 70% -10%, rgba(200, 245, 96, 0.07), transparent 55%),
@@ -49,6 +57,12 @@ input {
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+:where(button, select, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 button:disabled {
@@ -58,9 +72,12 @@ button:disabled {
 
 .app {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   height: 100%;
-  min-height: 100dvh;
+  height: 100dvh;
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+  overflow: hidden;
 }
 
 /* ——— Toolbar / brand ——— */
@@ -71,10 +88,12 @@ button:disabled {
   align-items: center;
   gap: 1rem;
   padding: 0.65rem 1rem;
+  padding-top: max(0.65rem, env(safe-area-inset-top));
   border-bottom: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(23, 30, 26, 0.95), rgba(18, 24, 22, 0.92));
   backdrop-filter: blur(8px);
-  z-index: 2;
+  position: relative;
+  z-index: 20;
 }
 
 .toolbar__brand {
@@ -119,8 +138,110 @@ button:disabled {
 .toolbar__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.45rem;
   justify-content: center;
+}
+
+.toolbar__group {
+  display: flex;
+  gap: 0.45rem;
+}
+
+/* Overflow menu: only shown when the toolbar is too narrow for every action. */
+.toolbar__more {
+  position: relative;
+  display: none;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 14rem;
+  padding: 0.3rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  animation: menu-in 0.14s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+
+.menu__item {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.menu__item:active:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.menu__hint {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.menu__note {
+  margin: 0.3rem 0 0;
+  padding: 0.55rem 0.75rem 0.35rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+@media (pointer: fine) {
+  .menu__note {
+    display: none;
+  }
+}
+
+.btn--labelled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* Icons in labelled buttons only appear when the label collapses (phones). */
+.btn__icon {
+  display: none;
+  flex-shrink: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .toolbar__status {
@@ -146,9 +267,26 @@ button:disabled {
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
-.btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: rgba(200, 245, 96, 0.35);
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: rgba(200, 245, 96, 0.35);
+  }
+
+  .btn--accent:hover:not(:disabled) {
+    background: #d4fa7a;
+    border-color: transparent;
+  }
+
+  .btn--ghost:hover:not(:disabled) {
+    color: var(--text);
+    background: var(--bg-hover);
+    border-color: transparent;
+  }
+
+  .menu__item:hover:not(:disabled) {
+    background: var(--bg-hover);
+  }
 }
 
 .btn:active:not(:disabled) {
@@ -162,22 +300,11 @@ button:disabled {
   font-weight: 600;
 }
 
-.btn--accent:hover:not(:disabled) {
-  background: #d4fa7a;
-  border-color: transparent;
-}
-
 .btn--ghost {
   background: transparent;
   border-color: transparent;
   color: var(--text-muted);
   padding-inline: 0.4rem;
-}
-
-.btn--ghost:hover:not(:disabled) {
-  color: var(--text);
-  background: var(--bg-hover);
-  border-color: transparent;
 }
 
 .btn--sm {
@@ -199,13 +326,34 @@ button:disabled {
   display: block;
 }
 
+.btn--lg {
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-size: 1rem;
+}
+
 /* ——— Workspace ——— */
 
 .workspace {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr) 280px;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'film stage side';
   min-height: 0;
   height: 100%;
+}
+
+.filmstrip {
+  grid-area: film;
+}
+
+.stage {
+  grid-area: stage;
+}
+
+.sidebar {
+  grid-area: side;
 }
 
 /* ——— Filmstrip ——— */
@@ -214,6 +362,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding-bottom: env(safe-area-inset-bottom);
   border-right: 1px solid var(--line);
   background: var(--bg-panel);
 }
@@ -264,8 +413,15 @@ button:disabled {
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.filmstrip__item:hover {
-  background: var(--bg-elevated);
+@media (hover: hover) {
+  .filmstrip__item:hover {
+    background: var(--bg-elevated);
+  }
+}
+
+.filmstrip__item {
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 .filmstrip__item--active {
@@ -439,9 +595,14 @@ button:disabled {
 .preview--empty {
   display: grid;
   place-items: center;
+  align-content: center;
   text-align: center;
   max-width: none;
   padding: 2rem;
+}
+
+.preview__empty-cta {
+  margin-top: 1.5rem;
 }
 
 .preview--empty .preview__empty-title,
@@ -472,9 +633,15 @@ button:disabled {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding-bottom: env(safe-area-inset-bottom);
   border-left: 1px solid var(--line);
   background: var(--bg-panel);
   overflow: hidden;
+}
+
+/* Grabber that folds the bottom sheet on phones. */
+.sheet-handle {
+  display: none;
 }
 
 .sidebar__scroll {
@@ -906,6 +1073,7 @@ button:disabled {
 
 .workspace--no-filmstrip {
   grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-areas: 'stage side';
 }
 
 .panel-tabs {
@@ -936,9 +1104,11 @@ button:disabled {
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
-.panel-tab:hover {
-  color: var(--text);
-  background: rgba(36, 48, 40, 0.45);
+@media (hover: hover) {
+  .panel-tab:hover {
+    color: var(--text);
+    background: rgba(36, 48, 40, 0.45);
+  }
 }
 
 .panel-tab--active {
@@ -1573,53 +1743,6 @@ button:disabled {
 
 /* ——— Responsive ——— */
 
-@media (max-width: 960px) {
-  .toolbar {
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
-  }
-
-  .toolbar__actions {
-    justify-content: flex-start;
-  }
-
-  .toolbar__status {
-    text-align: left;
-  }
-
-  .workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(120px, 28vh) minmax(200px, 1fr) auto;
-  }
-
-  .filmstrip {
-    border-right: none;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .filmstrip__list {
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .filmstrip__item {
-    width: 110px;
-    flex-shrink: 0;
-  }
-
-  .sidebar {
-    border-left: none;
-    border-top: 1px solid var(--line);
-    max-height: 45vh;
-    overflow-y: auto;
-  }
-
-  .sliders {
-    max-height: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2186,5 +2309,690 @@ kbd {
 
   .export-presets {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ——— Responsive ———
+   ≥1100px  desktop: filmstrip · stage · panels
+   768–1099 tablet / landscape phone: stage + panels, filmstrip under the stage
+   <768px   phone portrait: stage, filmstrip row, bottom tool sheet (keep in sync with PHONE_QUERY)
+   Landscape phones (height ≤500px) use the tablet layout so the photo keeps its room. */
+
+/* Touch: 44px targets (Apple HIG / WCAG 2.5.5), larger thumbs and handles. */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 2.5rem;
+  }
+
+  .btn--sm {
+    min-height: 2.25rem;
+  }
+
+  .btn--icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .toolbar__keyboard {
+    display: none;
+  }
+
+  /* iOS zooms the page into any focused field under 16px. */
+  .field,
+  .field--sm,
+  .preset-save__input,
+  input[type='text'],
+  input[type='number'],
+  select {
+    font-size: 16px;
+  }
+
+  .field,
+  .preset-save__input {
+    min-height: 2.75rem;
+  }
+
+  .field--sm {
+    min-height: 2.25rem;
+  }
+
+  .segmented__btn {
+    min-height: 2.5rem;
+  }
+
+  .chip {
+    min-height: 2.25rem;
+    padding-inline: 0.8rem;
+  }
+
+  .link-btn {
+    min-height: 2.25rem;
+    padding-inline: 0.25rem;
+  }
+
+  .check {
+    min-height: 2.5rem;
+  }
+
+  .check input {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .swatch-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .hsl-colors {
+    grid-template-columns: repeat(8, minmax(0, 2rem));
+  }
+
+  .preset-list__apply,
+  .mask-card__select {
+    min-height: 2.75rem;
+  }
+
+  .mask-add__btn {
+    min-height: 3.25rem;
+  }
+
+  .toast__close {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .histogram-clip {
+    padding: 0.3rem 0.6rem;
+  }
+
+  /* A vertical swipe over a slider scrolls the panel instead of grabbing the thumb. */
+  .cslider input[type='range'] {
+    height: 2rem;
+    touch-action: pan-y;
+  }
+
+  .cslider input[type='range']::-webkit-slider-runnable-track {
+    height: 0.25rem;
+  }
+
+  .cslider input[type='range']::-webkit-slider-thumb {
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: -0.5625rem;
+  }
+
+  .cslider input[type='range']::-moz-range-track {
+    height: 0.25rem;
+  }
+
+  .cslider input[type='range']::-moz-range-thumb {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .cslider input[type='range']:active:not(:disabled)::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+
+  /* On-image handles: bigger to see, and an invisible 44px hit area around each. */
+  .crop-overlay__handle {
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+  }
+
+  .crop-overlay__handle--n,
+  .crop-overlay__handle--s {
+    width: 30px;
+    height: 8px;
+    margin: -4px 0 0 -15px;
+  }
+
+  .crop-overlay__handle--e,
+  .crop-overlay__handle--w {
+    width: 8px;
+    height: 30px;
+    margin: -15px 0 0 -4px;
+  }
+
+  .mask-overlay__pin {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mask-overlay__handle {
+    width: 16px;
+    height: 16px;
+  }
+
+  .crop-overlay__handle::before,
+  .mask-overlay__pin::before,
+  .mask-overlay__handle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  .split-divider {
+    width: 44px;
+    margin-left: -22px;
+  }
+
+  .split-divider::before {
+    left: 21px;
+  }
+
+  .split-divider__grip {
+    width: 34px;
+    height: 34px;
+  }
+
+  .preview__controls .btn--icon,
+  .preview__controls .btn {
+    min-width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+/* ——— Tablet & landscape phone ——— */
+
+@media (max-width: 1099px) {
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .toolbar__actions {
+    margin-left: auto;
+    flex-wrap: nowrap;
+  }
+
+  .toolbar__secondary {
+    display: none;
+  }
+
+  .toolbar__more {
+    display: block;
+  }
+
+  /* Status becomes a transient chip under the toolbar (re-keyed per message). */
+  .toolbar__status {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 50%;
+    max-width: calc(100% - 2rem);
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: rgba(12, 16, 14, 0.88);
+    backdrop-filter: blur(8px);
+    color: var(--text);
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-50%);
+    animation: status-flash 2.6s ease forwards;
+  }
+
+  .toolbar__status:empty,
+  .toolbar__status--initial {
+    display: none;
+  }
+
+  .workspace,
+  .workspace--no-filmstrip {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'stage side'
+      'film side';
+  }
+
+  .sidebar > .ad-slot {
+    height: 100px;
+  }
+
+  /* Filmstrip turns into a horizontal row of square thumbnails. */
+  .filmstrip {
+    flex-direction: row;
+    align-items: stretch;
+    border-right: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .filmstrip--sparse,
+  .filmstrip__header,
+  .filmstrip > .ad-slot,
+  .filmstrip__name {
+    display: none;
+  }
+
+  .filmstrip__filter {
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 0.3rem;
+    padding: 0.5rem 0.6rem;
+    border-right: 1px solid var(--line);
+  }
+
+  .filmstrip__filter .field {
+    width: 7.5rem;
+  }
+
+  .filmstrip__count {
+    text-align: center;
+  }
+
+  .filmstrip__list {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.5rem 0.6rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .filmstrip__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filmstrip__list > li {
+    scroll-snap-align: start;
+  }
+
+  .filmstrip__item {
+    width: 4.75rem;
+    flex-shrink: 0;
+    gap: 0.15rem;
+    padding: 2px;
+  }
+
+  .filmstrip__thumb {
+    aspect-ratio: 1;
+  }
+
+  .filmstrip__meta {
+    justify-content: center;
+  }
+
+  .filmstrip__empty {
+    padding: 0.5rem;
+  }
+}
+
+@keyframes status-flash {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -4px);
+  }
+  8%,
+  80% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Landscape phones: every pixel of height goes to the photo. */
+@media (max-width: 1099px) and (max-height: 500px) {
+  .toolbar {
+    padding-block: 0.35rem;
+  }
+
+  .workspace,
+  .workspace--no-filmstrip {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  .filmstrip__filter {
+    display: none;
+  }
+
+  .filmstrip__item {
+    width: 3.25rem;
+  }
+
+  .filmstrip__meta {
+    display: none;
+  }
+
+  .histogram-panel,
+  .sidebar > .ad-slot,
+  .preview__ctl--secondary {
+    display: none;
+  }
+}
+
+/* ——— Phone ——— */
+
+@media (max-width: 767px) and (min-height: 501px) {
+  .toolbar {
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    padding-top: max(0.4rem, env(safe-area-inset-top));
+  }
+
+  .brand-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .toolbar__actions,
+  .toolbar__group {
+    gap: 0.3rem;
+  }
+
+  .toolbar .btn--icon,
+  .toolbar .btn--labelled {
+    width: 2.625rem;
+    height: 2.625rem;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .toolbar .btn--accent:not(.btn--labelled) {
+    height: 2.625rem;
+    padding-inline: 1rem;
+    border-radius: 999px;
+  }
+
+  .btn__icon {
+    display: block;
+  }
+
+  .btn__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .toolbar__status {
+    max-width: calc(100vw - 2rem);
+    white-space: normal;
+  }
+
+  .workspace,
+  .workspace--no-filmstrip {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'stage'
+      'film'
+      'side';
+  }
+
+  .filmstrip {
+    padding-bottom: 0;
+  }
+
+  .filmstrip__filter {
+    padding-inline: 0.5rem;
+  }
+
+  .filmstrip__filter .field {
+    width: 7.25rem;
+  }
+
+  .filmstrip__count {
+    font-size: 0.66rem;
+  }
+
+  .filmstrip__item {
+    width: 3.5rem;
+  }
+
+  .filmstrip__meta {
+    display: none;
+  }
+
+  .preview--empty {
+    padding: 1.5rem;
+  }
+
+  .preview__empty-title {
+    font-size: 1.35rem;
+  }
+
+  .preview__controls {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    border-radius: 999px;
+  }
+
+  .preview__ctl--secondary {
+    display: none;
+  }
+
+  .preview__badge--tool {
+    width: max-content;
+    max-width: calc(100% - 1.5rem);
+    text-align: center;
+  }
+
+  /* Bottom sheet: grabber · panel content · tab bar in the thumb zone. */
+  .sidebar {
+    position: relative;
+    padding-bottom: 0;
+    border-left: none;
+    border-top: 1px solid var(--line-strong);
+    border-radius: 14px 14px 0 0;
+    margin-top: -6px;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .sheet-handle {
+    order: 0;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 100%;
+    height: 1.375rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .sheet-handle::before {
+    content: '';
+    width: 2.25rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: var(--line-strong);
+  }
+
+  .sidebar__scroll {
+    order: 1;
+    flex: none;
+    height: clamp(10rem, 36dvh, 22rem);
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar > .ad-slot {
+    display: none;
+  }
+
+  .panel-tabs {
+    order: 2;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--line);
+    border-bottom: none;
+    background: var(--bg-panel);
+  }
+
+  .panel-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar--collapsed .panel-tabs {
+    border-top-color: transparent;
+  }
+
+  .panel-tab {
+    flex: 1 0 auto;
+    min-width: 2.75rem;
+    min-height: 3rem;
+    padding: 0 0.35rem;
+    border-bottom: none;
+    border-top: 2px solid transparent;
+    font-size: 0.74rem;
+    scroll-snap-align: center;
+  }
+
+  .panel-tab--active {
+    border-top-color: var(--accent);
+  }
+
+  .panel {
+    padding: 0.75rem 1rem;
+  }
+
+  .histogram-panel {
+    padding: 0.5rem 1rem 0.25rem;
+  }
+
+  .histogram-canvas {
+    height: 48px;
+  }
+
+  .sliders {
+    gap: 0.35rem;
+  }
+
+  /* Sliders stack (label · value / full-width track) for finer control on narrow screens. */
+  .cslider {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'label value'
+      'track track';
+    row-gap: 0;
+    font-size: 0.82rem;
+  }
+
+  .cslider__label {
+    grid-area: label;
+  }
+
+  .cslider__value {
+    grid-area: value;
+  }
+
+  .cslider input[type='range'] {
+    grid-area: track;
+  }
+
+  .curve-canvas {
+    max-width: min(100%, 34dvh);
+    margin-inline: auto;
+  }
+
+  /* Dialogs become bottom sheets. */
+  .modal {
+    place-items: end stretch;
+  }
+
+  .modal__card,
+  .modal__card--wide {
+    width: 100%;
+    max-height: 92dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1.1rem 1rem 0;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    animation: sheet-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .modal__actions {
+    position: sticky;
+    bottom: 0;
+    margin: 0.35rem -1rem 0;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--bg-panel);
+  }
+
+  .modal__actions .btn {
+    flex: 1;
+    min-height: 2.75rem;
+  }
+
+  .export-section .field-row {
+    flex-wrap: wrap;
+  }
+
+  .toast-region {
+    top: calc(env(safe-area-inset-top) + 0.5rem);
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .toast {
+    max-width: none;
+  }
+
+  .toast__message {
+    white-space: normal;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (max-width: 767px) and (min-height: 501px) {
+  .modal__card > :last-child:not(.modal__actions) {
+    margin-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Small phones (iPhone SE 1st gen, 360px Androids): tighten the toolbar to one row. */
+@media (max-width: 374px) and (min-height: 501px) {
+  .toolbar {
+    padding-inline: 0.5rem;
+  }
+
+  .toolbar__brand {
+    display: none;
+  }
+
+  .toolbar__actions,
+  .toolbar__group {
+    gap: 0.2rem;
+  }
+
+  .toolbar .btn--icon,
+  .toolbar .btn--labelled {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .toolbar .btn--accent:not(.btn--labelled) {
+    height: 2.5rem;
+    padding-inline: 0.85rem;
   }
 }

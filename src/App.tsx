@@ -15,7 +15,8 @@ import { ShortcutsDialog } from './components/ShortcutsDialog'
 import { Toast } from './components/Toast'
 import { ToneCurvePanel } from './components/ToneCurvePanel'
 import { Toolbar } from './components/Toolbar'
-import { PANELS, useEditorSession } from './hooks/useEditorSession'
+import { PANELS, useEditorSession, type PanelId } from './hooks/useEditorSession'
+import { PHONE_QUERY, useMediaQuery } from './hooks/useMediaQuery'
 import { aspectRatioFor } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
@@ -38,6 +39,32 @@ export default function App() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [brush, setBrush] = useState<BrushSettings>({ size: 0.05, feather: 0.6, flow: 1, erase: false })
   const previewApi = useRef<PreviewApi | null>(null)
+  const phone = useMediaQuery(PHONE_QUERY)
+  // Phones show the panels as a bottom sheet that can fold away to reveal the whole photo.
+  const [sheetCollapsed, setSheetCollapsed] = useState(false)
+  const sheetOpen = !phone || !sheetCollapsed
+  // Any panel change (tab, shortcut, mask added…) unfolds the sheet again.
+  const [sheetPanel, setSheetPanel] = useState(session.panelFocus)
+  if (sheetPanel !== session.panelFocus) {
+    setSheetPanel(session.panelFocus)
+    setSheetCollapsed(false)
+  }
+  const tabsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    tabsRef.current
+      ?.querySelector('[aria-selected="true"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+  }, [session.panelFocus, phone])
+
+  const selectPanel = (id: PanelId) => {
+    if (phone && id === session.panelFocus) {
+      setSheetCollapsed((v) => !v)
+      return
+    }
+    session.setPanelFocus(id)
+    if (id === 'crop') session.setCropMode(true)
+  }
 
   // Select a mask as soon as it is added; fall back to the last one if the selection disappears.
   const maskIds = edits.localAdjustments.map((r) => r.id)
@@ -170,6 +197,7 @@ export default function App() {
             }
             onHistogram={onHistogram}
             onFrameSize={setFrameSize}
+            onOpen={() => session.handleOpen()}
             cropOverlay={
               canEdit && session.panelFocus === 'crop' && session.cropMode
                 ? {
@@ -207,8 +235,18 @@ export default function App() {
           />
         </main>
 
-        <aside className="sidebar" aria-label="Editor panels">
-          <div className="panel-tabs" role="tablist" aria-label="Panels">
+        <aside
+          className={sheetOpen ? 'sidebar' : 'sidebar sidebar--collapsed'}
+          aria-label="Editor panels"
+        >
+          <button
+            type="button"
+            className="sheet-handle"
+            aria-label={sheetOpen ? 'Hide tools' : 'Show tools'}
+            aria-expanded={sheetOpen}
+            onClick={() => setSheetCollapsed((v) => !v)}
+          />
+          <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
             {PANELS.map(({ id, label }, index) => (
               <button
                 key={id}
@@ -219,17 +257,14 @@ export default function App() {
                   session.panelFocus === id ? 'panel-tab panel-tab--active' : 'panel-tab'
                 }
                 title={`${label} (⇧${index + 1})`}
-                onClick={() => {
-                  session.setPanelFocus(id)
-                  if (id === 'crop') session.setCropMode(true)
-                }}
+                onClick={() => selectPanel(id)}
               >
                 {label}
               </button>
             ))}
           </div>
 
-          <div className="sidebar__scroll">
+          <div className="sidebar__scroll" hidden={!sheetOpen}>
             <HistogramPanel
               bins={histogram?.bins ?? null}
               clipping={histogram?.clipping ?? null}
