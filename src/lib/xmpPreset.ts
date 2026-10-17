@@ -1,8 +1,11 @@
 import {
   DEFAULT_EDITS,
   cloneEdits,
+  isNeutralToneCurve,
+  normalizeToneCurve,
   type EditParams,
   type HslChannel,
+  type ToneCurve,
 } from '../types/edits'
 
 const HSL_XMP: { channel: HslChannel; hue: string; sat: string; lum: string }[] = [
@@ -116,6 +119,17 @@ function mapTint(value: number): number {
   return Math.max(-100, Math.min(100, value))
 }
 
+/** `ToneCurvePV2012` is a sequence of "x, y" pairs in 0–255. */
+function parseToneCurve(raw: string | undefined): ToneCurve | null {
+  if (!raw) return null
+  const points = [...raw.matchAll(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/g)].map((m) => ({
+    x: Number(m[1]) / 255,
+    y: Number(m[2]) / 255,
+  }))
+  const curve = normalizeToneCurve({ points })
+  return isNeutralToneCurve(curve) ? null : curve
+}
+
 export function extractXmpPresetName(text: string): string | null {
   const props = collectCrsProps(text)
   const fromProp = props.get('Name') ?? props.get('PresetName') ?? props.get('LookName')
@@ -174,15 +188,27 @@ export function parseXmpToEdits(text: string): EditParams {
     touched = true
   }
 
+  // Lightroom stores relative WB for JPEG/TIFF as Incremental*; absolute
+  // Kelvin (raw presets) can only be approximated without the as-shot WB.
+  const incrementalTemperature = firstNumber(props, 'IncrementalTemperature')
   const temperature = firstNumber(props, 'Temperature', 'Temperature2012')
-  if (temperature !== undefined) {
+  if (incrementalTemperature !== undefined) {
+    edits.temperature = Math.max(-100, Math.min(100, incrementalTemperature))
+    touched = true
+  } else if (temperature !== undefined) {
     edits.temperature = mapTemperature(temperature)
     touched = true
   }
 
-  const tint = firstNumber(props, 'Tint', 'Tint2012')
+  const tint = firstNumber(props, 'IncrementalTint', 'Tint', 'Tint2012')
   if (tint !== undefined) {
     edits.tint = mapTint(tint)
+    touched = true
+  }
+
+  const toneCurve = parseToneCurve(props.get('ToneCurvePV2012'))
+  if (toneCurve) {
+    edits.toneCurve = toneCurve
     touched = true
   }
 

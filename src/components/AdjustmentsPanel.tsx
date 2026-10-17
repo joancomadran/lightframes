@@ -1,53 +1,29 @@
-import { EDIT_SLIDERS, isNeutralHsl, type EditParams } from '../types/edits'
+import { DEFAULT_EDITS, EDIT_SLIDERS, type BasicEditKey, type EditParams } from '../types/edits'
 import { HslControls } from './HslPanel'
+import { Slider } from './Slider'
+
+type EditChange = (patch: Partial<EditParams>, opts?: { commit?: boolean }) => void
 
 type AdjustmentsPanelProps = {
   edits: EditParams
   disabled?: boolean
-  onChange: (patch: Partial<EditParams>) => void
+  onChange: EditChange
   onReset: () => void
   onBegin?: () => void
   onCommit?: () => void
 }
 
-function SliderRow({
-  slider,
-  value,
-  disabled,
-  onChange,
-  onBegin,
-  onCommit,
-}: {
-  slider: (typeof EDIT_SLIDERS)[number]
-  value: number
-  disabled?: boolean
-  onChange: (patch: Partial<EditParams>) => void
-  onBegin?: () => void
-  onCommit?: () => void
-}) {
-  return (
-    <label className="slider">
-      <span className="slider__meta">
-        <span>{slider.label}</span>
-        <span className="slider__value">
-          {Number.isInteger(slider.step) ? value : value.toFixed(2)}
-        </span>
-      </span>
-      <input
-        type="range"
-        min={slider.min}
-        max={slider.max}
-        step={slider.step}
-        value={value}
-        disabled={disabled}
-        onPointerDown={() => onBegin?.()}
-        onPointerUp={() => onCommit?.()}
-        onChange={(e) =>
-          onChange({ [slider.key]: Number(e.target.value) } as Partial<EditParams>)
-        }
-      />
-    </label>
-  )
+const GROUPS: { title: string; keys: BasicEditKey[] }[] = [
+  { title: 'Light', keys: ['exposure', 'contrast', 'highlights', 'shadows', 'whites', 'blacks'] },
+  { title: 'Color', keys: ['temperature', 'tint', 'vibrance', 'saturation'] },
+]
+
+/** Gradient tracks that hint at what a slider does; others get a neutral track. */
+const TRACKS: Partial<Record<BasicEditKey, string>> = {
+  temperature: 'linear-gradient(90deg, #4a7fd4, #b9b9b0, #e6b84a)',
+  tint: 'linear-gradient(90deg, #4caf6a, #b9b9b0, #d45aa8)',
+  vibrance: 'linear-gradient(90deg, #7d827e, #6fa4d8)',
+  saturation: 'linear-gradient(90deg, #7d827e, #e25555, #e6c84a, #4caf6a, #4a7fd4)',
 }
 
 export function AdjustmentsPanel({
@@ -58,49 +34,56 @@ export function AdjustmentsPanel({
   onBegin,
   onCommit,
 }: AdjustmentsPanelProps) {
-  const hslActive = !isNeutralHsl(edits.hsl)
-
   return (
     <section className="panel" aria-label="Adjustments">
-      <div className="panel__header">
-        <h2 className="panel__title">Adjust</h2>
-        <button
-          type="button"
-          className="btn btn--ghost btn--sm"
-          onClick={onReset}
-          disabled={disabled}
-        >
-          Reset
-        </button>
-      </div>
-
-      <div className="sliders">
-        {EDIT_SLIDERS.map((slider) => (
-          <div key={slider.key} className="slider-block">
-            <SliderRow
-              slider={slider}
-              value={edits[slider.key]}
-              disabled={disabled}
-              onChange={onChange}
-              onBegin={onBegin}
-              onCommit={onCommit}
-            />
-            {slider.key === 'tint' && (
-              <details className="hsl-dropdown">
-                <summary className="hsl-dropdown__summary">
-                  <span>HSL</span>
-                  {hslActive && (
-                    <span className="hsl-dropdown__badge" title="HSL edits active">
-                      •
-                    </span>
-                  )}
-                </summary>
-                <HslControls edits={edits} disabled={disabled} onChange={onChange} />
-              </details>
+      {GROUPS.map((group, index) => (
+        <div key={group.title} className="adjust-group">
+          <div className="adjust-group__header">
+            <h3 className="adjust-group__title">{group.title}</h3>
+            {index === 0 && (
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={onReset}
+                disabled={disabled}
+                title="Reset all adjustments"
+              >
+                Reset all
+              </button>
             )}
           </div>
-        ))}
-      </div>
+          {group.keys.map((key) => {
+            const slider = EDIT_SLIDERS.find((s) => s.key === key)
+            if (!slider) return null
+            return (
+              <Slider
+                key={key}
+                label={slider.label}
+                value={edits[key]}
+                min={slider.min}
+                max={slider.max}
+                step={slider.step}
+                defaultValue={DEFAULT_EDITS[key]}
+                track={TRACKS[key]}
+                disabled={disabled}
+                onChange={(value, opts) =>
+                  onChange({ [key]: value } as Partial<EditParams>, opts)
+                }
+                onBegin={onBegin}
+                onCommit={onCommit}
+              />
+            )
+          })}
+        </div>
+      ))}
+
+      <HslControls
+        edits={edits}
+        disabled={disabled}
+        onChange={onChange}
+        onBegin={onBegin}
+        onCommit={onCommit}
+      />
     </section>
   )
 }

@@ -3,15 +3,17 @@ import { downloadBlob, openImages } from '../lib/files'
 import {
   buildExportFilename,
   exportEditedImage,
+  type RenderSource,
 } from '../lib/imageProcessing'
 import {
   createPreset,
+  downloadAllPresetsJson,
   downloadPresetJson,
-  loadPresetsFromStorage,
-  readPresetFromFile,
-  savePresetsToStorage,
+  loadPresets,
+  readPresetsFromFile,
+  savePresets,
 } from '../lib/presets'
-import { decodeRawToJpegBlob, isRawFile } from '../lib/rawDecode'
+import { decodeRawLinear, decodeRawToJpegBlob, isRawFile } from '../lib/rawDecode'
 import {
   clearSessionSnapshot,
   loadSessionSnapshot,
@@ -57,6 +59,33 @@ async function makePhoto(file: File, edits?: EditParams): Promise<PhotoSession> 
   }
 }
 
+export type Toast = {
+  id: number
+  message: string
+  tone: 'success' | 'error'
+}
+
+const TOAST_DURATION_MS = 3500
+
+async function loadImage(url: string): Promise<HTMLImageElement> {
+  const img = new Image()
+  img.src = url
+  await img.decode()
+  return img
+}
+
+/** Full-resolution export source: RAWs are developed from the sensor data. */
+async function loadExportSource(photo: PhotoSession): Promise<RenderSource> {
+  if (isRawFile(photo.file)) {
+    try {
+      return await decodeRawLinear(photo.file, { halfSize: false })
+    } catch {
+      // LibRaw could not develop it — export from the embedded JPEG instead.
+    }
+  }
+  return loadImage(photo.objectUrl)
+}
+
 function revokeAll(photos: PhotoSession[]) {
   for (const photo of photos) URL.revokeObjectURL(photo.objectUrl)
 }
@@ -65,7 +94,8 @@ export function useEditorSession() {
   const [photos, setPhotos] = useState<PhotoSession[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [presets, setPresets] = useState<Preset[]>(() => loadPresetsFromStorage())
+  const [presets, setPresets] = useState<Preset[]>([])
+  const [presetsLoaded, setPresetsLoaded] = useState(false)
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
   const [presetIntensity, setPresetIntensityState] = useState(100)
   const [clipboard, setClipboard] = useState<EditParams | null>(null)
@@ -82,6 +112,7 @@ export function useEditorSession() {
   const [canUndo, setCanUndo] = useState(false)
   const [canRedo, setCanRedo] = useState(false)
   const [sessionReady, setSessionReady] = useState(false)
+  const [toast, setToast] = useState<Toast | null>(null)
 
   const photosRef = useRef(photos)
   const presetsRef = useRef(presets)
@@ -92,11 +123,23 @@ export function useEditorSession() {
   const futureRef = useRef<HistoryEntry[]>([])
   const historyAnchorRef = useRef<EditParams | null>(null)
   const persistTimerRef = useRef(0)
+  const toastTimerRef = useRef(0)
 
   const activePhoto = useMemo(
     () => photos.find((p) => p.id === activeId) ?? null,
     [photos, activeId],
   )
+
+  const dismissToast = useCallback(() => {
+    window.clearTimeout(toastTimerRef.current)
+    setToast(null)
+  }, [])
+
+  const showToast = useCallback((message: string, tone: Toast['tone'] = 'success') => {
+    window.clearTimeout(toastTimerRef.current)
+    setToast({ id: Date.now(), message, tone })
+    toastTimerRef.current = window.setTimeout(() => setToast(null), TOAST_DURATION_MS)
+  }, [])
 
   const syncHistoryFlags = useCallback(() => {
     setCanUndo(pastRef.current.length > 0)
@@ -123,14 +166,39 @@ export function useEditorSession() {
     selectedIdsRef.current = selectedIds
   }, [selectedIds])
 
+  // Load presets once. Until this finishes nothing is written back, so an
+  // empty initial state can never overwrite the stored presets.
   useEffect(() => {
-    savePresetsToStorage(presets)
-  }, [presets])
+    let cancelled = false
+    loadPresets()
+      .then((loaded) => {
+        if (cancelled) return
+        setPresets((prev) => {
+          const ids = new Set(prev.map((p) => p.id))
+          return [...prev, ...loaded.filter((p) => !ids.has(p.id))]
+        })
+        setPresetsLoaded(true)
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('Could not load custom presets — nothing was overwritten')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!presetsLoaded) return
+    savePresets(presets).catch(() => {
+      setStatus('Could not save presets — export a backup from the Presets panel')
+    })
+  }, [presets, presetsLoaded])
 
   useEffect(() => {
     return () => {
       revokeAll(photosRef.current)
       window.clearTimeout(persistTimerRef.current)
+      window.clearTimeout(toastTimerRef.current)
     }
   }, [])
 
@@ -516,12 +584,25 @@ export function useEditorSession() {
     setStatus(`Exported “${preset.name}.json”`)
   }, [])
 
+  const exportAllPresets = useCallback(() => {
+    const all = presetsRef.current
+    if (all.length === 0) return
+    downloadAllPresetsJson(all)
+    setStatus(`Exported backup of ${all.length} preset${all.length === 1 ? '' : 's'}`)
+  }, [])
+
   const importPreset = useCallback(async (file: File) => {
     try {
-      const preset = await readPresetFromFile(file)
-      setPresets((prev) => [preset, ...prev])
-      setSelectedPresetId(preset.id)
-      setStatus(`Imported “${preset.name}”`)
+      const imported = await readPresetsFromFile(file)
+      const existing = new Set(presetsRef.current.map((p) => p.id))
+      const fresh = imported.filter((p) => !existing.has(p.id))
+      setPresets((prev) => [...fresh, ...prev])
+      if (imported.length === 1) {
+        setSelectedPresetId(imported[0]!.id)
+        setStatus(`Imported “${imported[0]!.name}”`)
+      } else {
+        setStatus(`Imported ${fresh.length} of ${imported.length} presets (rest already present)`)
+      }
     } catch {
       setStatus('Could not import preset (JSON, XMP, or CUBE)')
     }
@@ -543,26 +624,27 @@ export function useEditorSession() {
         for (const id of targets) {
           const photo = photosRef.current.find((p) => p.id === id)
           if (!photo) continue
-          const img = new Image()
-          img.src = photo.objectUrl
-          await img.decode()
-          const { blob } = await exportEditedImage(img, photo.edits, options)
+          if (isRawFile(photo.file)) setStatus(`Developing ${photo.name}…`)
+          const source = await loadExportSource(photo)
+          const { blob } = await exportEditedImage(source, photo.edits, options)
           const filename = buildExportFilename(photo.name, options)
           downloadBlob(blob, filename)
         }
-        setStatus(
+        const message =
           targets.length === 1
             ? `Exported ${buildExportFilename(
                 photosRef.current.find((p) => p.id === targets[0])?.name ?? 'photo',
                 options,
               )}`
-            : `Exported ${targets.length} files`,
-        )
+            : `Exported ${targets.length} files`
+        setStatus(message)
+        showToast(message)
       } catch {
         setStatus('Export failed')
+        showToast('Export failed', 'error')
       }
     },
-    [],
+    [showToast],
   )
 
   const addRadial = useCallback(() => {
@@ -772,6 +854,8 @@ export function useEditorSession() {
     filmstripVisible,
     canUndo,
     canRedo,
+    toast,
+    dismissToast,
     handleOpen,
     selectPhoto,
     selectAll,
@@ -790,6 +874,7 @@ export function useEditorSession() {
     setPresetIntensity,
     deletePreset,
     exportPreset,
+    exportAllPresets,
     importPreset,
     setCompareMode,
     setShowClipping,
