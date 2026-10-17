@@ -1,9 +1,12 @@
 import {
+  CURVE_CHANNELS,
   DEFAULT_EDITS,
   cloneEdits,
   isNeutralToneCurve,
   normalizeToneCurve,
+  type BasicEditKey,
   type EditParams,
+  type GradeZoneId,
   type HslChannel,
   type ToneCurve,
 } from '../types/edits'
@@ -236,6 +239,70 @@ export function parseXmpToEdits(text: string): EditParams {
     }
     touched = true
   }
+
+  // Presence, effects and detail map 1:1 onto our sliders (same ranges).
+  const direct: [BasicEditKey, string[], number, number][] = [
+    ['texture', ['Texture'], -100, 100],
+    ['clarity', ['Clarity2012', 'Clarity'], -100, 100],
+    ['dehaze', ['Dehaze'], -100, 100],
+    ['vignette', ['PostCropVignetteAmount'], -100, 100],
+    ['vignetteMidpoint', ['PostCropVignetteMidpoint'], 0, 100],
+    ['grain', ['GrainAmount'], 0, 100],
+    ['grainSize', ['GrainSize'], 0, 100],
+    ['sharpening', ['Sharpness'], 0, 150],
+    ['noiseReduction', ['LuminanceSmoothing'], 0, 100],
+    ['colorNoiseReduction', ['ColorNoiseReduction'], 0, 100],
+  ]
+  for (const [key, names, min, max] of direct) {
+    const value = firstNumber(props, ...names)
+    if (value === undefined) continue
+    edits[key] = Math.max(min, Math.min(max, value))
+    touched = true
+  }
+
+  for (const channel of CURVE_CHANNELS) {
+    const suffix = channel[0]!.toUpperCase() + channel.slice(1)
+    const curve = parseToneCurve(props.get(`ToneCurvePV2012${suffix}`))
+    if (curve) {
+      edits.toneCurve = { ...edits.toneCurve, [channel]: curve.points }
+      touched = true
+    }
+  }
+
+  // Color Grading (Lightroom 10+), falling back to the older Split Toning.
+  const zones: [GradeZoneId, string, string, string][] = [
+    ['shadows', 'ColorGradeShadowHue', 'ColorGradeShadowSat', 'ColorGradeShadowLum'],
+    ['midtones', 'ColorGradeMidtoneHue', 'ColorGradeMidtoneSat', 'ColorGradeMidtoneLum'],
+    ['highlights', 'ColorGradeHighlightHue', 'ColorGradeHighlightSat', 'ColorGradeHighlightLum'],
+    ['global', 'ColorGradeGlobalHue', 'ColorGradeGlobalSat', 'ColorGradeGlobalLum'],
+  ]
+  for (const [zone, hueKey, satKey, lumKey] of zones) {
+    const hue = firstNumber(props, hueKey)
+    const sat = firstNumber(props, satKey)
+    const lum = firstNumber(props, lumKey)
+    if (hue === undefined && sat === undefined && lum === undefined) continue
+    edits.colorGrading[zone] = { hue: hue ?? 0, saturation: sat ?? 0, luminance: lum ?? 0 }
+    touched = true
+  }
+  const hasColorGrade = zones.some(([, hueKey, satKey]) => props.has(hueKey) || props.has(satKey))
+  if (!hasColorGrade) {
+    const shadowHue = firstNumber(props, 'SplitToningShadowHue')
+    const shadowSat = firstNumber(props, 'SplitToningShadowSaturation')
+    const highHue = firstNumber(props, 'SplitToningHighlightHue')
+    const highSat = firstNumber(props, 'SplitToningHighlightSaturation')
+    if (shadowSat) {
+      edits.colorGrading.shadows = { hue: shadowHue ?? 0, saturation: shadowSat, luminance: 0 }
+      touched = true
+    }
+    if (highSat) {
+      edits.colorGrading.highlights = { hue: highHue ?? 0, saturation: highSat, luminance: 0 }
+      touched = true
+    }
+  }
+  const blending = firstNumber(props, 'ColorGradeBlending')
+  if (blending !== undefined) edits.colorGrading.blending = blending
+  const balance = firstNumber(props, 'SplitToningBalance')
+  if (balance !== undefined) edits.colorGrading.balance = balance
 
   if (!touched) {
     throw new Error('XMP has no mappable develop settings')

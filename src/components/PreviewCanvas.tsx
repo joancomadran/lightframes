@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -12,11 +13,29 @@ import {
   type ClippingStats,
   type HistogramBins,
 } from '../lib/histogram'
-import { renderEditedImage, type RenderSource } from '../lib/imageProcessing'
+import {
+  computeAutoTone,
+  computeAutoWhiteBalance,
+  computeMaskPreview,
+  prepareBase,
+  sampleBaseLinear,
+  whiteBalanceForNeutral,
+  type BaseImage,
+  type RenderSource,
+} from '../lib/imageProcessing'
 import { loadRawPreview } from '../lib/rawDecode'
-import { stepRotate, type EditParams } from '../types/edits'
+import { developBase } from '../lib/renderPipeline'
+import { stepRotate, type EditParams, type LocalAdjustment } from '../types/edits'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
-import { RadialOverlay, type RadialOverlayConfig } from './RadialOverlay'
+import { MaskOverlay, type MaskOverlayConfig } from './MaskOverlay'
+
+/** What the panels can ask of the preview (it owns the pixels the auto tools read). */
+export type PreviewApi = {
+  autoTone: () => ReturnType<typeof computeAutoTone> | null
+  autoWhiteBalance: () => ReturnType<typeof computeAutoWhiteBalance> | null
+}
+
+type WhiteBalance = { temperature: number; tint: number }
 
 type PreviewCanvasProps = {
   src: string | null
@@ -31,8 +50,13 @@ type PreviewCanvasProps = {
   onHistogram?: (bins: HistogramBins, clipping: ClippingStats) => void
   /** When set, show the uncropped frame with an editable crop box. */
   cropOverlay?: CropOverlayConfig | null
-  /** When set, draw editable radial masks over the image. */
-  radialOverlay?: RadialOverlayConfig | null
+  /** When set, draw editable local masks (and the brush) over the image. */
+  maskOverlay?: MaskOverlayConfig | null
+  /** Mask to tint red over the image (mask overlay, O). */
+  maskTint?: LocalAdjustment | null
+  /** While set, clicking the image picks a neutral point for white balance. */
+  onPickWhiteBalance?: ((wb: WhiteBalance) => void) | null
+  apiRef?: { current: PreviewApi | null }
   /** Full-resolution size of the uncropped (rotated + straightened) frame. */
   onFrameSize?: (size: Size) => void
 }
@@ -117,13 +141,21 @@ export function PreviewCanvas({
   onRotate,
   onHistogram,
   cropOverlay = null,
-  radialOverlay = null,
+  maskOverlay = null,
+  maskTint = null,
+  onPickWhiteBalance = null,
+  apiRef,
   onFrameSize,
 }: PreviewCanvasProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const clipRef = useRef<HTMLCanvasElement>(null)
+  const beforeRef = useRef<HTMLCanvasElement>(null)
+  const tintRef = useRef<HTMLCanvasElement>(null)
+  const baseCacheRef = useRef<{ source: RenderSource; key: string; base: BaseImage } | null>(null)
+  const beforeCacheRef = useRef<BaseImage | null>(null)
+  const renderStateRef = useRef({ busy: false, dirty: false })
   const sourceRef = useRef<RenderSource | null>(null)
   const frameRef = useRef(0)
   const idleTimerRef = useRef(0)
@@ -149,7 +181,11 @@ export function PreviewCanvas({
   const [background, setBackground] = useState<PreviewBackground>(loadBackground)
   const [fullscreen, setFullscreen] = useState(false)
   const [sourceVersion, setSourceVersion] = useState(0)
-  const [developingRaw, setDevelopingRaw] = useState(false)
+  /** The `src` whose pixels are loaded; a RAW is still developing until it matches. */
+  const [readySrc, setReadySrc] = useState<string | null>(null)
+  const developingRaw = Boolean(rawFile) && readySrc !== src
+  const [split, setSplit] = useState(false)
+  const [splitPos, setSplitPos] = useState(0.5)
 
   const cropActive = cropOverlay != null
   // While cropping, render the whole frame (keeping straighten) so the box can move freely.
@@ -161,13 +197,28 @@ export function PreviewCanvas({
     [edits, cropActive],
   )
   const frameSizeRef = useRef<Size>({ w: 0, h: 0 })
+  const splitActive = split && !compareMode && !cropActive
+  // Everything the async render loop reads, refreshed every render.
+  const latestRef = useRef({ renderEdits, edits, maxEdge, compareMode, showClipping, splitActive, onHistogram })
+  useLayoutEffect(() => {
+    latestRef.current = { renderEdits, edits, maxEdge, compareMode, showClipping, splitActive, onHistogram }
+  })
 
-  viewRef.current = {
-    zoom,
-    pan,
-    content: contentSize,
-    viewport: viewportSize,
+  useLayoutEffect(() => {
+    viewRef.current = { zoom, pan, content: contentSize, viewport: viewportSize }
+  })
+
+  // A new photo, rotation or crop mode re-fits the view (state adjusted during render).
+  const viewKey = `${src}|${edits.rotate ?? 0}|${cropActive}`
+  const [fittedKey, setFittedKey] = useState(viewKey)
+  if (viewKey !== fittedKey) {
+    setFittedKey(viewKey)
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
   }
+
+  // Drop to the fast preview size while a slider moves; the idle size returns after a pause.
+  if (scrubbing && maxEdge !== PREVIEW_FAST) setMaxEdge(PREVIEW_FAST)
 
   const fitScale = fitScaleFor(contentSize, viewportSize)
   const scale = fitScale * zoom
@@ -203,8 +254,14 @@ export function PreviewCanvas({
     [applyZoom],
   )
 
-  const reportFrameSize = (source: RenderSource) => {
+  const onFrameSizeRef = useRef(onFrameSize)
+  useLayoutEffect(() => {
+    onFrameSizeRef.current = onFrameSize
+  })
+  const reportFrameSize = useCallback((source: RenderSource) => {
+    const onFrameSize = onFrameSizeRef.current
     if (!onFrameSize) return
+    const { edits } = latestRef.current
     const turn = edits.rotate ?? 0
     const quarter = turn === 90 || turn === 270
     const size = sourceSize(source)
@@ -218,7 +275,93 @@ export function PreviewCanvas({
     if (prev.w === next.w && prev.h === next.h) return
     frameSizeRef.current = next
     onFrameSize(next)
-  }
+  }, [])
+
+  const getBase = useCallback((source: RenderSource, renderEdits: EditParams, maxEdge: number) => {
+    const c = renderEdits.crop
+    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}`
+    const cached = baseCacheRef.current
+    if (cached && cached.source === source && cached.key === key) return cached.base
+    const base = prepareBase(source, renderEdits, maxEdge)
+    if (base) baseCacheRef.current = { source, key, base }
+    return base
+  }, [])
+
+  /**
+   * Render loop: at most one develop in flight; edits that arrive meanwhile
+   * mark it dirty and it runs again with the latest settings.
+   */
+  const renderNow = useCallback(async () => {
+    const state = renderStateRef.current
+    if (state.busy) {
+      state.dirty = true
+      return
+    }
+    state.busy = true
+    try {
+      do {
+        state.dirty = false
+        const source = sourceRef.current
+        const canvas = canvasRef.current
+        if (!source || !canvas) break
+        const { renderEdits, maxEdge, compareMode, showClipping, splitActive, onHistogram } =
+          latestRef.current
+        reportFrameSize(source)
+        const base = getBase(source, renderEdits, maxEdge)
+        if (!base) break
+        const imageData = await developBase(base, renderEdits, { bypass: compareMode })
+        if (sourceRef.current !== source) break
+
+        canvas.width = base.width
+        canvas.height = base.height
+        canvas.getContext('2d')?.putImageData(imageData, 0, 0)
+        setContentSize({ w: base.width, h: base.height })
+        if (onHistogram && !compareMode) {
+          const { bins, clipping } = computeHistogram(imageData)
+          onHistogram(bins, clipping)
+        }
+        const clipCanvas = clipRef.current
+        if (clipCanvas) {
+          if (showClipping && !compareMode) {
+            drawClippingOverlay(clipCanvas, imageData)
+          } else {
+            clipCanvas.width = 0
+            clipCanvas.height = 0
+          }
+        }
+
+        const beforeCanvas = beforeRef.current
+        if (splitActive && beforeCanvas && beforeCacheRef.current !== base) {
+          const before = await developBase(base, renderEdits, { bypass: true })
+          beforeCanvas.width = base.width
+          beforeCanvas.height = base.height
+          beforeCanvas.getContext('2d')?.putImageData(before, 0, 0)
+          beforeCacheRef.current = base
+        }
+      } while (state.dirty)
+    } finally {
+      state.busy = false
+    }
+  }, [getBase, reportFrameSize])
+
+  const pickBase = () => baseCacheRef.current?.base ?? null
+
+  useEffect(() => {
+    if (!apiRef) return
+    apiRef.current = {
+      autoTone: () => {
+        const base = pickBase()
+        return base ? computeAutoTone(base, latestRef.current.edits) : null
+      },
+      autoWhiteBalance: () => {
+        const base = pickBase()
+        return base ? computeAutoWhiteBalance(base) : null
+      },
+    }
+    return () => {
+      apiRef.current = null
+    }
+  }, [apiRef])
 
   const toggleBackground = useCallback(() => {
     setBackground((prev) => {
@@ -269,6 +412,9 @@ export function PreviewCanvas({
       } else if (key === 'b') {
         e.preventDefault()
         toggleBackground()
+      } else if (key === 'y') {
+        e.preventDefault()
+        setSplit((v) => !v)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -276,12 +422,8 @@ export function PreviewCanvas({
   }, [src, toggleFullscreen, toggleBackground])
 
   useEffect(() => {
-    if (scrubbing) {
-      setMaxEdge(PREVIEW_FAST)
-      window.clearTimeout(idleTimerRef.current)
-      return
-    }
     window.clearTimeout(idleTimerRef.current)
+    if (scrubbing) return
     idleTimerRef.current = window.setTimeout(() => setMaxEdge(PREVIEW_IDLE), 180)
     return () => window.clearTimeout(idleTimerRef.current)
   }, [scrubbing, edits])
@@ -303,7 +445,6 @@ export function PreviewCanvas({
   useEffect(() => {
     if (!src) {
       sourceRef.current = null
-      setContentSize({ w: 0, h: 0 })
       const canvas = canvasRef.current
       if (canvas) {
         const ctx = canvas.getContext('2d')
@@ -315,13 +456,13 @@ export function PreviewCanvas({
     }
 
     let cancelled = false
-    resetView()
     sourceRef.current = null
     // Rendering happens in the effect below once the source is ready.
     const showSource = (source: RenderSource) => {
       if (cancelled) return
       sourceRef.current = source
       setSourceVersion((v) => v + 1)
+      setReadySrc(src)
     }
     const loadImage = () => {
       const img = new Image()
@@ -330,59 +471,54 @@ export function PreviewCanvas({
     }
 
     if (rawFile) {
-      setDevelopingRaw(true)
       loadRawPreview(rawFile)
         .then(showSource)
         // LibRaw could not develop this file: fall back to the embedded JPEG.
         .catch(loadImage)
-        .finally(() => {
-          if (!cancelled) setDevelopingRaw(false)
+        .catch(() => {
+          if (!cancelled) setReadySrc(src)
         })
     } else {
-      setDevelopingRaw(false)
       void loadImage()
     }
 
     return () => {
       cancelled = true
     }
-  }, [src, rawFile, resetView])
+  }, [src, rawFile])
 
   useEffect(() => {
     cancelAnimationFrame(frameRef.current)
-    frameRef.current = requestAnimationFrame(() => {
-      const source = sourceRef.current
-      const canvas = canvasRef.current
-      if (!source || !canvas || !src) return
-      reportFrameSize(source)
-      const imageData = renderEditedImage(source, renderEdits, canvas, {
-        maxEdge,
-        bypassColor: compareMode,
-      })
-      setContentSize({ w: canvas.width, h: canvas.height })
-      if (imageData && onHistogram && !compareMode) {
-        const { bins, clipping } = computeHistogram(imageData)
-        onHistogram(bins, clipping)
-      }
-      const clipCanvas = clipRef.current
-      if (clipCanvas) {
-        if (showClipping && imageData && !compareMode) {
-          drawClippingOverlay(clipCanvas, imageData)
-        } else {
-          clipCanvas.width = 0
-          clipCanvas.height = 0
-        }
-      }
-    })
+    frameRef.current = requestAnimationFrame(() => void renderNow())
     return () => cancelAnimationFrame(frameRef.current)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [renderEdits, src, sourceVersion, maxEdge, compareMode, showClipping, onHistogram])
+  }, [renderEdits, src, sourceVersion, maxEdge, compareMode, showClipping, splitActive, onHistogram, renderNow])
 
-  const rotate = edits.rotate ?? 0
+  // Red mask tint: a small grid of the selected mask's weights, scaled up by CSS.
   useEffect(() => {
-    if (!src) return
-    resetView()
-  }, [rotate, src, cropActive, resetView])
+    const canvas = tintRef.current
+    if (!canvas) return
+    if (!maskTint || contentSize.w === 0) {
+      canvas.width = 0
+      canvas.height = 0
+      return
+    }
+    const scale = 360 / Math.max(contentSize.w, contentSize.h)
+    const w = Math.max(1, Math.round(contentSize.w * scale))
+    const h = Math.max(1, Math.round(contentSize.h * scale))
+    const weights = computeMaskPreview(maskTint, w, h, contentSize.w, contentSize.h)
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const img = ctx.createImageData(w, h)
+    for (let k = 0, i = 0; k < weights.length; k++, i += 4) {
+      img.data[i] = 255
+      img.data[i + 1] = 48
+      img.data[i + 2] = 64
+      img.data[i + 3] = weights[k]! * 150
+    }
+    ctx.putImageData(img, 0, 0)
+  }, [maskTint, contentSize.w, contentSize.h])
 
   useEffect(() => {
     const el = viewportRef.current
@@ -405,6 +541,16 @@ export function PreviewCanvas({
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 || !src) return
+    if (onPickWhiteBalance) {
+      const base = pickBase()
+      const rect = e.currentTarget.getBoundingClientRect()
+      const x = Math.floor((e.clientX - rect.left - tx) / scale)
+      const y = Math.floor((e.clientY - rect.top - ty) / scale)
+      if (base && x >= 0 && y >= 0 && x < base.width && y < base.height) {
+        onPickWhiteBalance(whiteBalanceForNeutral(sampleBaseLinear(base, x, y)))
+      }
+      return
+    }
     dragRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
@@ -465,6 +611,7 @@ export function PreviewCanvas({
     width: contentSize.w * scale,
     height: contentSize.h * scale,
   }
+  const splitX = tx + splitPos * contentSize.w * scale
 
   return (
     <div
@@ -476,9 +623,12 @@ export function PreviewCanvas({
       ) : (
         compareMode && <div className="preview__badge">Before</div>
       )}
+      {onPickWhiteBalance && (
+        <div className="preview__badge preview__badge--tool">Click a neutral grey or white area · Esc to cancel</div>
+      )}
       <div
         ref={viewportRef}
-        className="preview__viewport"
+        className={onPickWhiteBalance ? 'preview__viewport preview__viewport--picker' : 'preview__viewport'}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -493,22 +643,48 @@ export function PreviewCanvas({
             transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
           }}
         >
+          {splitActive && (
+            <canvas ref={beforeRef} className="preview__canvas preview__canvas--before" aria-hidden="true" />
+          )}
           <canvas
             ref={canvasRef}
             className="preview__canvas"
             aria-label={name ?? 'Preview'}
+            style={splitActive ? { clipPath: `inset(0 0 0 ${splitPos * 100}%)` } : undefined}
           />
           <canvas
             ref={clipRef}
             className="preview__clip"
             aria-hidden="true"
           />
+          <canvas ref={tintRef} className="preview__tint" aria-hidden="true" />
         </div>
+        {splitActive && contentSize.w > 0 && (
+          <div
+            className="split-divider"
+            style={{ left: splitX, top: overlayFrame.top, height: overlayFrame.height }}
+            onPointerDown={(e) => {
+              e.stopPropagation()
+              e.currentTarget.setPointerCapture(e.pointerId)
+            }}
+            onPointerMove={(e) => {
+              if (!e.currentTarget.hasPointerCapture(e.pointerId) || overlayFrame.width <= 0) return
+              const rect = viewportRef.current?.getBoundingClientRect()
+              if (!rect) return
+              setSplitPos(clamp((e.clientX - rect.left - tx) / overlayFrame.width, 0, 1))
+            }}
+            onDoubleClick={(e) => e.stopPropagation()}
+          >
+            <span className="split-divider__label split-divider__label--before">Before</span>
+            <span className="split-divider__label split-divider__label--after">After</span>
+            <span className="split-divider__grip" aria-hidden="true" />
+          </div>
+        )}
         {cropOverlay && contentSize.w > 0 && (
           <CropOverlay frame={overlayFrame} config={cropOverlay} />
         )}
-        {radialOverlay && !compareMode && contentSize.w > 0 && (
-          <RadialOverlay frame={overlayFrame} config={radialOverlay} />
+        {maskOverlay && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+          <MaskOverlay frame={overlayFrame} config={maskOverlay} />
         )}
       </div>
 
@@ -595,6 +771,21 @@ export function PreviewCanvas({
           Fit
         </button>
         <span className="preview__controls-sep" aria-hidden="true" />
+        <button
+          type="button"
+          className={splitActive ? 'btn btn--ghost btn--sm btn--icon btn--on' : 'btn btn--ghost btn--sm btn--icon'}
+          onClick={() => setSplit((v) => !v)}
+          disabled={compareMode || cropActive}
+          title="Before / after split (Y)"
+          aria-label="Before / after split"
+          aria-pressed={splitActive}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+            <path d="M12 4v16" stroke="currentColor" strokeWidth="2" />
+            <path d="M3 4h9v16H5a2 2 0 0 1-2-2V4Z" fill="currentColor" opacity="0.35" />
+          </svg>
+        </button>
         <button
           type="button"
           className="btn btn--ghost btn--sm btn--icon"

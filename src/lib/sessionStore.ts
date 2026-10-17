@@ -19,6 +19,8 @@ export type PersistedPhoto = {
   fileName: string
   fileType: string
   edits: EditParams
+  rating?: number
+  flag?: PhotoSession['flag']
 }
 
 export type PersistedSession = {
@@ -85,6 +87,8 @@ export function photosToPersisted(photos: PhotoSession[]): PersistedPhoto[] {
     fileName: photo.file.name,
     fileType: photo.file.type,
     edits: cloneEdits(photo.edits),
+    rating: photo.rating,
+    flag: photo.flag,
   }))
 }
 
@@ -114,6 +118,8 @@ export async function persistedToPhotos(
       file,
       edits,
       thumbnailUrl: objectUrl,
+      rating: item.rating ?? 0,
+      flag: item.flag ?? null,
     })
   }
   return photos

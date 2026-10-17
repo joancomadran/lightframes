@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdSlot } from './components/AdSlot'
 import { AdjustmentsPanel } from './components/AdjustmentsPanel'
+import { ColorPanel } from './components/ColorPanel'
 import { CropPanel } from './components/CropPanel'
+import { EffectsPanel } from './components/EffectsPanel'
 import { ExportDialog } from './components/ExportDialog'
 import { Filmstrip } from './components/Filmstrip'
 import { HistogramPanel } from './components/HistogramPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
+import type { BrushSettings } from './components/MaskOverlay'
 import { PresetsPanel } from './components/PresetsPanel'
-import { PreviewCanvas, type Size } from './components/PreviewCanvas'
+import { PreviewCanvas, type PreviewApi, type Size } from './components/PreviewCanvas'
+import { ShortcutsDialog } from './components/ShortcutsDialog'
 import { Toast } from './components/Toast'
 import { ToneCurvePanel } from './components/ToneCurvePanel'
 import { Toolbar } from './components/Toolbar'
-import { useEditorSession } from './hooks/useEditorSession'
+import { PANELS, useEditorSession } from './hooks/useEditorSession'
 import { aspectRatioFor } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
@@ -28,22 +32,69 @@ export default function App() {
   const [scrubbing, setScrubbing] = useState(false)
   const [cropAspect, setCropAspect] = useState({ id: 'free', flipped: false })
   const [frameSize, setFrameSize] = useState<Size | null>(null)
-  const [selectedRadialId, setSelectedRadialId] = useState<string | null>(null)
+  const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null)
+  const [pickingWhiteBalance, setPickingWhiteBalance] = useState(false)
+  const [showMaskTint, setShowMaskTint] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [brush, setBrush] = useState<BrushSettings>({ size: 0.05, feather: 0.6, flow: 1, erase: false })
+  const previewApi = useRef<PreviewApi | null>(null)
 
-  // Select a radial as soon as it is added; fall back to the last one if the selection disappears.
-  const radialIds = edits.localAdjustments.map((r) => r.id)
-  const radialKey = radialIds.join('|')
-  const prevRadialIds = useRef<string[]>(radialIds)
+  // Select a mask as soon as it is added; fall back to the last one if the selection disappears.
+  const maskIds = edits.localAdjustments.map((r) => r.id)
+  const maskKey = maskIds.join('|')
+  const prevMaskIds = useRef<string[]>(maskIds)
   useEffect(() => {
-    const prev = prevRadialIds.current
-    prevRadialIds.current = radialIds
-    const added = radialIds.find((id) => !prev.includes(id))
-    if (added) setSelectedRadialId(added)
-    else if (!selectedRadialId || !radialIds.includes(selectedRadialId)) {
-      setSelectedRadialId(radialIds[radialIds.length - 1] ?? null)
+    const prev = prevMaskIds.current
+    prevMaskIds.current = maskIds
+    const added = maskIds.find((id) => !prev.includes(id))
+    if (added) setSelectedMaskId(added)
+    else if (!selectedMaskId || !maskIds.includes(selectedMaskId)) {
+      setSelectedMaskId(maskIds[maskIds.length - 1] ?? null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [radialKey])
+  }, [maskKey])
+  const selectedMask = edits.localAdjustments.find((m) => m.id === selectedMaskId) ?? null
+
+  const autoTone = () => {
+    const values = previewApi.current?.autoTone()
+    if (values) session.updateEdits(values, { commit: true })
+  }
+  const autoWhiteBalance = () => {
+    const values = previewApi.current?.autoWhiteBalance()
+    if (values) session.updateEdits(values, { commit: true })
+  }
+
+  // App-level keys: W picker, O mask tint, ? shortcuts, Esc cancels the picker.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (
+        e.metaKey ||
+        e.ctrlKey ||
+        (target &&
+          (target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT' ||
+            target.isContentEditable))
+      ) {
+        return
+      }
+      if (e.key === '?') {
+        e.preventDefault()
+        setShortcutsOpen((v) => !v)
+      } else if (e.key === 'Escape') {
+        setPickingWhiteBalance(false)
+      } else if (e.key.toLowerCase() === 'w' && !e.altKey) {
+        e.preventDefault()
+        setPickingWhiteBalance((v) => !v)
+      } else if (e.key.toLowerCase() === 'o' && !e.altKey) {
+        e.preventDefault()
+        setShowMaskTint((v) => !v)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const onHistogram = useCallback((bins: HistogramBins, clipping: ClippingStats) => {
     setHistogram({ bins, clipping })
@@ -76,6 +127,7 @@ export default function App() {
         onSync={session.syncSelected}
         onToggleCompare={() => session.setCompareMode(!session.compareMode)}
         onExport={() => session.setExportOpen(true)}
+        onShowShortcuts={() => setShortcutsOpen(true)}
       />
 
       <div
@@ -86,10 +138,13 @@ export default function App() {
         }
       >
         <Filmstrip
-          photos={session.photos}
+          photos={session.visiblePhotos}
+          totalCount={session.photos.length}
           activeId={session.activeId}
           selectedIds={session.selectedIds}
           visible={session.filmstripVisible}
+          filter={session.filmstripFilter}
+          onFilterChange={session.setFilmstripFilter}
           onSelect={session.selectPhoto}
           onOpen={session.handleOpen}
           onSync={session.syncSelected}
@@ -126,32 +181,35 @@ export default function App() {
                   }
                 : null
             }
-            radialOverlay={
+            maskOverlay={
               canEdit && session.panelFocus === 'local'
                 ? {
                     items: edits.localAdjustments,
-                    selectedId: selectedRadialId,
-                    onSelect: setSelectedRadialId,
-                    onChange: session.updateRadial,
+                    selectedId: selectedMaskId,
+                    brush,
+                    onSelect: setSelectedMaskId,
+                    onChange: session.updateLocal,
                     onBegin: begin,
                     onCommit: commit,
                   }
                 : null
             }
+            maskTint={canEdit && session.panelFocus === 'local' && showMaskTint ? selectedMask : null}
+            onPickWhiteBalance={
+              canEdit && pickingWhiteBalance
+                ? (wb) => {
+                    session.updateEdits(wb, { commit: true })
+                    setPickingWhiteBalance(false)
+                  }
+                : null
+            }
+            apiRef={previewApi}
           />
         </main>
 
         <aside className="sidebar" aria-label="Editor panels">
           <div className="panel-tabs" role="tablist" aria-label="Panels">
-            {(
-              [
-                ['adjust', 'Adjust'],
-                ['curve', 'Curve'],
-                ['crop', 'Crop'],
-                ['local', 'Local'],
-                ['presets', 'Presets'],
-              ] as const
-            ).map(([id, label]) => (
+            {PANELS.map(({ id, label }, index) => (
               <button
                 key={id}
                 type="button"
@@ -160,6 +218,7 @@ export default function App() {
                 className={
                   session.panelFocus === id ? 'panel-tab panel-tab--active' : 'panel-tab'
                 }
+                title={`${label} (⇧${index + 1})`}
                 onClick={() => {
                   session.setPanelFocus(id)
                   if (id === 'crop') session.setCropMode(true)
@@ -182,8 +241,32 @@ export default function App() {
               <AdjustmentsPanel
                 edits={edits}
                 disabled={!canEdit}
+                pickingWhiteBalance={pickingWhiteBalance}
                 onChange={session.updateEdits}
                 onReset={session.resetEdits}
+                onAutoTone={autoTone}
+                onAutoWhiteBalance={autoWhiteBalance}
+                onTogglePicker={() => setPickingWhiteBalance((v) => !v)}
+                onBegin={begin}
+                onCommit={commit}
+              />
+            )}
+
+            {session.panelFocus === 'color' && (
+              <ColorPanel
+                edits={edits}
+                disabled={!canEdit}
+                onChange={session.updateEdits}
+                onBegin={begin}
+                onCommit={commit}
+              />
+            )}
+
+            {session.panelFocus === 'effects' && (
+              <EffectsPanel
+                edits={edits}
+                disabled={!canEdit}
+                onChange={session.updateEdits}
                 onBegin={begin}
                 onCommit={commit}
               />
@@ -193,7 +276,7 @@ export default function App() {
               <ToneCurvePanel
                 edits={edits}
                 disabled={!canEdit}
-                histogram={histogram?.bins.lum ?? null}
+                histogram={histogram?.bins ?? null}
                 onChange={session.updateEdits}
                 onBegin={begin}
                 onCommit={commit}
@@ -220,11 +303,15 @@ export default function App() {
               <LocalAdjustPanel
                 edits={edits}
                 disabled={!canEdit}
-                selectedId={selectedRadialId}
-                onSelect={setSelectedRadialId}
-                onAdd={session.addRadial}
-                onUpdate={session.updateRadial}
-                onRemove={session.removeRadial}
+                selectedId={selectedMaskId}
+                brush={brush}
+                showOverlay={showMaskTint}
+                onSelect={setSelectedMaskId}
+                onAdd={session.addLocal}
+                onUpdate={session.updateLocal}
+                onRemove={session.removeLocal}
+                onBrushChange={setBrush}
+                onToggleOverlay={() => setShowMaskTint((v) => !v)}
                 onBegin={begin}
                 onCommit={commit}
               />
@@ -259,6 +346,8 @@ export default function App() {
         onClose={() => session.setExportOpen(false)}
         onExport={session.runExport}
       />
+
+      <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       <Toast toast={session.toast} onDismiss={session.dismissToast} />
     </div>

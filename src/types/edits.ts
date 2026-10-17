@@ -39,23 +39,90 @@ export type CropRect = {
 
 export type CurvePoint = { x: number; y: number }
 
-/** Master RGB tone curve in 0–1 space. */
+export type CurveChannel = 'red' | 'green' | 'blue'
+
+/** Tone curves in 0–1 space: `points` is the master (RGB) curve; channels are optional. */
 export type ToneCurve = {
   points: CurvePoint[]
+  red?: CurvePoint[]
+  green?: CurvePoint[]
+  blue?: CurvePoint[]
 }
 
-export type RadialAdjustment = {
+/** Settings every local mask applies inside its area. */
+type LocalAdjustmentBase = {
   id: string
+  /** Apply outside the shape instead of inside. */
+  invert: boolean
+  exposure: number
+  contrast: number
+  saturation: number
+  temperature: number
+}
+
+export type RadialAdjustment = LocalAdjustmentBase & {
   type: 'radial'
-  /** Center / radii in oriented image space (0–1). */
+  /** Center / radii in output image space (0–1). */
   cx: number
   cy: number
   radiusX: number
   radiusY: number
   feather: number
-  exposure: number
-  contrast: number
+}
+
+/** Graduated filter: full effect at (x1, y1), fading to nothing at (x2, y2). */
+export type LinearAdjustment = LocalAdjustmentBase & {
+  type: 'linear'
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
+export type BrushStroke = {
+  /** Flat [x0, y0, x1, y1, …] in output image space (0–1). */
+  points: number[]
+  /** Radius as a fraction of the image width. */
+  size: number
+  /** 0 = hard edge, 1 = fully soft. */
+  feather: number
+  /** Opacity of the stroke (0–1). */
+  flow: number
+  erase: boolean
+}
+
+export type BrushAdjustment = LocalAdjustmentBase & {
+  type: 'brush'
+  strokes: BrushStroke[]
+}
+
+export type LocalAdjustment = RadialAdjustment | LinearAdjustment | BrushAdjustment
+export type LocalAdjustmentType = LocalAdjustment['type']
+
+/** Any subset of fields a local mask can carry — used for partial updates. */
+export type LocalAdjustmentPatch = Partial<
+  Omit<RadialAdjustment, 'id' | 'type'> &
+    Omit<LinearAdjustment, 'id' | 'type'> &
+    Omit<BrushAdjustment, 'id' | 'type'>
+>
+
+export type GradeZone = {
+  /** 0–360 degrees. */
+  hue: number
+  /** 0–100. */
   saturation: number
+  /** −100…100. */
+  luminance: number
+}
+
+export type GradeZoneId = 'shadows' | 'midtones' | 'highlights' | 'global'
+
+/** Color grading (split toning) wheels, like Lightroom's Color Grading panel. */
+export type ColorGrading = Record<GradeZoneId, GradeZone> & {
+  /** 0–100: how much the shadow / highlight ranges overlap. */
+  blending: number
+  /** −100…100: shifts the split point toward shadows (−) or highlights (+). */
+  balance: number
 }
 
 export type EditParams = {
@@ -69,11 +136,23 @@ export type EditParams = {
   tint: number
   vibrance: number
   saturation: number
+  texture: number
+  clarity: number
+  dehaze: number
+  /** Post-crop vignette: negative darkens, positive lightens the corners. */
+  vignette: number
+  vignetteMidpoint: number
+  grain: number
+  grainSize: number
+  sharpening: number
+  noiseReduction: number
+  colorNoiseReduction: number
+  colorGrading: ColorGrading
   /** Image orientation in 90° steps (clockwise). */
   rotate: RotateDegrees
   crop: CropRect
   toneCurve: ToneCurve
-  localAdjustments: RadialAdjustment[]
+  localAdjustments: LocalAdjustment[]
   hsl: HslEdits
   /** Optional look-up table applied after parametric edits (from .cube). */
   lut?: Lut3D
@@ -83,7 +162,14 @@ export type EditParams = {
 
 export type BasicEditKey = Exclude<
   keyof EditParams,
-  'hsl' | 'lut' | 'lutMix' | 'rotate' | 'crop' | 'toneCurve' | 'localAdjustments'
+  | 'hsl'
+  | 'lut'
+  | 'lutMix'
+  | 'rotate'
+  | 'crop'
+  | 'toneCurve'
+  | 'localAdjustments'
+  | 'colorGrading'
 >
 
 export type Preset = {
@@ -93,6 +179,8 @@ export type Preset = {
   createdAt: string
 }
 
+export type PhotoFlag = 'pick' | 'reject'
+
 export type PhotoSession = {
   id: string
   name: string
@@ -101,22 +189,57 @@ export type PhotoSession = {
   file: File
   edits: EditParams
   thumbnailUrl: string
+  /** 0–5 stars. */
+  rating: number
+  flag: PhotoFlag | null
 }
 
 export type ExportFormat = 'jpeg' | 'png' | 'webp'
+
+export type WatermarkPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
+
+export type Watermark = {
+  enabled: boolean
+  text: string
+  position: WatermarkPosition
+  /** 0–1. */
+  opacity: number
+  /** Text height as a fraction of the image's short edge. */
+  size: number
+}
+
+/** Exact output canvas; the photo is scaled to fit and letterboxed. */
+export type ExportFrame = {
+  width: number
+  height: number
+  background: string
+}
 
 export type ExportOptions = {
   format: ExportFormat
   quality: number
   maxEdge: number
+  /** When set, output is exactly this size (fit + pad); `maxEdge` is ignored. */
+  frame: ExportFrame | null
+  watermark: Watermark
   /** `{name}` is replaced with the source basename. */
   filenamePattern: string
+}
+
+export const DEFAULT_WATERMARK: Watermark = {
+  enabled: false,
+  text: '© ',
+  position: 'bottom-right',
+  opacity: 0.7,
+  size: 0.035,
 }
 
 export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   format: 'jpeg',
   quality: 0.92,
   maxEdge: 8192,
+  frame: null,
+  watermark: DEFAULT_WATERMARK,
   filenamePattern: '{name}-edited',
 }
 
@@ -156,6 +279,26 @@ export function createDefaultCrop(): CropRect {
   return { x: 0, y: 0, width: 1, height: 1, straighten: 0 }
 }
 
+const NEUTRAL_ZONE: GradeZone = { hue: 0, saturation: 0, luminance: 0 }
+
+export const GRADE_ZONES: { id: GradeZoneId; label: string }[] = [
+  { id: 'shadows', label: 'Shadows' },
+  { id: 'midtones', label: 'Midtones' },
+  { id: 'highlights', label: 'Highlights' },
+  { id: 'global', label: 'Global' },
+]
+
+export function createDefaultColorGrading(): ColorGrading {
+  return {
+    shadows: { ...NEUTRAL_ZONE },
+    midtones: { ...NEUTRAL_ZONE },
+    highlights: { ...NEUTRAL_ZONE },
+    global: { ...NEUTRAL_ZONE },
+    blending: 50,
+    balance: 0,
+  }
+}
+
 export function createDefaultToneCurve(): ToneCurve {
   return {
     points: [
@@ -176,6 +319,17 @@ export const DEFAULT_EDITS: EditParams = {
   tint: 0,
   vibrance: 0,
   saturation: 0,
+  texture: 0,
+  clarity: 0,
+  dehaze: 0,
+  vignette: 0,
+  vignetteMidpoint: 50,
+  grain: 0,
+  grainSize: 25,
+  sharpening: 0,
+  noiseReduction: 0,
+  colorNoiseReduction: 0,
+  colorGrading: createDefaultColorGrading(),
   rotate: 0,
   crop: createDefaultCrop(),
   toneCurve: createDefaultToneCurve(),
@@ -212,6 +366,16 @@ export const EDIT_SLIDERS: {
   { key: 'tint', label: 'Tint', min: -100, max: 100, step: 1 },
   { key: 'vibrance', label: 'Vibrance', min: -100, max: 100, step: 1 },
   { key: 'saturation', label: 'Saturation', min: -100, max: 100, step: 1 },
+  { key: 'texture', label: 'Texture', min: -100, max: 100, step: 1 },
+  { key: 'clarity', label: 'Clarity', min: -100, max: 100, step: 1 },
+  { key: 'dehaze', label: 'Dehaze', min: -100, max: 100, step: 1 },
+  { key: 'vignette', label: 'Amount', min: -100, max: 100, step: 1 },
+  { key: 'vignetteMidpoint', label: 'Midpoint', min: 0, max: 100, step: 1 },
+  { key: 'grain', label: 'Amount', min: 0, max: 100, step: 1 },
+  { key: 'grainSize', label: 'Size', min: 0, max: 100, step: 1 },
+  { key: 'sharpening', label: 'Sharpening', min: 0, max: 150, step: 1 },
+  { key: 'noiseReduction', label: 'Luminance NR', min: 0, max: 100, step: 1 },
+  { key: 'colorNoiseReduction', label: 'Color NR', min: 0, max: 100, step: 1 },
 ]
 
 export function cloneHsl(hsl: HslEdits): HslEdits {
@@ -239,21 +403,45 @@ export function cloneCrop(crop: CropRect): CropRect {
   return { ...crop }
 }
 
+export const CURVE_CHANNELS: CurveChannel[] = ['red', 'green', 'blue']
+
 export function cloneToneCurve(curve: ToneCurve): ToneCurve {
-  return { points: curve.points.map((p) => ({ ...p })) }
+  const next: ToneCurve = { points: curve.points.map((p) => ({ ...p })) }
+  for (const channel of CURVE_CHANNELS) {
+    const points = curve[channel]
+    if (points) next[channel] = points.map((p) => ({ ...p }))
+  }
+  return next
 }
 
-export function cloneLocalAdjustments(items: RadialAdjustment[]): RadialAdjustment[] {
+export function cloneColorGrading(grading: ColorGrading): ColorGrading {
+  return {
+    shadows: { ...grading.shadows },
+    midtones: { ...grading.midtones },
+    highlights: { ...grading.highlights },
+    global: { ...grading.global },
+    blending: grading.blending,
+    balance: grading.balance,
+  }
+}
+
+/** Shallow per-item copy; brush strokes are treated as immutable and shared. */
+export function cloneLocalAdjustments(items: LocalAdjustment[]): LocalAdjustment[] {
   return items.map((item) => ({ ...item }))
 }
 
 export function cloneEdits(edits: EditParams): EditParams {
   const next: EditParams = {
     ...edits,
+    // Edits saved by older versions lack newer sliders: fill them with defaults.
+    ...Object.fromEntries(
+      EDIT_SLIDERS.filter((s) => !Number.isFinite(edits[s.key])).map((s) => [s.key, DEFAULT_EDITS[s.key]]),
+    ),
     hsl: cloneHsl(edits.hsl),
     crop: cloneCrop(edits.crop ?? createDefaultCrop()),
     toneCurve: cloneToneCurve(edits.toneCurve ?? createDefaultToneCurve()),
     localAdjustments: cloneLocalAdjustments(edits.localAdjustments ?? []),
+    colorGrading: cloneColorGrading(edits.colorGrading ?? createDefaultColorGrading()),
   }
   if (edits.lut) next.lut = cloneLut(edits.lut)
   else delete next.lut
@@ -270,6 +458,7 @@ export function mergeEdits(base: EditParams, patch: Partial<EditParams>): EditPa
     crop: cropPatch,
     toneCurve: curvePatch,
     localAdjustments: localPatch,
+    colorGrading: gradingPatch,
     ...rest
   } = patch
   const next = cloneEdits({ ...base, ...rest })
@@ -284,6 +473,15 @@ export function mergeEdits(base: EditParams, patch: Partial<EditParams>): EditPa
   if (cropPatch) next.crop = { ...next.crop, ...cropPatch }
   if (curvePatch) next.toneCurve = cloneToneCurve(curvePatch)
   if (localPatch) next.localAdjustments = cloneLocalAdjustments(localPatch)
+  if (gradingPatch) {
+    const grading = next.colorGrading
+    for (const zone of GRADE_ZONES) {
+      const zonePatch = gradingPatch[zone.id]
+      if (zonePatch) grading[zone.id] = { ...grading[zone.id], ...zonePatch }
+    }
+    if (typeof gradingPatch.blending === 'number') grading.blending = gradingPatch.blending
+    if (typeof gradingPatch.balance === 'number') grading.balance = gradingPatch.balance
+  }
   if (lutPatch !== undefined) {
     if (lutPatch) next.lut = cloneLut(lutPatch)
     else delete next.lut
@@ -324,23 +522,62 @@ export function normalizeCrop(value: unknown): CropRect {
   }
 }
 
-export function normalizeToneCurve(value: unknown): ToneCurve {
-  const fallback = createDefaultToneCurve()
-  if (!value || typeof value !== 'object') return fallback
-  const obj = value as Record<string, unknown>
-  if (!Array.isArray(obj.points) || obj.points.length < 2) return fallback
+function normalizeCurvePoints(value: unknown): CurvePoint[] | null {
+  if (!Array.isArray(value) || value.length < 2) return null
   const points: CurvePoint[] = []
-  for (const raw of obj.points) {
+  for (const raw of value) {
     if (!raw || typeof raw !== 'object') continue
     const p = raw as Record<string, unknown>
     if (typeof p.x !== 'number' || typeof p.y !== 'number') continue
     points.push({ x: clamp01(p.x), y: clamp01(p.y) })
   }
-  if (points.length < 2) return fallback
+  if (points.length < 2) return null
   points.sort((a, b) => a.x - b.x)
   points[0] = { x: 0, y: points[0]!.y }
   points[points.length - 1] = { x: 1, y: points[points.length - 1]!.y }
-  return { points }
+  return points
+}
+
+export function normalizeToneCurve(value: unknown): ToneCurve {
+  const fallback = createDefaultToneCurve()
+  if (!value || typeof value !== 'object') return fallback
+  const obj = value as Record<string, unknown>
+  const next: ToneCurve = { points: normalizeCurvePoints(obj.points) ?? fallback.points }
+  for (const channel of CURVE_CHANNELS) {
+    const points = normalizeCurvePoints(obj[channel])
+    if (points && !isIdentityCurve(points)) next[channel] = points
+  }
+  return next
+}
+
+function normalizeZone(value: unknown): GradeZone {
+  if (!value || typeof value !== 'object') return { ...NEUTRAL_ZONE }
+  const obj = value as Record<string, unknown>
+  const num = (v: unknown, min: number, max: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : 0
+  return {
+    hue: (((typeof obj.hue === 'number' ? obj.hue : 0) % 360) + 360) % 360,
+    saturation: num(obj.saturation, 0, 100),
+    luminance: num(obj.luminance, -100, 100),
+  }
+}
+
+export function normalizeColorGrading(value: unknown): ColorGrading {
+  const next = createDefaultColorGrading()
+  if (!value || typeof value !== 'object') return next
+  const obj = value as Record<string, unknown>
+  for (const zone of GRADE_ZONES) next[zone.id] = normalizeZone(obj[zone.id])
+  if (typeof obj.blending === 'number') next.blending = Math.min(100, Math.max(0, obj.blending))
+  if (typeof obj.balance === 'number') next.balance = Math.min(100, Math.max(-100, obj.balance))
+  return next
+}
+
+const LOCAL_DEFAULTS = {
+  invert: false,
+  exposure: 0,
+  contrast: 0,
+  saturation: 0,
+  temperature: 0,
 }
 
 export function createRadialAdjustment(
@@ -349,16 +586,55 @@ export function createRadialAdjustment(
   return {
     id: crypto.randomUUID(),
     type: 'radial',
+    ...LOCAL_DEFAULTS,
     cx: 0.5,
     cy: 0.5,
     radiusX: 0.35,
     radiusY: 0.35,
     feather: 0.35,
-    exposure: 0,
-    contrast: 0,
-    saturation: 0,
     ...patch,
   }
+}
+
+export function createLinearAdjustment(
+  patch?: Partial<Omit<LinearAdjustment, 'id' | 'type'>>,
+): LinearAdjustment {
+  return {
+    id: crypto.randomUUID(),
+    type: 'linear',
+    ...LOCAL_DEFAULTS,
+    x1: 0.5,
+    y1: 0.15,
+    x2: 0.5,
+    y2: 0.55,
+    ...patch,
+  }
+}
+
+export function createBrushAdjustment(
+  patch?: Partial<Omit<BrushAdjustment, 'id' | 'type'>>,
+): BrushAdjustment {
+  return {
+    id: crypto.randomUUID(),
+    type: 'brush',
+    ...LOCAL_DEFAULTS,
+    strokes: [],
+    ...patch,
+  }
+}
+
+export function createLocalAdjustment(type: LocalAdjustmentType): LocalAdjustment {
+  if (type === 'linear') return createLinearAdjustment()
+  if (type === 'brush') return createBrushAdjustment()
+  return createRadialAdjustment()
+}
+
+/** Apply a partial update without letting it change the mask's type or id. */
+export function patchLocalAdjustment(
+  item: LocalAdjustment,
+  patch: LocalAdjustmentPatch,
+): LocalAdjustment {
+  return { ...item, ...patch, id: item.id, type: item.type } as LocalAdjustment
 }
 
 /**
@@ -381,6 +657,20 @@ export function blendEdits(from: EditParams, to: EditParams, t: number): EditPar
     amount >= 0.5
       ? cloneLocalAdjustments(to.localAdjustments)
       : cloneLocalAdjustments(from.localAdjustments)
+
+  for (const zone of GRADE_ZONES) {
+    const a = from.colorGrading[zone.id]
+    const b = to.colorGrading[zone.id]
+    // Hue only means something with saturation: take it from whichever side has colour.
+    const hue = b.saturation > 0 || a.saturation === 0 ? b.hue : a.hue
+    next.colorGrading[zone.id] = {
+      hue,
+      saturation: lerp(a.saturation, b.saturation, amount),
+      luminance: lerp(a.luminance, b.luminance, amount),
+    }
+  }
+  next.colorGrading.blending = lerp(from.colorGrading.blending, to.colorGrading.blending, amount)
+  next.colorGrading.balance = lerp(from.colorGrading.balance, to.colorGrading.balance, amount)
 
   for (const channel of HSL_CHANNELS) {
     const a = from.hsl[channel.id]
@@ -423,10 +713,24 @@ export function isNeutralCrop(crop: CropRect): boolean {
   )
 }
 
-export function isNeutralToneCurve(curve: ToneCurve): boolean {
-  if (curve.points.length !== 2) return false
-  const [a, b] = curve.points
+export function isIdentityCurve(points: CurvePoint[]): boolean {
+  if (points.length !== 2) return false
+  const [a, b] = points
   return Boolean(a && b && a.x === 0 && a.y === 0 && b.x === 1 && b.y === 1)
+}
+
+export function isNeutralToneCurve(curve: ToneCurve): boolean {
+  return (
+    isIdentityCurve(curve.points) &&
+    CURVE_CHANNELS.every((channel) => !curve[channel] || isIdentityCurve(curve[channel]!))
+  )
+}
+
+export function isNeutralColorGrading(grading: ColorGrading): boolean {
+  return GRADE_ZONES.every((zone) => {
+    const z = grading[zone.id]
+    return z.saturation === 0 && z.luminance === 0
+  })
 }
 
 export function isNeutralEdits(edits: EditParams): boolean {
@@ -437,6 +741,7 @@ export function isNeutralEdits(edits: EditParams): boolean {
     isNeutralHsl(edits.hsl) &&
     isNeutralCrop(edits.crop) &&
     isNeutralToneCurve(edits.toneCurve) &&
+    isNeutralColorGrading(edits.colorGrading) &&
     edits.localAdjustments.length === 0 &&
     !edits.lut
   )
@@ -459,25 +764,62 @@ export function normalizeLut(value: unknown): Lut3D | null {
   }
 }
 
-function normalizeLocalAdjustments(value: unknown): RadialAdjustment[] {
+function normalizeStroke(value: unknown): BrushStroke | null {
+  if (!value || typeof value !== 'object') return null
+  const obj = value as Record<string, unknown>
+  if (!Array.isArray(obj.points)) return null
+  const points = obj.points.filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+  if (points.length < 2) return null
+  return {
+    points: points.length % 2 === 0 ? points : points.slice(0, -1),
+    size: typeof obj.size === 'number' ? Math.min(0.5, Math.max(0.002, obj.size)) : 0.05,
+    feather: typeof obj.feather === 'number' ? clamp01(obj.feather) : 0.5,
+    flow: typeof obj.flow === 'number' ? clamp01(obj.flow) : 1,
+    erase: obj.erase === true,
+  }
+}
+
+function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
   if (!Array.isArray(value)) return []
-  const out: RadialAdjustment[] = []
+  const out: LocalAdjustment[] = []
+  const num = (v: unknown, fallback: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback
   for (const raw of value) {
     if (!raw || typeof raw !== 'object') continue
     const obj = raw as Record<string, unknown>
-    if (obj.type !== 'radial') continue
-    out.push({
+    const base = {
       id: typeof obj.id === 'string' ? obj.id : crypto.randomUUID(),
-      type: 'radial',
-      cx: typeof obj.cx === 'number' ? clamp01(obj.cx) : 0.5,
-      cy: typeof obj.cy === 'number' ? clamp01(obj.cy) : 0.5,
-      radiusX: typeof obj.radiusX === 'number' ? Math.max(0.02, clamp01(obj.radiusX)) : 0.35,
-      radiusY: typeof obj.radiusY === 'number' ? Math.max(0.02, clamp01(obj.radiusY)) : 0.35,
-      feather: typeof obj.feather === 'number' ? clamp01(obj.feather) : 0.35,
-      exposure: typeof obj.exposure === 'number' ? obj.exposure : 0,
-      contrast: typeof obj.contrast === 'number' ? obj.contrast : 0,
-      saturation: typeof obj.saturation === 'number' ? obj.saturation : 0,
-    })
+      invert: obj.invert === true,
+      exposure: num(obj.exposure, 0),
+      contrast: num(obj.contrast, 0),
+      saturation: num(obj.saturation, 0),
+      temperature: num(obj.temperature, 0),
+    }
+    if (obj.type === 'radial') {
+      out.push({
+        ...base,
+        type: 'radial',
+        cx: clamp01(num(obj.cx, 0.5)),
+        cy: clamp01(num(obj.cy, 0.5)),
+        radiusX: Math.max(0.02, Math.min(1.5, num(obj.radiusX, 0.35))),
+        radiusY: Math.max(0.02, Math.min(1.5, num(obj.radiusY, 0.35))),
+        feather: clamp01(num(obj.feather, 0.35)),
+      })
+    } else if (obj.type === 'linear') {
+      out.push({
+        ...base,
+        type: 'linear',
+        x1: num(obj.x1, 0.5),
+        y1: num(obj.y1, 0.15),
+        x2: num(obj.x2, 0.5),
+        y2: num(obj.y2, 0.55),
+      })
+    } else if (obj.type === 'brush') {
+      const strokes = Array.isArray(obj.strokes)
+        ? obj.strokes.map(normalizeStroke).filter((st): st is BrushStroke => st !== null)
+        : []
+      out.push({ ...base, type: 'brush', strokes })
+    }
   }
   return out
 }
@@ -501,6 +843,7 @@ export function normalizeEdits(value: unknown): EditParams | null {
 
   if (obj.crop !== undefined) next.crop = normalizeCrop(obj.crop)
   if (obj.toneCurve !== undefined) next.toneCurve = normalizeToneCurve(obj.toneCurve)
+  if (obj.colorGrading !== undefined) next.colorGrading = normalizeColorGrading(obj.colorGrading)
   if (obj.localAdjustments !== undefined) {
     next.localAdjustments = normalizeLocalAdjustments(obj.localAdjustments)
   }
@@ -534,7 +877,17 @@ export function normalizeEdits(value: unknown): EditParams | null {
   const hasCrop = obj.crop !== undefined
   const hasCurve = obj.toneCurve !== undefined
   const hasLocal = Array.isArray(obj.localAdjustments) && obj.localAdjustments.length > 0
-  if (!hasBasic && !hasHsl && !hasLut && !hasRotate && !hasCrop && !hasCurve && !hasLocal) {
+  const hasGrading = obj.colorGrading !== undefined
+  if (
+    !hasBasic &&
+    !hasHsl &&
+    !hasLut &&
+    !hasRotate &&
+    !hasCrop &&
+    !hasCurve &&
+    !hasLocal &&
+    !hasGrading
+  ) {
     return null
   }
   return next

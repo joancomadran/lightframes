@@ -1,15 +1,22 @@
 import {
+  CURVE_CHANNELS,
   DEFAULT_EDITS,
-  EDIT_SLIDERS,
   HSL_CHANNELS,
+  isIdentityCurve,
+  isNeutralColorGrading,
   isNeutralHsl,
   isNeutralToneCurve,
   normalizeRotate,
+  type BrushAdjustment,
+  type ColorGrading,
   type CropRect,
   type EditParams,
   type ExportFormat,
   type ExportOptions,
+  type GradeZone,
   type HslEdits,
+  type LinearAdjustment,
+  type LocalAdjustment,
   type RadialAdjustment,
   type ToneCurve,
 } from '../types/edits'
@@ -54,6 +61,10 @@ const BLACKS_CRUSH = 0.12
 /** HSL hue ±100 ≈ ±30°; luminance ±100 ≈ ±0.5 stop on the encoded value. */
 const HSL_HUE_DEGREES = 0.3
 const HSL_LUM_STOPS = 0.5
+/** Colour-grading saturation 100 pushes encoded RGB this far toward the hue. */
+const GRADE_STRENGTH = 0.2
+/** Colour-grading luminance ±100 shifts encoded values by this much. */
+const GRADE_LUM_RANGE = 0.18
 
 /** Long edge of the low-res luminance map used for highlights / shadows. */
 const MASK_EDGE = 128
@@ -322,21 +333,6 @@ function buildLuminanceMask(
   return { data, width: mw, height: mh, sx: mw / width, sy: mh / height }
 }
 
-function sampleMask(mask: LuminanceMask, x: number, y: number): number {
-  const fx = clamp((x + 0.5) * mask.sx - 0.5, 0, mask.width - 1)
-  const fy = clamp((y + 0.5) * mask.sy - 0.5, 0, mask.height - 1)
-  const x0 = fx | 0
-  const y0 = fy | 0
-  const x1 = Math.min(mask.width - 1, x0 + 1)
-  const y1 = Math.min(mask.height - 1, y0 + 1)
-  const tx = fx - x0
-  const ty = fy - y0
-  const { data, width } = mask
-  const top = data[y0 * width + x0]! + (data[y0 * width + x1]! - data[y0 * width + x0]!) * tx
-  const bottom = data[y1 * width + x0]! + (data[y1 * width + x1]! - data[y1 * width + x0]!) * tx
-  return top + (bottom - top) * ty
-}
-
 /** 0 for skin-like oranges, 1 elsewhere — vibrance leaves skin mostly alone. */
 function skinProtection(r: number, g: number, b: number): number {
   const { h } = rgbToHsl(r, g, b)
@@ -381,7 +377,61 @@ function applyHslEdits(r: number, g: number, b: number, hsl: HslEdits): [number,
   return [nr, ng, nb]
 }
 
-/** Vibrance / saturation (around luma), then HSL, on encoded RGB in 0–1. */
+type GradePrep = {
+  tints: [number, number, number][]
+  lums: number[]
+  pivot: number
+  spread: number
+}
+
+/** Offset a zone adds to encoded RGB: its hue's colour minus that colour's own luma. */
+function zoneTint(zone: GradeZone): [number, number, number] {
+  const [r, g, b] = hslToRgb(zone.hue, 1, 0.5)
+  const l = LUMA_R * r + LUMA_G * g + LUMA_B * b
+  const k = (zone.saturation / 100) * GRADE_STRENGTH
+  return [(r - l) * k, (g - l) * k, (b - l) * k]
+}
+
+function prepareGrading(grading: ColorGrading): GradePrep | null {
+  if (isNeutralColorGrading(grading)) return null
+  const zones = [grading.shadows, grading.midtones, grading.highlights, grading.global]
+  return {
+    tints: zones.map(zoneTint),
+    lums: zones.map((z) => (z.luminance / 100) * GRADE_LUM_RANGE),
+    // Positive balance hands more of the range to the highlight wheel.
+    pivot: 0.5 - (grading.balance / 100) * 0.25,
+    spread: 0.2 + (grading.blending / 100) * 0.45,
+  }
+}
+
+/** Shadows / midtones / highlights weights from luma, then the global wheel on top. */
+function applyGrading(r: number, g: number, b: number, prep: GradePrep): [number, number, number] {
+  const luma = LUMA_R * r + LUMA_G * g + LUMA_B * b
+  const t = luma - prep.pivot
+  const mid = Math.max(0, 1 - Math.abs(t) / prep.spread)
+  const wm = mid * mid * (3 - 2 * mid)
+  // Ease the tint off toward pure black so shadow colour doesn't crush the blacks.
+  const floor = 0.3 + 0.7 * smoothstep(0, 0.18, luma)
+  const ws = (t < 0 ? 1 - wm : 0) * floor
+  const wh = t >= 0 ? 1 - wm : 0
+  const weights = [ws, wm * floor, wh, floor]
+  let dr = 0
+  let dg = 0
+  let db = 0
+  let dl = 0
+  for (let k = 0; k < 4; k++) {
+    const w = weights[k]!
+    if (w <= 0) continue
+    const tint = prep.tints[k]!
+    dr += w * tint[0]
+    dg += w * tint[1]
+    db += w * tint[2]
+    dl += w * prep.lums[k]!
+  }
+  return [r + dr + dl, g + dg + dl, b + db + dl]
+}
+
+/** Vibrance / saturation (around luma), HSL, then colour grading, on encoded RGB in 0–1. */
 function adjustColor(
   r: number,
   g: number,
@@ -389,6 +439,7 @@ function adjustColor(
   saturation: number,
   vibrance: number,
   hsl: HslEdits | null,
+  grading: GradePrep | null,
 ): [number, number, number] {
   if (saturation !== 0 || vibrance !== 0) {
     const luma = LUMA_R * r + LUMA_G * g + LUMA_B * b
@@ -407,6 +458,9 @@ function adjustColor(
   if (hsl) {
     ;[r, g, b] = applyHslEdits(r, g, b, hsl)
   }
+  if (grading) {
+    ;[r, g, b] = applyGrading(clamp01(r), clamp01(g), clamp01(b), grading)
+  }
   return [clamp01(r), clamp01(g), clamp01(b)]
 }
 
@@ -414,15 +468,29 @@ function adjustColor(
  * The colour stage depends only on the pixel's RGB, so it is baked into a
  * small 3D table and sampled trilinearly instead of running HSL maths per pixel.
  */
-function buildColorGrid(saturation: number, vibrance: number, hsl: HslEdits): Float32Array {
+function buildColorGrid(
+  saturation: number,
+  vibrance: number,
+  hsl: HslEdits,
+  grading: ColorGrading,
+): Float32Array {
   const n = COLOR_GRID
   const max = n - 1
   const hslEdits = isNeutralHsl(hsl) ? null : hsl
+  const gradePrep = prepareGrading(grading)
   const grid = new Float32Array(n * n * n * 3)
   for (let bi = 0, k = 0; bi < n; bi++) {
     for (let gi = 0; gi < n; gi++) {
       for (let ri = 0; ri < n; ri++, k += 3) {
-        const [r, g, b] = adjustColor(ri / max, gi / max, bi / max, saturation, vibrance, hslEdits)
+        const [r, g, b] = adjustColor(
+          ri / max,
+          gi / max,
+          bi / max,
+          saturation,
+          vibrance,
+          hslEdits,
+          gradePrep,
+        )
         grid[k] = r
         grid[k + 1] = g
         grid[k + 2] = b
@@ -571,19 +639,76 @@ function rawBaseEncode(v: number): number {
   return sampleTable(rawBaseTable, Math.sqrt(Math.sqrt(v)))
 }
 
+/** Sliders handled by the develop pass (the rest belong to the detail pass). */
+const DEVELOP_KEYS = [
+  'exposure',
+  'contrast',
+  'highlights',
+  'shadows',
+  'whites',
+  'blacks',
+  'temperature',
+  'tint',
+  'vibrance',
+  'saturation',
+] as const
+
 function isNeutralDevelop(edits: EditParams): boolean {
   return (
-    EDIT_SLIDERS.every((slider) => edits[slider.key] === 0) &&
+    DEVELOP_KEYS.every((key) => edits[key] === 0) &&
     isNeutralHsl(edits.hsl) &&
-    isNeutralToneCurve(edits.toneCurve)
+    isNeutralToneCurve(edits.toneCurve) &&
+    isNeutralColorGrading(edits.colorGrading)
   )
 }
 
-/** Global develop settings (everything but local adjustments and LUT). */
-function developImageData(imageData: ImageData, edits: EditParams, linear?: LinearImage): void {
-  const { data, width, height } = imageData
-  const encode = linear ? rawBaseEncode : encodeSrgb
+/** Low-res grid sampled bilinearly in full-image coordinates. */
+export type MaskGrid = {
+  data: Float32Array
+  width: number
+  height: number
+}
 
+/**
+ * What a strip of the image needs to know about the whole image so that
+ * processing it alone gives the same pixels as processing everything at once.
+ */
+export type DevelopContext = {
+  /** Image row of the buffer's first row. */
+  yOffset: number
+  fullWidth: number
+  fullHeight: number
+  /** Blurred luminance driving Shadows / Highlights (null when both are 0). */
+  lumMask: MaskGrid | null
+  /** Rasterised brush masks by adjustment id. */
+  brushMasks: Record<string, MaskGrid>
+}
+
+function sampleGrid(grid: MaskGrid, x: number, y: number, fullWidth: number, fullHeight: number): number {
+  const fx = clamp(((x + 0.5) * grid.width) / fullWidth - 0.5, 0, grid.width - 1)
+  const fy = clamp(((y + 0.5) * grid.height) / fullHeight - 0.5, 0, grid.height - 1)
+  const x0 = fx | 0
+  const y0 = fy | 0
+  const x1 = Math.min(grid.width - 1, x0 + 1)
+  const y1 = Math.min(grid.height - 1, y0 + 1)
+  const tx = fx - x0
+  const ty = fy - y0
+  const { data, width } = grid
+  const top = data[y0 * width + x0]! + (data[y0 * width + x1]! - data[y0 * width + x0]!) * tx
+  const bottom = data[y1 * width + x0]! + (data[y1 * width + x1]! - data[y1 * width + x0]!) * tx
+  return top + (bottom - top) * ty
+}
+
+type DevelopSetup = {
+  mulR: number
+  mulG: number
+  mulB: number
+  white: number
+  useShoulder: boolean
+  encode: (v: number) => number
+}
+
+function developSetup(edits: EditParams, linear: boolean): DevelopSetup {
   const [wbR, wbG, wbB] = whiteBalanceGains(edits.temperature, edits.tint)
   const exposureMul = Math.pow(2, edits.exposure)
   const mulR = wbR * exposureMul
@@ -591,30 +716,27 @@ function developImageData(imageData: ImageData, edits: EditParams, linear?: Line
   const mulB = wbB * exposureMul
   const white = Math.max(mulR, mulG, mulB)
   // RAW keeps its headroom until the base curve; 8-bit sources need a shoulder.
-  const useShoulder = !linear && white > 1
+  return {
+    mulR,
+    mulG,
+    mulB,
+    white,
+    useShoulder: !linear && white > 1,
+    encode: linear ? rawBaseEncode : encodeSrgb,
+  }
+}
 
-  const shadows = edits.shadows / 100
-  const highlights = edits.highlights / 100
-  const contrast = edits.contrast / 100
-  const whites = edits.whites / 100
-  const blacks = edits.blacks / 100
-  const colorGrid =
-    edits.saturation !== 0 || edits.vibrance !== 0 || !isNeutralHsl(edits.hsl)
-      ? buildColorGrid(edits.saturation / 100, edits.vibrance / 100, edits.hsl)
-      : null
-
-  const toneTable =
-    contrast !== 0 || whites !== 0 || blacks !== 0
-      ? buildBasicToneTable(contrast, whites, blacks)
-      : null
-  const curveTable = isNeutralToneCurve(edits.toneCurve)
-    ? null
-    : buildToneCurveLut(edits.toneCurve)
-
-  const lin = new Float32Array(3)
+/** Writes white-balanced, exposed linear RGB for the pixel at `offset` into `out`. */
+function makeToLinear(
+  setup: DevelopSetup,
+  data: Uint8ClampedArray,
+  linear: LinearImage | undefined,
+  out: Float32Array,
+): (offset: number) => void {
+  const { mulR, mulG, mulB, white, useShoulder } = setup
   const src = linear?.data
   const srcScale = linear?.scale ?? 1
-  const toLinear = (offset: number) => {
+  return (offset) => {
     let r: number
     let g: number
     let b: number
@@ -633,22 +755,72 @@ function developImageData(imageData: ImageData, edits: EditParams, linear?: Line
       g = shoulder(g, white)
       b = shoulder(b, white)
     }
-    lin[0] = r
-    lin[1] = g
-    lin[2] = b
+    out[0] = r
+    out[1] = g
+    out[2] = b
   }
+}
 
-  let mask: LuminanceMask | null = null
-  let gainTable: Float32Array | null = null
-  if (shadows !== 0 || highlights !== 0) {
-    mask = buildLuminanceMask(width, height, encode, (offset) => {
-      toLinear(offset)
-      return LUMA_R * lin[0]! + LUMA_G * lin[1]! + LUMA_B * lin[2]!
-    })
-    gainTable = buildLocalToneGainTable(shadows, highlights)
-  }
+/** Shadows / Highlights mask for the whole image (call once, share with every strip). */
+export function buildLumMask(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  edits: EditParams,
+  linear?: LinearImage,
+): MaskGrid | null {
+  if (edits.shadows === 0 && edits.highlights === 0) return null
+  const setup = developSetup(edits, Boolean(linear))
+  const lin = new Float32Array(3)
+  const toLinear = makeToLinear(setup, data, linear, lin)
+  const mask = buildLuminanceMask(width, height, setup.encode, (offset) => {
+    toLinear(offset)
+    return LUMA_R * lin[0]! + LUMA_G * lin[1]! + LUMA_B * lin[2]!
+  })
+  return { data: mask.data, width: mask.width, height: mask.height }
+}
+
+/** Global develop settings (everything but local adjustments, LUT and detail). */
+function developImageData(
+  imageData: ImageData,
+  edits: EditParams,
+  linear: LinearImage | undefined,
+  ctx: DevelopContext,
+): void {
+  const { data, width, height } = imageData
+  const setup = developSetup(edits, Boolean(linear))
+  const { encode } = setup
+
+  const contrast = edits.contrast / 100
+  const whites = edits.whites / 100
+  const blacks = edits.blacks / 100
+  const colorGrid =
+    edits.saturation !== 0 ||
+    edits.vibrance !== 0 ||
+    !isNeutralHsl(edits.hsl) ||
+    !isNeutralColorGrading(edits.colorGrading)
+      ? buildColorGrid(edits.saturation / 100, edits.vibrance / 100, edits.hsl, edits.colorGrading)
+      : null
+
+  const toneTable =
+    contrast !== 0 || whites !== 0 || blacks !== 0
+      ? buildBasicToneTable(contrast, whites, blacks)
+      : null
+  const curve = edits.toneCurve
+  const curveTable = isIdentityCurve(curve.points) ? null : buildToneCurveLut(curve)
+  const channelTables = CURVE_CHANNELS.map((channel) => {
+    const points = curve[channel]
+    return points && !isIdentityCurve(points) ? buildToneCurveLut({ points }) : null
+  })
+  const [redTable, greenTable, blueTable] = channelTables
+
+  const lin = new Float32Array(3)
+  const toLinear = makeToLinear(setup, data, linear, lin)
+  const mask = ctx.lumMask
+  const gainTable = mask ? buildLocalToneGainTable(edits.shadows / 100, edits.highlights / 100) : null
 
   for (let y = 0, i = 0; y < height; y++) {
+    const gy = y + ctx.yOffset
     for (let x = 0; x < width; x++, i += 4) {
       toLinear(i)
       let r = lin[0]!
@@ -657,7 +829,8 @@ function developImageData(imageData: ImageData, edits: EditParams, linear?: Line
 
       if (mask && gainTable) {
         const own = encode(LUMA_R * r + LUMA_G * g + LUMA_B * b)
-        const base = MASK_LOCAL_MIX * sampleMask(mask, x, y) + (1 - MASK_LOCAL_MIX) * own
+        const local = sampleGrid(mask, x, gy, ctx.fullWidth, ctx.fullHeight)
+        const base = MASK_LOCAL_MIX * local + (1 - MASK_LOCAL_MIX) * own
         const gain = sampleTable(gainTable, clamp01(base))
         r *= gain
         g *= gain
@@ -690,6 +863,9 @@ function developImageData(imageData: ImageData, edits: EditParams, linear?: Line
         g = sampleTable(curveTable, g)
         b = sampleTable(curveTable, b)
       }
+      if (redTable) r = sampleTable(redTable, r)
+      if (greenTable) g = sampleTable(greenTable, g)
+      if (blueTable) b = sampleTable(blueTable, b)
 
       data[i] = r * 255
       data[i + 1] = g * 255
@@ -698,15 +874,11 @@ function developImageData(imageData: ImageData, edits: EditParams, linear?: Line
   }
 }
 
-function radialWeight(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  adj: RadialAdjustment,
-): number {
-  const dx = (x / w - adj.cx) / Math.max(0.001, adj.radiusX)
-  const dy = (y / h - adj.cy) / Math.max(0.001, adj.radiusY)
+// ——— Local adjustments ————————————————————————————————————————————————
+
+function radialWeight(x: number, y: number, w: number, h: number, adj: RadialAdjustment): number {
+  const dx = ((x + 0.5) / w - adj.cx) / Math.max(0.001, adj.radiusX)
+  const dy = ((y + 0.5) / h - adj.cy) / Math.max(0.001, adj.radiusY)
   const d = Math.sqrt(dx * dx + dy * dy)
   if (d >= 1) return 0
   const feather = Math.min(0.95, Math.max(0.01, adj.feather))
@@ -716,35 +888,69 @@ function radialWeight(
   return 1 - t * t * (3 - 2 * t)
 }
 
-function applyLocalAdjustments(imageData: ImageData, items: RadialAdjustment[]): void {
+/** Full effect on the start side of (x1, y1), fading out by (x2, y2); measured in pixels. */
+function linearWeight(x: number, y: number, w: number, h: number, adj: LinearAdjustment): number {
+  const ax = adj.x1 * w
+  const ay = adj.y1 * h
+  const vx = adj.x2 * w - ax
+  const vy = adj.y2 * h - ay
+  const len2 = vx * vx + vy * vy
+  if (len2 < 1e-6) return 0
+  const t = ((x + 0.5 - ax) * vx + (y + 0.5 - ay) * vy) / len2
+  return 1 - smoothstep(0, 1, t)
+}
+
+function maskWeight(
+  adj: LocalAdjustment,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  brush: MaskGrid | undefined,
+): number {
+  let weight = 0
+  if (adj.type === 'radial') weight = radialWeight(x, y, w, h, adj)
+  else if (adj.type === 'linear') weight = linearWeight(x, y, w, h, adj)
+  else if (brush) weight = sampleGrid(brush, x, y, w, h)
+  return adj.invert ? 1 - weight : weight
+}
+
+function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], ctx: DevelopContext): void {
   if (items.length === 0) return
   const { data, width, height } = imageData
+  const { fullWidth, fullHeight } = ctx
   for (let y = 0; y < height; y++) {
+    const gy = y + ctx.yOffset
     for (let x = 0; x < width; x++) {
       let weight = 0
       let exposure = 0
       let contrast = 0
       let saturation = 0
+      let temperature = 0
       for (const adj of items) {
-        const w = radialWeight(x, y, width, height, adj)
+        const w = maskWeight(adj, x, gy, fullWidth, fullHeight, ctx.brushMasks[adj.id])
         if (w <= 0) continue
         weight += w
         exposure += w * adj.exposure
         contrast += w * adj.contrast
         saturation += w * adj.saturation
+        temperature += w * adj.temperature
       }
       if (weight <= 0) continue
       exposure /= weight
       contrast /= weight
       saturation /= weight
+      temperature /= weight
       const mask = Math.min(1, weight)
 
       const i = (y * width + x) * 4
-      // Exposure in linear light, like the global slider.
+      // Exposure and temperature in linear light, like the global sliders.
       const expMul = Math.pow(2, exposure * mask)
-      let r = encodeSrgb(DECODE_LUT[data[i]!]! * expMul)
-      let g = encodeSrgb(DECODE_LUT[data[i + 1]!]! * expMul)
-      let b = encodeSrgb(DECODE_LUT[data[i + 2]!]! * expMul)
+      const [wbR, wbG, wbB] =
+        temperature !== 0 ? whiteBalanceGains(temperature * mask, 0) : [1, 1, 1]
+      let r = encodeSrgb(DECODE_LUT[data[i]!]! * expMul * wbR)
+      let g = encodeSrgb(DECODE_LUT[data[i + 1]!]! * expMul * wbG)
+      let b = encodeSrgb(DECODE_LUT[data[i + 2]!]! * expMul * wbB)
 
       const c = (contrast / 100) * mask
       r = (r - MID_GREY) * (1 + c) + MID_GREY
@@ -764,21 +970,656 @@ function applyLocalAdjustments(imageData: ImageData, items: RadialAdjustment[]):
   }
 }
 
+/** Long edge of the grid brush strokes are rasterised into. */
+const BRUSH_GRID_EDGE = 640
+
+export function brushGridSize(fullWidth: number, fullHeight: number): { width: number; height: number } {
+  const scale = BRUSH_GRID_EDGE / Math.max(fullWidth, fullHeight, 1)
+  return {
+    width: Math.max(1, Math.round(fullWidth * scale)),
+    height: Math.max(1, Math.round(fullHeight * scale)),
+  }
+}
+
+function stampStroke(grid: Float32Array, gw: number, gh: number, stroke: BrushAdjustment['strokes'][number]) {
+  const radius = Math.max(0.75, stroke.size * gw)
+  const inner = 1 - Math.min(0.98, Math.max(0, stroke.feather))
+  const spacing = Math.max(0.5, radius * 0.2)
+  const pts = stroke.points
+  const stamp = (cx: number, cy: number) => {
+    const x0 = Math.max(0, Math.floor(cx - radius))
+    const x1 = Math.min(gw - 1, Math.ceil(cx + radius))
+    const y0 = Math.max(0, Math.floor(cy - radius))
+    const y1 = Math.min(gh - 1, Math.ceil(cy + radius))
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const d = Math.hypot(x + 0.5 - cx, y + 0.5 - cy) / radius
+        if (d >= 1) continue
+        const v = (d <= inner ? 1 : 1 - smoothstep(inner, 1, d)) * stroke.flow
+        const k = y * gw + x
+        grid[k] = stroke.erase ? grid[k]! * (1 - v) : Math.max(grid[k]!, v)
+      }
+    }
+  }
+  let px = pts[0]! * gw
+  let py = pts[1]! * gh
+  stamp(px, py)
+  for (let i = 2; i + 1 < pts.length; i += 2) {
+    const nx = pts[i]! * gw
+    const ny = pts[i + 1]! * gh
+    const dist = Math.hypot(nx - px, ny - py)
+    const steps = Math.max(1, Math.ceil(dist / spacing))
+    for (let s = 1; s <= steps; s++) {
+      stamp(px + ((nx - px) * s) / steps, py + ((ny - py) * s) / steps)
+    }
+    px = nx
+    py = ny
+  }
+}
+
+const brushCache = new Map<string, { strokes: BrushAdjustment['strokes']; key: string; base: Float32Array; grid: MaskGrid }>()
+
 /**
- * Apply non-destructive EditParams to ImageData in place (color only). With
- * `linear`, pixels are developed from that RAW buffer (same dimensions) and
- * ImageData only receives the result.
+ * Rasterise a brush mask. While painting only the last stroke changes, so the
+ * grid of all earlier strokes is cached and reused.
+ */
+export function rasterizeBrush(adj: BrushAdjustment, fullWidth: number, fullHeight: number): MaskGrid {
+  const { width, height } = brushGridSize(fullWidth, fullHeight)
+  const key = `${width}x${height}`
+  const strokes = adj.strokes
+  const cached = brushCache.get(adj.id)
+  if (cached && cached.key === key && cached.strokes === strokes) return cached.grid
+
+  const n = strokes.length
+  let base: Float32Array
+  const prefixMatches =
+    cached &&
+    cached.key === key &&
+    cached.strokes.length >= n - 1 &&
+    strokes.slice(0, n - 1).every((stroke, i) => stroke === cached.strokes[i])
+  if (prefixMatches && cached.strokes.length === n - 1) {
+    // One new stroke on top of the cached result.
+    base = cached.grid.data
+  } else if (prefixMatches && cached.strokes.length === n) {
+    base = cached.base
+  } else {
+    base = new Float32Array(width * height)
+    for (let i = 0; i < n - 1; i++) stampStroke(base, width, height, strokes[i]!)
+  }
+  const data = base.slice()
+  if (n > 0) stampStroke(data, width, height, strokes[n - 1]!)
+  const grid = { data, width, height }
+  brushCache.set(adj.id, { strokes, key, base, grid })
+  return grid
+}
+
+export function buildBrushMasks(
+  items: LocalAdjustment[],
+  fullWidth: number,
+  fullHeight: number,
+): Record<string, MaskGrid> {
+  const out: Record<string, MaskGrid> = {}
+  for (const adj of items) {
+    if (adj.type === 'brush') out[adj.id] = rasterizeBrush(adj, fullWidth, fullHeight)
+  }
+  return out
+}
+
+/** Weights of one mask over a small grid, for the on-image mask overlay. */
+export function computeMaskPreview(
+  adj: LocalAdjustment,
+  width: number,
+  height: number,
+  fullWidth: number,
+  fullHeight: number,
+): Float32Array {
+  const brush = adj.type === 'brush' ? rasterizeBrush(adj, fullWidth, fullHeight) : undefined
+  const out = new Float32Array(width * height)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const fx = ((x + 0.5) / width) * fullWidth - 0.5
+      const fy = ((y + 0.5) / height) * fullHeight - 0.5
+      out[y * width + x] = maskWeight(adj, fx, fy, fullWidth, fullHeight, brush)
+    }
+  }
+  return out
+}
+
+/**
+ * Develop pass for a whole image or one horizontal strip of it: global
+ * develop, local adjustments, then the LUT. With `linear`, pixels come from
+ * that RAW buffer (same dimensions) and ImageData only receives the result.
  */
 export function applyEditsToImageData(
   imageData: ImageData,
   edits: EditParams,
   linear?: LinearImage,
+  context?: DevelopContext,
 ): void {
-  if (linear || !isNeutralDevelop(edits)) developImageData(imageData, edits, linear)
-  applyLocalAdjustments(imageData, edits.localAdjustments)
+  const ctx: DevelopContext = context ?? {
+    yOffset: 0,
+    fullWidth: imageData.width,
+    fullHeight: imageData.height,
+    lumMask: buildLumMask(imageData.data, imageData.width, imageData.height, edits, linear),
+    brushMasks: buildBrushMasks(edits.localAdjustments, imageData.width, imageData.height),
+  }
+  if (linear || !isNeutralDevelop(edits)) developImageData(imageData, edits, linear, ctx)
+  applyLocalAdjustments(imageData, edits.localAdjustments, ctx)
 
   if (edits.lut) {
     applyLutToImageData(imageData, edits.lut, edits.lutMix ?? 1)
+  }
+}
+
+// ——— Detail & effects ————————————————————————————————————————————————————
+//
+// Texture, clarity, dehaze, sharpening, noise reduction, vignette and grain
+// look at neighbourhoods or at the whole frame, so they run as a second pass
+// on the developed image. Radii scale with the image so the preview matches
+// the export.
+
+const DETAIL_KEYS = [
+  'texture',
+  'clarity',
+  'dehaze',
+  'vignette',
+  'grain',
+  'sharpening',
+  'noiseReduction',
+  'colorNoiseReduction',
+] as const
+
+export function needsDetailPass(edits: EditParams): boolean {
+  return DETAIL_KEYS.some((key) => edits[key] !== 0)
+}
+
+/** Long edge of the low-res maps clarity and dehaze compare against. */
+const DETAIL_MAP_EDGE = 256
+
+export type DetailMaps = {
+  /** Blurred luma: clarity boosts what differs from it. */
+  clarity: MaskGrid | null
+  /** Smoothed dark channel: an estimate of how much haze covers each area. */
+  haze: MaskGrid | null
+  /** Colour of the haze (atmospheric light), encoded RGB. */
+  airlight: [number, number, number]
+}
+
+function textureRadius(longEdge: number): number {
+  return Math.max(1, Math.round(longEdge * 0.0035))
+}
+
+function chromaRadius(longEdge: number): number {
+  return Math.max(1, Math.round(longEdge * 0.0025))
+}
+
+/** Rows above / below a strip needed so neighbourhood filters see real pixels. */
+export function detailMargin(edits: EditParams, fullWidth: number, fullHeight: number): number {
+  const longEdge = Math.max(fullWidth, fullHeight)
+  let margin = 0
+  if (edits.texture !== 0) margin = Math.max(margin, textureRadius(longEdge) * 2)
+  if (edits.colorNoiseReduction !== 0) margin = Math.max(margin, chromaRadius(longEdge) * 2)
+  if (edits.noiseReduction !== 0) margin = Math.max(margin, 2)
+  if (edits.sharpening !== 0) margin = Math.max(margin, 1)
+  return margin + 2
+}
+
+/** Area-average downscale of the developed image into the clarity / haze maps. */
+export function buildDetailMaps(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  edits: EditParams,
+): DetailMaps {
+  const maps: DetailMaps = { clarity: null, haze: null, airlight: [1, 1, 1] }
+  if (edits.clarity === 0 && edits.dehaze === 0) return maps
+  const scale = Math.min(1, DETAIL_MAP_EDGE / Math.max(width, height))
+  const gw = Math.max(1, Math.round(width * scale))
+  const gh = Math.max(1, Math.round(height * scale))
+  const luma = new Float32Array(gw * gh)
+  const dark = new Float32Array(gw * gh).fill(1)
+  const rgb = new Float32Array(gw * gh * 3)
+  const count = new Uint32Array(gw * gh)
+  const step = Math.max(1, Math.floor(1 / scale / 3))
+  for (let y = 0; y < height; y += step) {
+    const row = Math.min(gh - 1, Math.floor((y * gh) / height)) * gw
+    for (let x = 0; x < width; x += step) {
+      const cell = row + Math.min(gw - 1, Math.floor((x * gw) / width))
+      const i = (y * width + x) * 4
+      const r = data[i]! / 255
+      const g = data[i + 1]! / 255
+      const b = data[i + 2]! / 255
+      luma[cell]! += LUMA_R * r + LUMA_G * g + LUMA_B * b
+      dark[cell] = Math.min(dark[cell]!, r, g, b)
+      rgb[cell * 3]! += r
+      rgb[cell * 3 + 1]! += g
+      rgb[cell * 3 + 2]! += b
+      count[cell]!++
+    }
+  }
+  for (let k = 0; k < luma.length; k++) {
+    const n = count[k] || 1
+    luma[k]! /= n
+    rgb[k * 3]! /= n
+    rgb[k * 3 + 1]! /= n
+    rgb[k * 3 + 2]! /= n
+    if (!count[k]) dark[k] = 0
+  }
+
+  if (edits.clarity !== 0) {
+    const blurred = luma.slice()
+    for (let pass = 0; pass < 3; pass++) boxBlur(blurred, gw, gh, 2)
+    maps.clarity = { data: blurred, width: gw, height: gh }
+  }
+
+  if (edits.dehaze !== 0) {
+    // Airlight: the average colour of the haziest 0.5% of the frame.
+    const order = Array.from(dark.keys()).sort((a, b) => dark[b]! - dark[a]!)
+    const take = Math.max(1, Math.round(order.length * 0.005))
+    const air: [number, number, number] = [0, 0, 0]
+    for (let k = 0; k < take; k++) {
+      const c = order[k]!
+      air[0] += rgb[c * 3]!
+      air[1] += rgb[c * 3 + 1]!
+      air[2] += rgb[c * 3 + 2]!
+    }
+    maps.airlight = [
+      Math.max(0.3, air[0] / take),
+      Math.max(0.3, air[1] / take),
+      Math.max(0.3, air[2] / take),
+    ]
+    const haze = dark.slice()
+    for (let pass = 0; pass < 2; pass++) boxBlur(haze, gw, gh, 1)
+    maps.haze = { data: haze, width: gw, height: gh }
+  }
+  return maps
+}
+
+/** O(n) box blur with clamped edges, separable; returns a new buffer. */
+function boxBlurFast(src: Float32Array, width: number, height: number, radius: number, passes: number): Float32Array {
+  const a = src.slice()
+  const b = new Float32Array(src.length)
+  const taps = radius * 2 + 1
+  for (let pass = 0; pass < passes; pass++) {
+    for (let y = 0; y < height; y++) {
+      const row = y * width
+      let sum = 0
+      for (let k = -radius; k <= radius; k++) sum += a[row + clamp(k, 0, width - 1)]!
+      for (let x = 0; x < width; x++) {
+        b[row + x] = sum / taps
+        sum += a[row + Math.min(width - 1, x + radius + 1)]! - a[row + Math.max(0, x - radius)]!
+      }
+    }
+    for (let x = 0; x < width; x++) {
+      let sum = 0
+      for (let k = -radius; k <= radius; k++) sum += b[clamp(k, 0, height - 1) * width + x]!
+      for (let y = 0; y < height; y++) {
+        a[y * width + x] = sum / taps
+        sum += b[Math.min(height - 1, y + radius + 1) * width + x]! - b[Math.max(0, y - radius) * width + x]!
+      }
+    }
+  }
+  return a
+}
+
+function hashNoise(ix: number, iy: number): number {
+  let h = Math.imul(ix, 374761393) ^ Math.imul(iy, 668265263)
+  h = Math.imul(h ^ (h >>> 13), 1274126177)
+  h ^= h >>> 16
+  return ((h >>> 0) / 4294967295) * 2 - 1
+}
+
+/** Smooth value noise in [−1, 1], anchored to image coordinates. */
+function valueNoise(x: number, y: number): number {
+  const ix = Math.floor(x)
+  const iy = Math.floor(y)
+  const fx = x - ix
+  const fy = y - iy
+  const sx = fx * fx * (3 - 2 * fx)
+  const sy = fy * fy * (3 - 2 * fy)
+  const a = hashNoise(ix, iy)
+  const b = hashNoise(ix + 1, iy)
+  const c = hashNoise(ix, iy + 1)
+  const d = hashNoise(ix + 1, iy + 1)
+  return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy
+}
+
+export type DetailRegion = {
+  /** Image row of the buffer's first row. */
+  yOffset: number
+  fullWidth: number
+  fullHeight: number
+}
+
+/** Detail & effects pass, in place, on a developed RGBA buffer (whole image or strip with margins). */
+export function applyDetail(
+  data: Uint8ClampedArray,
+  width: number,
+  rows: number,
+  edits: EditParams,
+  region: DetailRegion,
+  maps: DetailMaps,
+): void {
+  if (!needsDetailPass(edits)) return
+  const n = width * rows
+  const { fullWidth, fullHeight, yOffset } = region
+  const longEdge = Math.max(fullWidth, fullHeight)
+  const R = new Float32Array(n)
+  const G = new Float32Array(n)
+  const B = new Float32Array(n)
+  const L = new Float32Array(n)
+  for (let k = 0, i = 0; k < n; k++, i += 4) {
+    R[k] = data[i]! / 255
+    G[k] = data[i + 1]! / 255
+    B[k] = data[i + 2]! / 255
+    L[k] = LUMA_R * R[k]! + LUMA_G * G[k]! + LUMA_B * B[k]!
+  }
+  const addLuma = (k: number, d: number) => {
+    R[k]! += d
+    G[k]! += d
+    B[k]! += d
+    L[k]! += d
+  }
+
+  // Luminance noise: pull toward a small blur where the image is flat.
+  if (edits.noiseReduction > 0) {
+    const blur = boxBlurFast(L, width, rows, 1, 2)
+    const amount = edits.noiseReduction / 100
+    const sigma2 = 2 * 0.04 * 0.04
+    for (let k = 0; k < n; k++) {
+      const d = blur[k]! - L[k]!
+      addLuma(k, d * amount * Math.exp(-(d * d) / sigma2))
+    }
+  }
+
+  // Colour noise: blur the chroma, keep luma.
+  if (edits.colorNoiseReduction > 0) {
+    const radius = chromaRadius(longEdge)
+    const cr = new Float32Array(n)
+    const cg = new Float32Array(n)
+    const cb = new Float32Array(n)
+    for (let k = 0; k < n; k++) {
+      cr[k] = R[k]! - L[k]!
+      cg[k] = G[k]! - L[k]!
+      cb[k] = B[k]! - L[k]!
+    }
+    const br = boxBlurFast(cr, width, rows, radius, 2)
+    const bg = boxBlurFast(cg, width, rows, radius, 2)
+    const bb = boxBlurFast(cb, width, rows, radius, 2)
+    const amount = edits.colorNoiseReduction / 100
+    for (let k = 0; k < n; k++) {
+      R[k] = L[k]! + cr[k]! + (br[k]! - cr[k]!) * amount
+      G[k] = L[k]! + cg[k]! + (bg[k]! - cg[k]!) * amount
+      B[k] = L[k]! + cb[k]! + (bb[k]! - cb[k]!) * amount
+    }
+  }
+
+  // Dehaze: invert a simple haze model (I = J·t + A·(1 − t)); negative adds haze.
+  if (edits.dehaze !== 0 && maps.haze) {
+    const amount = edits.dehaze / 100
+    const [ar, ag, ab] = maps.airlight
+    const airLuma = LUMA_R * ar + LUMA_G * ag + LUMA_B * ab
+    for (let y = 0, k = 0; y < rows; y++) {
+      const gy = y + yOffset
+      for (let x = 0; x < width; x++, k++) {
+        if (amount > 0) {
+          const hazeLevel = sampleGrid(maps.haze, x, gy, fullWidth, fullHeight) / airLuma
+          const t = Math.max(0.3, 1 - 0.85 * amount * clamp01(hazeLevel))
+          R[k] = (R[k]! - ar) / t + ar
+          G[k] = (G[k]! - ag) / t + ag
+          B[k] = (B[k]! - ab) / t + ab
+        } else {
+          const mix = -amount * 0.55
+          R[k] = R[k]! + (ar - R[k]!) * mix
+          G[k] = G[k]! + (ag - G[k]!) * mix
+          B[k] = B[k]! + (ab - B[k]!) * mix
+        }
+        L[k] = LUMA_R * R[k]! + LUMA_G * G[k]! + LUMA_B * B[k]!
+      }
+    }
+  }
+
+  // Texture: medium-frequency detail.
+  if (edits.texture !== 0) {
+    const base = boxBlurFast(L, width, rows, textureRadius(longEdge), 2)
+    const amount = edits.texture / 100
+    for (let k = 0; k < n; k++) addLuma(k, (L[k]! - base[k]!) * amount)
+  }
+
+  // Clarity: large-scale local contrast, strongest in the midtones.
+  if (edits.clarity !== 0 && maps.clarity) {
+    const amount = (edits.clarity / 100) * 0.8
+    for (let y = 0, k = 0; y < rows; y++) {
+      const gy = y + yOffset
+      for (let x = 0; x < width; x++, k++) {
+        const l = L[k]!
+        const base = sampleGrid(maps.clarity, x, gy, fullWidth, fullHeight)
+        const mid = clamp01(1 - (2 * l - 1) * (2 * l - 1))
+        addLuma(k, (l - base) * amount * mid)
+      }
+    }
+  }
+
+  // Sharpening: small-radius unsharp mask on luma, ignoring tiny (noisy) differences.
+  if (edits.sharpening > 0) {
+    const blur = boxBlurFast(L, width, rows, 1, 1)
+    const amount = (edits.sharpening / 100) * 1.2
+    for (let k = 0; k < n; k++) {
+      const d = L[k]! - blur[k]!
+      const sd = Math.sign(d) * Math.max(0, Math.abs(d) - 0.003)
+      addLuma(k, sd * amount)
+    }
+  }
+
+  // Post-crop vignette.
+  if (edits.vignette !== 0) {
+    const amount = edits.vignette / 100
+    const start = 0.15 + 0.6 * (edits.vignetteMidpoint / 100)
+    const end = start + 0.75
+    for (let y = 0, k = 0; y < rows; y++) {
+      const dy = (((y + yOffset + 0.5) / fullHeight) * 2 - 1) ** 2
+      for (let x = 0; x < width; x++, k++) {
+        const dx = (((x + 0.5) / fullWidth) * 2 - 1) ** 2
+        const f = smoothstep(start, end, Math.sqrt((dx + dy) / 2) * 1.25)
+        if (f <= 0) continue
+        if (amount < 0) {
+          const mul = 1 + amount * f * 0.9
+          R[k]! *= mul
+          G[k]! *= mul
+          B[k]! *= mul
+        } else {
+          const lift = amount * f * 0.8
+          R[k]! += (1 - R[k]!) * lift
+          G[k]! += (1 - G[k]!) * lift
+          B[k]! += (1 - B[k]!) * lift
+        }
+      }
+    }
+  }
+
+  // Film grain: two octaves of luma noise, weaker in deep shadows and highlights.
+  if (edits.grain > 0) {
+    const cell = longEdge * (0.0006 + (edits.grainSize / 100) * 0.0035)
+    const amp = (edits.grain / 100) * 0.16
+    for (let y = 0, k = 0; y < rows; y++) {
+      const gy = (y + yOffset) / cell
+      for (let x = 0; x < width; x++, k++) {
+        const gx = x / cell
+        const noise = 0.7 * valueNoise(gx, gy) + 0.3 * valueNoise(gx * 2.1 + 17.3, gy * 2.1 + 5.1)
+        const l = clamp01(LUMA_R * R[k]! + LUMA_G * G[k]! + LUMA_B * B[k]!)
+        const d = noise * amp * (0.35 + 2.6 * l * (1 - l))
+        R[k]! += d
+        G[k]! += d
+        B[k]! += d
+      }
+    }
+  }
+
+  for (let k = 0, i = 0; k < n; k++, i += 4) {
+    data[i] = clamp01(R[k]!) * 255
+    data[i + 1] = clamp01(G[k]!) * 255
+    data[i + 2] = clamp01(B[k]!) * 255
+  }
+}
+
+/** Develop + detail on one full buffer, synchronously (no workers). */
+export function processImageSync(imageData: ImageData, edits: EditParams, linear?: LinearImage): void {
+  applyEditsToImageData(imageData, edits, linear)
+  if (!needsDetailPass(edits)) return
+  const { data, width, height } = imageData
+  const maps = buildDetailMaps(data, width, height, edits)
+  applyDetail(data, width, height, edits, { yOffset: 0, fullWidth: width, fullHeight: height }, maps)
+}
+
+// ——— Auto tone & white balance ———————————————————————————————————————————
+
+/**
+ * Temperature / tint (−100…100) that make linear RGB `rgb` neutral grey, given
+ * the gain model in whiteBalanceGains (red and blue gains multiply to 1).
+ */
+export function whiteBalanceForNeutral(rgb: [number, number, number]): {
+  temperature: number
+  tint: number
+} {
+  const [r, g, b] = rgb.map((v) => Math.max(1e-5, v)) as [number, number, number]
+  const t = Math.log2(b / r) / (2 * TEMPERATURE_STOPS)
+  const m = -Math.log2(Math.sqrt(r * b) / g) / TINT_STOPS
+  return {
+    temperature: Math.round(clamp(t * 100, -100, 100)),
+    tint: Math.round(clamp(m * 100, -100, 100)),
+  }
+}
+
+/** Pixels the auto tools look at: the geometry-transformed source before any edits. */
+export type BaseSample = {
+  data: Uint8ClampedArray
+  width: number
+  height: number
+  linear: LinearImage | null
+}
+
+function readLinear(base: BaseSample, offset: number, out: Float32Array): void {
+  if (base.linear) {
+    const j = (offset >> 2) * 3
+    out[0] = base.linear.data[j]! * base.linear.scale
+    out[1] = base.linear.data[j + 1]! * base.linear.scale
+    out[2] = base.linear.data[j + 2]! * base.linear.scale
+  } else {
+    out[0] = DECODE_LUT[base.data[offset]!]!
+    out[1] = DECODE_LUT[base.data[offset + 1]!]!
+    out[2] = DECODE_LUT[base.data[offset + 2]!]!
+  }
+}
+
+/** Average linear RGB in a (2r+1)² box around (x, y) of the base image. */
+export function sampleBaseLinear(base: BaseSample, x: number, y: number, r = 2): [number, number, number] {
+  const out = new Float32Array(3)
+  const sum: [number, number, number] = [0, 0, 0]
+  let count = 0
+  for (let yy = Math.max(0, y - r); yy <= Math.min(base.height - 1, y + r); yy++) {
+    for (let xx = Math.max(0, x - r); xx <= Math.min(base.width - 1, x + r); xx++) {
+      readLinear(base, (yy * base.width + xx) * 4, out)
+      sum[0] += out[0]!
+      sum[1] += out[1]!
+      sum[2] += out[2]!
+      count++
+    }
+  }
+  return count ? [sum[0] / count, sum[1] / count, sum[2] / count] : [1, 1, 1]
+}
+
+function forEachSample(base: BaseSample, fn: (r: number, g: number, b: number) => void): void {
+  const out = new Float32Array(3)
+  const total = base.width * base.height
+  const step = Math.max(1, Math.floor(Math.sqrt(total / 120000)))
+  for (let y = 0; y < base.height; y += step) {
+    for (let x = 0; x < base.width; x += step) {
+      const offset = (y * base.width + x) * 4
+      if (base.data[offset + 3] === 0) continue
+      readLinear(base, offset, out)
+      fn(out[0]!, out[1]!, out[2]!)
+    }
+  }
+}
+
+/** Grey-world white balance, ignoring near-black and clipped pixels. */
+export function computeAutoWhiteBalance(base: BaseSample): { temperature: number; tint: number } {
+  const sum: [number, number, number] = [0, 0, 0]
+  forEachSample(base, (r, g, b) => {
+    const max = Math.max(r, g, b)
+    if (max < 0.01 || max > 0.95) return
+    sum[0] += r
+    sum[1] += g
+    sum[2] += b
+  })
+  if (sum[0] + sum[1] + sum[2] <= 0) return { temperature: 0, tint: 0 }
+  return whiteBalanceForNeutral(sum)
+}
+
+function percentile(sorted: Float32Array, p: number): number {
+  if (sorted.length === 0) return 0
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(p * (sorted.length - 1))))]!
+}
+
+/**
+ * Auto tone from the histogram: exposure to bring the median to mid grey,
+ * then whites / blacks to set the end points and highlights / shadows to
+ * recover the extremes. Keeps the current white balance.
+ */
+export function computeAutoTone(
+  base: BaseSample,
+  edits: EditParams,
+): Pick<EditParams, 'exposure' | 'contrast' | 'highlights' | 'shadows' | 'whites' | 'blacks'> {
+  const encode = base.linear ? rawBaseEncode : encodeSrgb
+  const [wbR, wbG, wbB] = whiteBalanceGains(edits.temperature, edits.tint)
+  const lumas: number[] = []
+  forEachSample(base, (r, g, b) => {
+    lumas.push(LUMA_R * r * wbR + LUMA_G * g * wbG + LUMA_B * b * wbB)
+  })
+  const linear = Float32Array.from(lumas).sort()
+  const neutral = { exposure: 0, contrast: 0, highlights: 0, shadows: 0, whites: 0, blacks: 0 }
+  if (linear.length === 0) return neutral
+
+  // Exposure: bisect so the median lands on mid grey once encoded.
+  const median = Math.max(1e-5, percentile(linear, 0.5))
+  const target = 0.46
+  let lo = -2
+  let hi = 2
+  for (let k = 0; k < 24; k++) {
+    const mid = (lo + hi) / 2
+    if (encode(median * Math.pow(2, mid)) < target) lo = mid
+    else hi = mid
+  }
+  const exposure = Math.round(((lo + hi) / 2) * 100) / 100
+  const gain = Math.pow(2, exposure)
+  const encoded = linear.map((v) => clamp01(encode(v * gain)))
+
+  const pHi = percentile(encoded, 0.995)
+  const pLo = percentile(encoded, 0.005)
+  const p25 = percentile(encoded, 0.25)
+  const p75 = percentile(encoded, 0.75)
+  let above = 0
+  let below = 0
+  for (const v of encoded) {
+    if (v > 0.9) above++
+    if (v < 0.12) below++
+  }
+  const count = encoded.length
+
+  const whites = clamp((0.97 - pHi) / (WHITES_RANGE * Math.max(0.2, pHi ** 3)), -60, 60)
+  const blackRange = pLo > 0.02 ? BLACKS_CRUSH : BLACKS_LIFT
+  const blacks = clamp((0.02 - pLo) / (blackRange * Math.max(0.3, (1 - pLo) ** 3)), -60, 60)
+  const contrast = clamp((0.32 - (p75 - p25)) * 120, -25, 25)
+  const highlights = -clamp((above / count) * 400, 0, 70)
+  const shadows = clamp((below / count) * 300, 0, 60)
+
+  return {
+    exposure,
+    contrast: Math.round(contrast),
+    highlights: Math.round(highlights),
+    shadows: Math.round(shadows),
+    whites: Math.round(whites),
+    blacks: Math.round(blacks),
   }
 }
 
@@ -945,47 +1786,20 @@ function transformLinear(
   }
 }
 
-function renderLinearImage(
-  source: LinearImage,
-  edits: EditParams,
-  target: HTMLCanvasElement,
-  opts: RenderOptions,
-): ImageData | null {
-  const { image, alpha } = transformLinear(scaleLinear(source, opts.maxEdge ?? 2400), edits)
-  target.width = image.width
-  target.height = image.height
-  const ctx = target.getContext('2d', { willReadFrequently: true })
-  if (!ctx) return null
-  const imageData = ctx.createImageData(image.width, image.height)
-  const px = imageData.data
-  for (let k = 0, i = 3; k < image.width * image.height; k++, i += 4) {
-    px[i] = alpha ? alpha[k]! : 255
+/** Geometry-transformed pixels (orientation, straighten, crop, preview scale) the develop passes start from. */
+export type BaseImage = BaseSample
+
+/** Orientation, straighten, crop and downscale — everything but the colour work. */
+export function prepareBase(source: RenderSource, edits: EditParams, maxEdge = 2400): BaseImage | null {
+  if (isLinearImage(source)) {
+    const { image, alpha } = transformLinear(scaleLinear(source, maxEdge), edits)
+    const data = new Uint8ClampedArray(image.width * image.height * 4)
+    for (let k = 0, i = 3; k < image.width * image.height; k++, i += 4) {
+      data[i] = alpha ? alpha[k]! : 255
+    }
+    return { data, width: image.width, height: image.height, linear: image }
   }
-  // "Before" still shows the base RAW rendering, just without the user's edits.
-  applyEditsToImageData(imageData, opts.bypassColor ? DEFAULT_EDITS : edits, image)
-  ctx.putImageData(imageData, 0, 0)
-  return imageData
-}
 
-export type RenderOptions = {
-  maxEdge?: number
-  /** Skip color grading (for before/after compare). */
-  bypassColor?: boolean
-}
-
-/**
- * Draw source with orientation, straighten, crop, then optional color edits.
- * Returns the ImageData used for the final canvas (for histogram / clipping).
- */
-export function renderEditedImage(
-  source: RenderSource,
-  edits: EditParams,
-  target: HTMLCanvasElement,
-  options: RenderOptions | number = {},
-): ImageData | null {
-  const opts: RenderOptions = typeof options === 'number' ? { maxEdge: options } : options
-  if (isLinearImage(source)) return renderLinearImage(source, edits, target, opts)
-  const maxEdge = opts.maxEdge ?? 2400
   const srcW = source.width
   const srcH = source.height
   const scale = Math.min(1, maxEdge / Math.max(srcW, srcH))
@@ -1047,21 +1861,44 @@ export function renderEditedImage(
     work = cropped
   }
 
-  target.width = work.width
-  target.height = work.height
+  const wctx = work.getContext('2d', { willReadFrequently: true })
+  if (!wctx) return null
+  const pixels = wctx.getImageData(0, 0, work.width, work.height)
+  return { data: pixels.data, width: work.width, height: work.height, linear: null }
+}
+
+export type RenderOptions = {
+  maxEdge?: number
+  /** Skip the user's edits (for before/after compare). */
+  bypassColor?: boolean
+}
+
+/**
+ * Synchronous render on the main thread. The editor uses the worker pool in
+ * renderPipeline; this stays as the fallback when workers are unavailable.
+ */
+export function renderEditedImage(
+  source: RenderSource,
+  edits: EditParams,
+  target: HTMLCanvasElement,
+  options: RenderOptions | number = {},
+): ImageData | null {
+  const opts: RenderOptions = typeof options === 'number' ? { maxEdge: options } : options
+  const base = prepareBase(source, edits, opts.maxEdge ?? 2400)
+  if (!base) return null
+  target.width = base.width
+  target.height = base.height
   const ctx = target.getContext('2d', { willReadFrequently: true })
   if (!ctx) return null
-  ctx.drawImage(work, 0, 0)
-
-  const imageData = ctx.getImageData(0, 0, target.width, target.height)
-  if (!opts.bypassColor) {
-    applyEditsToImageData(imageData, edits)
-  }
+  const imageData = new ImageData(base.data.slice(), base.width, base.height)
+  // "Before" still shows the base RAW rendering, just without the user's edits.
+  if (base.linear) processImageSync(imageData, opts.bypassColor ? DEFAULT_EDITS : edits, base.linear)
+  else if (!opts.bypassColor) processImageSync(imageData, edits)
   ctx.putImageData(imageData, 0, 0)
   return imageData
 }
 
-const MIME_BY_FORMAT: Record<ExportFormat, string> = {
+export const MIME_BY_FORMAT: Record<ExportFormat, string> = {
   jpeg: 'image/jpeg',
   png: 'image/png',
   webp: 'image/webp',
@@ -1073,42 +1910,4 @@ export function buildExportFilename(baseName: string, options: ExportOptions): s
   const name = pattern.replaceAll('{name}', stem)
   const ext = options.format === 'jpeg' ? 'jpg' : options.format
   return name.toLowerCase().endsWith(`.${ext}`) ? name : `${name}.${ext}`
-}
-
-export async function exportEditedImage(
-  source: RenderSource,
-  edits: EditParams,
-  options: ExportOptions,
-): Promise<{ blob: Blob; filename: string }> {
-  const canvas = document.createElement('canvas')
-  renderEditedImage(source, edits, canvas, { maxEdge: options.maxEdge })
-  const mime = MIME_BY_FORMAT[options.format]
-  const quality =
-    options.format === 'png' ? undefined : Math.min(1, Math.max(0.1, options.quality))
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (result) => {
-        if (result) resolve(result)
-        else reject(new Error(`Failed to encode ${options.format}`))
-      },
-      mime,
-      quality,
-    )
-  })
-  return { blob, filename: buildExportFilename('export', options) }
-}
-
-/** @deprecated Prefer exportEditedImage with ExportOptions. */
-export async function exportEditedJpeg(
-  source: HTMLImageElement | ImageBitmap,
-  edits: EditParams,
-  quality = 0.92,
-): Promise<Blob> {
-  const { blob } = await exportEditedImage(source, edits, {
-    format: 'jpeg',
-    quality,
-    maxEdge: 8192,
-    filenamePattern: '{name}-edited',
-  })
-  return blob
 }

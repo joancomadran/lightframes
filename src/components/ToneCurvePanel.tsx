@@ -1,17 +1,27 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react'
+import type { HistogramBins } from '../lib/histogram'
 import { evaluateToneCurve } from '../lib/imageProcessing'
 import {
   createDefaultToneCurve,
+  type CurveChannel,
   type CurvePoint,
   type EditParams,
-  type ToneCurve,
 } from '../types/edits'
+
+type ChannelId = 'rgb' | CurveChannel
+
+const CHANNELS: { id: ChannelId; label: string; color: string; bins: keyof HistogramBins }[] = [
+  { id: 'rgb', label: 'RGB', color: '#c8f560', bins: 'lum' },
+  { id: 'red', label: 'Red', color: '#ff6b6b', bins: 'r' },
+  { id: 'green', label: 'Green', color: '#5fd38a', bins: 'g' },
+  { id: 'blue', label: 'Blue', color: '#5f9dff', bins: 'b' },
+]
 
 type ToneCurvePanelProps = {
   edits: EditParams
   disabled?: boolean
-  /** Luminance histogram drawn behind the curve. */
-  histogram?: Uint32Array | null
+  /** Histogram drawn behind the curve (the channel being edited). */
+  histogram?: HistogramBins | null
   onChange: (patch: Partial<EditParams>, opts?: { commit?: boolean }) => void
   onBegin?: () => void
   onCommit?: () => void
@@ -68,7 +78,7 @@ function samePoints(a: CurvePoint[], b: CurvePoint[]): boolean {
 export function ToneCurvePanel({
   edits,
   disabled,
-  histogram,
+  histogram: bins,
   onChange,
   onBegin,
   onCommit,
@@ -77,8 +87,13 @@ export function ToneCurvePanel({
   const dragIndex = useRef<number | null>(null)
   const [size, setSize] = useState(0)
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [channelId, setChannelId] = useState<ChannelId>('rgb')
+  const channel = CHANNELS.find((c) => c.id === channelId) ?? CHANNELS[0]!
   const curve = edits.toneCurve
-  const activePreset = CURVE_PRESETS.find((p) => samePoints(p.points, curve.points))?.id
+  const points =
+    channelId === 'rgb' ? curve.points : (curve[channelId] ?? createDefaultToneCurve().points)
+  const histogram = bins?.[channel.bins] ?? null
+  const activePreset = CURVE_PRESETS.find((p) => samePoints(p.points, points))?.id
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -142,8 +157,8 @@ export function ToneCurvePanel({
     ctx.stroke()
     ctx.setLineDash([])
 
-    const evaluate = evaluateToneCurve(curve)
-    ctx.strokeStyle = '#c8f560'
+    const evaluate = evaluateToneCurve({ points })
+    ctx.strokeStyle = channel.color
     ctx.lineWidth = 1.75
     ctx.beginPath()
     for (let px = 0; px <= size; px++) {
@@ -153,19 +168,19 @@ export function ToneCurvePanel({
     }
     ctx.stroke()
 
-    curve.points.forEach((p, i) => {
+    points.forEach((p, i) => {
       const x = clamp01(p.x) * size
       const y = (1 - clamp01(p.y)) * size
       const active = i === activeIndex
       ctx.beginPath()
       ctx.arc(x, y, active ? 5 : 4, 0, Math.PI * 2)
-      ctx.fillStyle = active ? '#c8f560' : '#121816'
+      ctx.fillStyle = active ? channel.color : '#121816'
       ctx.fill()
       ctx.lineWidth = 1.5
-      ctx.strokeStyle = active ? '#c8f560' : '#e8efe4'
+      ctx.strokeStyle = active ? channel.color : '#e8efe4'
       ctx.stroke()
     })
-  }, [curve, size, histogram, activeIndex])
+  }, [points, channel, size, histogram, activeIndex])
 
   const pointFromEvent = (e: ReactMouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -181,7 +196,7 @@ export function ToneCurvePanel({
     const my = e.clientY - rect.top
     let best = -1
     let bestDist = HIT_RADIUS
-    curve.points.forEach((p, i) => {
+    points.forEach((p, i) => {
       const d = Math.hypot(p.x * rect.width - mx, (1 - p.y) * rect.height - my)
       if (d <= bestDist) {
         bestDist = d
@@ -191,10 +206,10 @@ export function ToneCurvePanel({
     return best
   }
 
-  const setCurve = (next: ToneCurve, opts?: { commit?: boolean }) =>
-    onChange({ toneCurve: next }, opts)
+  const setPoints = (next: CurvePoint[], opts?: { commit?: boolean }) =>
+    onChange({ toneCurve: { ...curve, [channelId === 'rgb' ? 'points' : channelId]: next } }, opts)
 
-  const active = activeIndex !== null ? curve.points[activeIndex] : undefined
+  const active = activeIndex !== null ? points[activeIndex] : undefined
 
   return (
     <section className="panel" aria-label="Tone curve">
@@ -202,7 +217,34 @@ export function ToneCurvePanel({
         <h3 className="adjust-group__title">Tone curve</h3>
       </div>
 
-      <div className="segmented" role="group" aria-label="Curve presets">
+      <div className="segmented segmented--channels" role="tablist" aria-label="Curve channel">
+        {CHANNELS.map((item) => {
+          const edited =
+            item.id === 'rgb'
+              ? !samePoints(curve.points, createDefaultToneCurve().points)
+              : Boolean(curve[item.id]) && !samePoints(curve[item.id]!, createDefaultToneCurve().points)
+          return (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={item.id === channelId}
+              className={item.id === channelId ? 'segmented__btn segmented__btn--active' : 'segmented__btn'}
+              style={{ '--channel': item.color } as CSSProperties}
+              disabled={disabled}
+              onClick={() => {
+                setChannelId(item.id)
+                setActiveIndex(null)
+              }}
+            >
+              {item.label}
+              {edited && <span className="segmented__dot" aria-hidden="true" />}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="segmented segmented--presets" role="group" aria-label="Curve presets">
         {CURVE_PRESETS.map((preset) => (
           <button
             key={preset.id}
@@ -213,7 +255,7 @@ export function ToneCurvePanel({
             aria-pressed={activePreset === preset.id}
             disabled={disabled}
             onClick={() =>
-              setCurve({ points: preset.points.map((p) => ({ ...p })) }, { commit: true })
+              setPoints(preset.points.map((p) => ({ ...p })), { commit: true })
             }
           >
             {preset.label}
@@ -231,9 +273,9 @@ export function ToneCurvePanel({
           let idx = hitIndex(e)
           if (idx < 0) {
             const pt = pointFromEvent(e)
-            const points = [...curve.points, pt].sort((a, b) => a.x - b.x)
-            setCurve({ points })
-            idx = points.indexOf(pt)
+            const next = [...points, pt].sort((a, b) => a.x - b.x)
+            setPoints(next)
+            idx = next.indexOf(pt)
           }
           dragIndex.current = idx
           setActiveIndex(idx)
@@ -248,15 +290,16 @@ export function ToneCurvePanel({
           }
           const pt = pointFromEvent(e)
           const idx = dragIndex.current
-          const points = curve.points.map((p, i) => {
-            if (i !== idx) return p
-            if (i === 0) return { x: 0, y: pt.y }
-            if (i === curve.points.length - 1) return { x: 1, y: pt.y }
-            const minX = curve.points[i - 1]!.x + 0.01
-            const maxX = curve.points[i + 1]!.x - 0.01
-            return { x: Math.min(maxX, Math.max(minX, pt.x)), y: pt.y }
-          })
-          setCurve({ points })
+          setPoints(
+            points.map((p, i) => {
+              if (i !== idx) return p
+              if (i === 0) return { x: 0, y: pt.y }
+              if (i === points.length - 1) return { x: 1, y: pt.y }
+              const minX = points[i - 1]!.x + 0.01
+              const maxX = points[i + 1]!.x - 0.01
+              return { x: Math.min(maxX, Math.max(minX, pt.x)), y: pt.y }
+            }),
+          )
         }}
         onPointerUp={(e) => {
           if (dragIndex.current !== null) {
@@ -273,8 +316,8 @@ export function ToneCurvePanel({
         onDoubleClick={(e) => {
           if (disabled) return
           const idx = hitIndex(e)
-          if (idx <= 0 || idx >= curve.points.length - 1) return
-          setCurve({ points: curve.points.filter((_, i) => i !== idx) }, { commit: true })
+          if (idx <= 0 || idx >= points.length - 1) return
+          setPoints(points.filter((_, i) => i !== idx), { commit: true })
           setActiveIndex(null)
         }}
       />

@@ -14,6 +14,7 @@ type ToolbarProps = {
   onSync: () => void
   onToggleCompare: () => void
   onExport: () => void
+  onShowShortcuts: () => void
 }
 
 export function Toolbar({
@@ -32,6 +33,7 @@ export function Toolbar({
   onSync,
   onToggleCompare,
   onExport,
+  onShowShortcuts,
 }: ToolbarProps) {
   return (
     <header className="toolbar">
@@ -137,6 +139,15 @@ export function Toolbar({
         </button>
         <button type="button" className="btn btn--accent" onClick={onExport} disabled={!canEdit}>
           Export
+        </button>
+        <button
+          type="button"
+          className="btn btn--icon"
+          onClick={onShowShortcuts}
+          title="Keyboard shortcuts (?)"
+          aria-label="Keyboard shortcuts"
+        >
+          ?
         </button>
       </div>
 

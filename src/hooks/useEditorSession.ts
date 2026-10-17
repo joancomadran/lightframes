@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { downloadBlob, openImages } from '../lib/files'
-import {
-  buildExportFilename,
-  exportEditedImage,
-  type RenderSource,
-} from '../lib/imageProcessing'
+import { buildExportFilename, type RenderSource } from '../lib/imageProcessing'
+import { exportEditedImage } from '../lib/renderPipeline'
 import {
   createPreset,
   downloadAllPresetsJson,
@@ -25,14 +22,42 @@ import {
   DEFAULT_EXPORT_OPTIONS,
   blendEdits,
   cloneEdits,
-  createRadialAdjustment,
+  createLocalAdjustment,
   mergeEdits,
+  normalizeEdits,
+  patchLocalAdjustment,
   type EditParams,
   type ExportOptions,
+  type LocalAdjustmentPatch,
+  type LocalAdjustmentType,
+  type PhotoFlag,
   type PhotoSession,
   type Preset,
-  type RadialAdjustment,
 } from '../types/edits'
+
+export type PanelId = 'adjust' | 'color' | 'effects' | 'curve' | 'crop' | 'local' | 'presets'
+
+/** Panels in tab order; Shift + 1…7 jumps to them. */
+export const PANELS: { id: PanelId; label: string }[] = [
+  { id: 'adjust', label: 'Adjust' },
+  { id: 'color', label: 'Color' },
+  { id: 'effects', label: 'Effects' },
+  { id: 'curve', label: 'Curve' },
+  { id: 'crop', label: 'Crop' },
+  { id: 'local', label: 'Local' },
+  { id: 'presets', label: 'Presets' },
+]
+
+/** Which photos the filmstrip shows. */
+export type FilmstripFilter = 'all' | 'picks' | 'rejected' | 'unflagged' | `stars-${1 | 2 | 3 | 4 | 5}`
+
+export function matchesFilter(photo: PhotoSession, filter: FilmstripFilter): boolean {
+  if (filter === 'all') return true
+  if (filter === 'picks') return photo.flag === 'pick'
+  if (filter === 'rejected') return photo.flag === 'reject'
+  if (filter === 'unflagged') return photo.flag === null
+  return photo.rating >= Number(filter.slice(6))
+}
 
 type HistoryEntry = {
   photoId: string
@@ -56,6 +81,8 @@ async function makePhoto(file: File, edits?: EditParams): Promise<PhotoSession> 
     file,
     edits: cloneEdits(edits ?? DEFAULT_EDITS),
     thumbnailUrl: objectUrl,
+    rating: 0,
+    flag: null,
   }
 }
 
@@ -105,9 +132,8 @@ export function useEditorSession() {
   const [cropMode, setCropMode] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [exportOptions, setExportOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS)
-  const [panelFocus, setPanelFocus] = useState<
-    'adjust' | 'curve' | 'crop' | 'local' | 'presets'
-  >('adjust')
+  const [panelFocus, setPanelFocus] = useState<PanelId>('adjust')
+  const [filmstripFilter, setFilmstripFilter] = useState<FilmstripFilter>('all')
   const [filmstripVisible, setFilmstripVisible] = useState(true)
   const [canUndo, setCanUndo] = useState(false)
   const [canRedo, setCanRedo] = useState(false)
@@ -221,8 +247,10 @@ export function useEditorSession() {
               : new File([item.file], item.fileName || item.name, {
                   type: item.fileType || 'application/octet-stream',
                 })
-          const photo = await makePhoto(file, item.edits)
+          const photo = await makePhoto(file, normalizeEdits(item.edits) ?? undefined)
           photo.id = item.id
+          photo.rating = item.rating ?? 0
+          photo.flag = item.flag ?? null
           next.push(photo)
         }
         if (cancelled) {
@@ -626,8 +654,7 @@ export function useEditorSession() {
           if (!photo) continue
           if (isRawFile(photo.file)) setStatus(`Developing ${photo.name}…`)
           const source = await loadExportSource(photo)
-          const { blob } = await exportEditedImage(source, photo.edits, options)
-          const filename = buildExportFilename(photo.name, options)
+          const { blob, filename } = await exportEditedImage(source, photo.edits, options, photo.name)
           downloadBlob(blob, filename)
         }
         const message =
@@ -647,32 +674,35 @@ export function useEditorSession() {
     [showToast],
   )
 
-  const addRadial = useCallback(() => {
-    const id = activeIdRef.current
-    if (!id) return
-    const photo = photosRef.current.find((p) => p.id === id)
-    if (!photo) return
-    pushHistory(id, photo.edits)
-    const radial = createRadialAdjustment()
-    setPhotos((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              edits: {
-                ...cloneEdits(p.edits),
-                localAdjustments: [...p.edits.localAdjustments, radial],
-              },
-            }
-          : p,
-      ),
-    )
-    setPanelFocus('local')
-    setStatus('Added radial adjustment')
-  }, [pushHistory])
+  const addLocal = useCallback(
+    (type: LocalAdjustmentType) => {
+      const id = activeIdRef.current
+      if (!id) return
+      const photo = photosRef.current.find((p) => p.id === id)
+      if (!photo) return
+      pushHistory(id, photo.edits)
+      const mask = createLocalAdjustment(type)
+      setPhotos((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                edits: {
+                  ...cloneEdits(p.edits),
+                  localAdjustments: [...p.edits.localAdjustments, mask],
+                },
+              }
+            : p,
+        ),
+      )
+      setPanelFocus('local')
+      setStatus(`Added ${type} mask`)
+    },
+    [pushHistory],
+  )
 
-  const updateRadial = useCallback(
-    (radialId: string, patch: Partial<RadialAdjustment>) => {
+  const updateLocal = useCallback(
+    (maskId: string, patch: LocalAdjustmentPatch) => {
       const id = activeIdRef.current
       if (!id) return
       if (!historyAnchorRef.current) beginEdit()
@@ -684,7 +714,7 @@ export function useEditorSession() {
             edits: {
               ...cloneEdits(photo.edits),
               localAdjustments: photo.edits.localAdjustments.map((item) =>
-                item.id === radialId ? { ...item, ...patch } : item,
+                item.id === maskId ? patchLocalAdjustment(item, patch) : item,
               ),
             },
           }
@@ -694,8 +724,8 @@ export function useEditorSession() {
     [beginEdit],
   )
 
-  const removeRadial = useCallback(
-    (radialId: string) => {
+  const removeLocal = useCallback(
+    (maskId: string) => {
       const photo = photosRef.current.find((p) => p.id === activeIdRef.current)
       if (!photo) return
       pushHistory(photo.id, photo.edits)
@@ -706,9 +736,7 @@ export function useEditorSession() {
                 ...p,
                 edits: {
                   ...cloneEdits(p.edits),
-                  localAdjustments: p.edits.localAdjustments.filter(
-                    (item) => item.id !== radialId,
-                  ),
+                  localAdjustments: p.edits.localAdjustments.filter((item) => item.id !== maskId),
                 },
               }
             : p,
@@ -718,8 +746,41 @@ export function useEditorSession() {
     [pushHistory],
   )
 
+  /** Rating / flag go to the whole selection, like Lightroom. */
+  const ratingTargets = () =>
+    selectedIdsRef.current.length > 0
+      ? selectedIdsRef.current
+      : activeIdRef.current
+        ? [activeIdRef.current]
+        : []
+
+  const setRating = useCallback((rating: number) => {
+    const targets = ratingTargets()
+    if (targets.length === 0) return
+    const value = Math.min(5, Math.max(0, Math.round(rating)))
+    setPhotos((prev) => prev.map((p) => (targets.includes(p.id) ? { ...p, rating: value } : p)))
+    setStatus(value === 0 ? 'Rating cleared' : `Rated ${'★'.repeat(value)}`)
+  }, [])
+
+  const setFlag = useCallback((flag: PhotoFlag | null) => {
+    const targets = ratingTargets()
+    if (targets.length === 0) return
+    setPhotos((prev) => prev.map((p) => (targets.includes(p.id) ? { ...p, flag } : p)))
+    setStatus(flag === 'pick' ? 'Flagged as pick' : flag === 'reject' ? 'Flagged as rejected' : 'Flag removed')
+  }, [])
+
+  const filterRef = useRef(filmstripFilter)
+  useEffect(() => {
+    filterRef.current = filmstripFilter
+  }, [filmstripFilter])
+
+  const visiblePhotos = useMemo(
+    () => photos.filter((photo) => matchesFilter(photo, filmstripFilter)),
+    [photos, filmstripFilter],
+  )
+
   const stepFilmstrip = useCallback((delta: -1 | 1) => {
-    const order = photosRef.current
+    const order = photosRef.current.filter((p) => matchesFilter(p, filterRef.current))
     if (order.length === 0) return
     const idx = order.findIndex((p) => p.id === activeIdRef.current)
     const next = order[Math.min(order.length - 1, Math.max(0, (idx < 0 ? 0 : idx) + delta))]
@@ -800,25 +861,41 @@ export function useEditorSession() {
         setShowClipping((v) => !v)
         return
       }
-      if (key === '1') {
-        setPanelFocus('adjust')
+      // Shift + 1…7 picks a panel (e.code: Shift changes e.key on most layouts).
+      const digit = /^Digit([0-9])$/.exec(e.code)?.[1]
+      if (e.shiftKey && !mod && digit) {
+        const panel = PANELS[Number(digit) - 1]
+        if (panel) {
+          e.preventDefault()
+          setPanelFocus(panel.id)
+          if (panel.id === 'crop') setCropMode(true)
+        }
         return
       }
-      if (key === '2') {
-        setPanelFocus('curve')
+      if (!mod && !e.altKey && digit && Number(digit) <= 5) {
+        setRating(Number(digit))
         return
       }
-      if (key === '3') {
-        setPanelFocus('crop')
-        setCropMode(true)
+      if (!mod && key === 'p') {
+        setFlag('pick')
         return
       }
-      if (key === '4') {
-        setPanelFocus('local')
+      if (!mod && key === 'x') {
+        setFlag('reject')
         return
       }
-      if (key === '5') {
-        setPanelFocus('presets')
+      if (!mod && key === 'u') {
+        setFlag(null)
+        return
+      }
+      if (!mod && key === 'm') {
+        e.preventDefault()
+        addLocal(e.shiftKey ? 'radial' : 'linear')
+        return
+      }
+      if (!mod && key === 'k') {
+        e.preventDefault()
+        addLocal('brush')
         return
       }
       if (key === '[' || key === 'arrowup') {
@@ -833,7 +910,7 @@ export function useEditorSession() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [undo, redo, copyEdits, pasteEdits, selectAll, syncSelected, stepFilmstrip])
+  }, [undo, redo, copyEdits, pasteEdits, selectAll, syncSelected, stepFilmstrip, setRating, setFlag, addLocal])
 
   return {
     photos,
@@ -884,8 +961,13 @@ export function useEditorSession() {
     runExport,
     setPanelFocus,
     setFilmstripVisible,
-    addRadial,
-    updateRadial,
-    removeRadial,
+    addLocal,
+    updateLocal,
+    removeLocal,
+    setRating,
+    setFlag,
+    filmstripFilter,
+    setFilmstripFilter,
+    visiblePhotos,
   }
 }
