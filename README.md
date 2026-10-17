@@ -2,16 +2,18 @@
 
 Free, open-source, **local** photo editor focused on custom presets and copy/paste edits — a Lightroom-like workflow without the cloud.
 
-Runs entirely in the browser. Edits stay non-destructive until you export.
+Runs entirely in the browser. Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh.
 
-## Features (MVP)
+## Features
 
-- Open JPEG / PNG / Sony ARW images (file picker by default; Option/Alt+Open for a folder). ARW uses the embedded full-size JPEG when present, otherwise LibRaw WASM
-- Non-destructive tonal + color sliders with live canvas preview
-- HSL editor (Hue / Saturation / Luminance per color band)
+- Open JPEG / PNG / camera RAW (ARW, CR2/CR3, NEF, DNG, RAF, ORF, RW2, …). Toolbar Open uses the file picker; Filmstrip **Folder** opens a directory (Option/Alt switches). Additional opens append to the filmstrip. RAW uses embedded JPEG when present, otherwise LibRaw WASM
+- Non-destructive tonal + color sliders with live canvas preview (fast preview while scrubbing)
+- HSL editor, master tone curve, crop / straighten / rotate, and radial local adjustments
+- Histogram with shadow/highlight clipping overlay
+- Undo / redo and before/after compare
+- Multi-select filmstrip, sync edits, copy/paste across selection
 - Save / update custom presets; dial intensity 0–100%; import JSON, Lightroom XMP, or `.cube` LUTs; export as JSON
-- Copy and paste edits between photos (`Ctrl/Cmd+C` / `Ctrl/Cmd+V`)
-- Export edited JPEG
+- Export JPEG / PNG / WebP with quality, max edge, and filename pattern
 - Works fully offline after the app is loaded
 
 ## Requirements
@@ -51,30 +53,24 @@ Presets are named `EditParams` stacks stored in `localStorage` and exportable as
 - **XMP** — Lightroom / Camera Raw develop settings mapped onto the basic + HSL sliders
 - **CUBE** — 3D LUT applied after parametric edits (stored on the preset as `edits.lut`)
 
-Example JSON:
+## Shortcuts
 
-```json
-{
-  "id": "…",
-  "name": "Golden hour soft",
-  "edits": {
-    "exposure": 0.2,
-    "contrast": 10,
-    "highlights": -20,
-    "shadows": 15,
-    "whites": 0,
-    "blacks": -5,
-    "temperature": 25,
-    "tint": 5,
-    "vibrance": 15,
-    "saturation": 5,
-    "hsl": {
-      "oranges": { "hue": -10, "saturation": 15, "luminance": 5 }
-    }
-  },
-  "createdAt": "2026-10-16T00:00:00.000Z"
-}
-```
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl/Cmd+Z` | Undo |
+| `Ctrl/Cmd+Shift+Z` / `Ctrl/Cmd+Y` | Redo |
+| `Ctrl/Cmd+C` / `V` | Copy / paste edits |
+| `Ctrl/Cmd+A` | Select all in filmstrip |
+| `Ctrl/Cmd+S` | Sync active edits to selection |
+| `Ctrl/Cmd+E` | Export dialog |
+| `\` | Before / after compare |
+| `R` | Crop panel |
+| `G` | Toggle filmstrip |
+| `J` | Clipping overlay |
+| `1`–`5` | Adjust / Curve / Crop / Local / Presets |
+| `[` / `]` | Previous / next photo |
+
+(Ignored when focus is in a text field.)
 
 ## Ad slots
 
@@ -91,19 +87,11 @@ Hidden by default. Enable reserved placeholders with:
 VITE_ADS_ENABLED=true npm run dev
 ```
 
-## Shortcuts
-
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl/Cmd+C` | Copy edits from the active photo |
-| `Ctrl/Cmd+V` | Paste edits onto the active photo |
-
-(Ignored when focus is in a text field.)
-
 ## Stack
 
 - Vite + React + TypeScript
-- Canvas preview (CPU pixel pipeline for MVP)
+- Canvas preview (CPU pixel pipeline with dual-resolution scrubbing)
+- IndexedDB session restore
 - MIT license
 
 Optional **Tauri** desktop wrap is planned post-MVP; this repo ships as a local web app first.

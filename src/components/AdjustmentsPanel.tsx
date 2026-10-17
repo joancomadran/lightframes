@@ -6,6 +6,8 @@ type AdjustmentsPanelProps = {
   disabled?: boolean
   onChange: (patch: Partial<EditParams>) => void
   onReset: () => void
+  onBegin?: () => void
+  onCommit?: () => void
 }
 
 function SliderRow({
@@ -13,11 +15,15 @@ function SliderRow({
   value,
   disabled,
   onChange,
+  onBegin,
+  onCommit,
 }: {
   slider: (typeof EDIT_SLIDERS)[number]
   value: number
   disabled?: boolean
   onChange: (patch: Partial<EditParams>) => void
+  onBegin?: () => void
+  onCommit?: () => void
 }) {
   return (
     <label className="slider">
@@ -34,6 +40,8 @@ function SliderRow({
         step={slider.step}
         value={value}
         disabled={disabled}
+        onPointerDown={() => onBegin?.()}
+        onPointerUp={() => onCommit?.()}
         onChange={(e) =>
           onChange({ [slider.key]: Number(e.target.value) } as Partial<EditParams>)
         }
@@ -47,6 +55,8 @@ export function AdjustmentsPanel({
   disabled,
   onChange,
   onReset,
+  onBegin,
+  onCommit,
 }: AdjustmentsPanelProps) {
   const hslActive = !isNeutralHsl(edits.hsl)
 
@@ -72,6 +82,8 @@ export function AdjustmentsPanel({
               value={edits[slider.key]}
               disabled={disabled}
               onChange={onChange}
+              onBegin={onBegin}
+              onCommit={onCommit}
             />
             {slider.key === 'tint' && (
               <details className="hsl-dropdown">
