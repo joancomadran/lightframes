@@ -370,6 +370,8 @@ export default function App() {
             />
           </main>
 
+          {/* Phones skip the tool sheet until there is a photo: disabled sliders only crowd the welcome screen. */}
+          {(!phone || canEdit) && (
           <aside
             className={sheetOpen ? 'sidebar' : 'sidebar sidebar--collapsed'}
             aria-label="Editor panels"
@@ -530,6 +532,7 @@ export default function App() {
               <GithubStar />
             </div>
           </aside>
+          )}
         </div>
       )}
 

@@ -114,7 +114,7 @@ export function Toolbar({
   }
 
   return (
-    <header className="toolbar">
+    <header className={editing && !canEdit ? 'toolbar toolbar--empty' : 'toolbar'}>
       <div className="toolbar__brand">
         <span className="brand-mark" aria-hidden="true" />
         <h1 className="brand-name">Lightframes</h1>
