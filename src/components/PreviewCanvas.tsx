@@ -46,6 +46,9 @@ type PreviewCanvasProps = {
   edits: EditParams
   name?: string
   compareMode?: boolean
+  /** Before / after slider over the image. */
+  split?: boolean
+  onToggleSplit?: () => void
   showClipping?: boolean
   scrubbing?: boolean
   onRotate?: (next: EditParams['rotate']) => void
@@ -71,6 +74,8 @@ type Pan = { x: number; y: number }
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 8
 const ZOOM_STEP = 1.25
+/** How long a finger rests on the photo before it shows the unedited version. */
+const HOLD_MS = 280
 // iPhone Safari only supports fullscreen for <video>.
 const canFullscreen = typeof document !== 'undefined' && Boolean(document.fullscreenEnabled)
 const PREVIEW_FAST = 960
@@ -142,6 +147,8 @@ export function PreviewCanvas({
   edits,
   name,
   compareMode = false,
+  split = false,
+  onToggleSplit,
   showClipping = false,
   scrubbing = false,
   onRotate,
@@ -162,7 +169,8 @@ export function PreviewCanvas({
   const beforeRef = useRef<HTMLCanvasElement>(null)
   const tintRef = useRef<HTMLCanvasElement>(null)
   const baseCacheRef = useRef<{ source: RenderSource; key: string; base: BaseImage } | null>(null)
-  const beforeCacheRef = useRef<BaseImage | null>(null)
+  /** Which base was drawn into which "before" canvas (it remounts every time the split opens). */
+  const beforeCacheRef = useRef<{ base: BaseImage; canvas: HTMLCanvasElement } | null>(null)
   const renderStateRef = useRef({ busy: false, dirty: false })
   const sourceRef = useRef<RenderSource | null>(null)
   const frameRef = useRef(0)
@@ -182,6 +190,12 @@ export function PreviewCanvas({
   } | null>(null)
   // Touch gestures: every active pointer (viewport coords), the pinch baseline and the last tap.
   const pointersRef = useRef(new Map<number, { x: number; y: number }>())
+  // Touch and hold shows the unedited photo until the finger lifts.
+  const holdRef = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null)
+  const [holding, setHolding] = useState(false)
+  /** Bases currently drawn on the main and the "before" canvas: the before layer only shows once they match. */
+  const [renderedBase, setRenderedBase] = useState<BaseImage | null>(null)
+  const [beforeBase, setBeforeBase] = useState<BaseImage | null>(null)
   const pinchRef = useRef<{
     dist: number
     mid: { x: number; y: number }
@@ -201,7 +215,6 @@ export function PreviewCanvas({
   /** The `src` whose pixels are loaded; a RAW is still developing until it matches. */
   const [readySrc, setReadySrc] = useState<string | null>(null)
   const developingRaw = Boolean(rawFile) && readySrc !== src
-  const [split, setSplit] = useState(false)
   const [splitPos, setSplitPos] = useState(0.5)
 
   const cropActive = cropOverlay != null
@@ -333,6 +346,7 @@ export function PreviewCanvas({
         canvas.height = base.height
         canvas.getContext('2d')?.putImageData(imageData, 0, 0)
         setContentSize({ w: base.width, h: base.height })
+        setRenderedBase(base)
         if (onHistogram && !compareMode) {
           const { bins, clipping } = computeHistogram(imageData)
           onHistogram(bins, clipping)
@@ -348,12 +362,18 @@ export function PreviewCanvas({
         }
 
         const beforeCanvas = beforeRef.current
-        if (splitActive && beforeCanvas && beforeCacheRef.current !== base) {
+        const beforeCache = beforeCacheRef.current
+        if (
+          splitActive &&
+          beforeCanvas &&
+          (beforeCache?.base !== base || beforeCache.canvas !== beforeCanvas)
+        ) {
           const before = await developBase(base, renderEdits, { bypass: true })
           beforeCanvas.width = base.width
           beforeCanvas.height = base.height
           beforeCanvas.getContext('2d')?.putImageData(before, 0, 0)
-          beforeCacheRef.current = base
+          beforeCacheRef.current = { base, canvas: beforeCanvas }
+          setBeforeBase(base)
         }
       } while (state.dirty)
     } finally {
@@ -362,6 +382,33 @@ export function PreviewCanvas({
   }, [getBase, reportFrameSize])
 
   const pickBase = () => baseCacheRef.current?.base ?? null
+
+  /** Draw the unedited photo onto the "before" canvas for the base on screen, unless it is already there. */
+  const renderBefore = useCallback(async () => {
+    const canvas = beforeRef.current
+    const base = baseCacheRef.current?.base
+    if (!canvas || !base) return
+    const cached = beforeCacheRef.current
+    if (cached?.base !== base || cached.canvas !== canvas) {
+      const before = await developBase(base, latestRef.current.renderEdits, { bypass: true })
+      if (baseCacheRef.current?.base !== base) return
+      canvas.width = base.width
+      canvas.height = base.height
+      canvas.getContext('2d')?.putImageData(before, 0, 0)
+      beforeCacheRef.current = { base, canvas }
+    }
+    setBeforeBase(base)
+  }, [])
+
+  useEffect(() => {
+    if (holding) void renderBefore()
+  }, [holding, renderBefore])
+
+  const cancelHold = () => {
+    if (holdRef.current) window.clearTimeout(holdRef.current.timer)
+    holdRef.current = null
+    setHolding(false)
+  }
 
   useEffect(() => {
     if (!apiRef) return
@@ -432,12 +479,12 @@ export function PreviewCanvas({
         toggleBackground()
       } else if (key === 'y') {
         e.preventDefault()
-        setSplit((v) => !v)
+        onToggleSplit?.()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [src, toggleFullscreen, toggleBackground])
+  }, [src, toggleFullscreen, toggleBackground, onToggleSplit])
 
   useEffect(() => {
     window.clearTimeout(idleTimerRef.current)
@@ -594,10 +641,20 @@ export function PreviewCanvas({
     pointersRef.current.set(e.pointerId, localPoint(e))
     e.currentTarget.setPointerCapture(e.pointerId)
     if (pointersRef.current.size === 2) {
+      cancelHold()
       startPinch()
       lastTapRef.current = null
     } else if (pointersRef.current.size === 1) {
       startDrag(e.pointerId, e.clientX, e.clientY)
+      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay) {
+        const hold = { timer: 0, x: e.clientX, y: e.clientY, fired: false }
+        hold.timer = window.setTimeout(() => {
+          hold.fired = true
+          navigator.vibrate?.(8)
+          setHolding(true)
+        }, HOLD_MS)
+        holdRef.current = hold
+      }
     }
   }
 
@@ -628,6 +685,13 @@ export function PreviewCanvas({
       return
     }
 
+    const hold = holdRef.current
+    if (hold) {
+      // Holding shows the before view; moving first means the finger wants to pan.
+      if (hold.fired) return
+      if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 8) cancelHold()
+    }
+
     const drag = dragRef.current
     if (!drag || drag.pointerId !== e.pointerId) return
     setPan({
@@ -640,6 +704,13 @@ export function PreviewCanvas({
     if (!pointersRef.current.delete(e.pointerId)) return
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId)
+    }
+    const held = holdRef.current?.fired ?? false
+    cancelHold()
+    if (held) {
+      dragRef.current = null
+      lastTapRef.current = null
+      return
     }
 
     if (pinchRef.current) {
@@ -715,6 +786,7 @@ export function PreviewCanvas({
     height: contentSize.h * scale,
   }
   const splitX = tx + splitPos * contentSize.w * scale
+  const holdingBefore = holding && beforeBase !== null && beforeBase === renderedBase
 
   return (
     <div
@@ -724,7 +796,7 @@ export function PreviewCanvas({
       {developingRaw ? (
         <div className="preview__badge">Developing RAW…</div>
       ) : (
-        compareMode && <div className="preview__badge">Before</div>
+        (compareMode || holdingBefore) && <div className="preview__badge">Before</div>
       )}
       {onPickWhiteBalance && (
         <div className="preview__badge preview__badge--tool">
@@ -748,14 +820,24 @@ export function PreviewCanvas({
             transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
           }}
         >
-          {splitActive && (
-            <canvas ref={beforeRef} className="preview__canvas preview__canvas--before" aria-hidden="true" />
-          )}
+          {/* Stays mounted so the unedited render survives between split and hold views. */}
+          <canvas
+            ref={beforeRef}
+            className="preview__canvas preview__canvas--before"
+            aria-hidden="true"
+            hidden={!splitActive && !holdingBefore}
+          />
           <canvas
             ref={canvasRef}
             className="preview__canvas"
             aria-label={name ?? 'Preview'}
-            style={splitActive ? { clipPath: `inset(0 0 0 ${splitPos * 100}%)` } : undefined}
+            style={
+              holdingBefore
+                ? { opacity: 0 }
+                : splitActive
+                  ? { clipPath: `inset(0 0 0 ${splitPos * 100}%)` }
+                  : undefined
+            }
           />
           <canvas
             ref={clipRef}
@@ -879,8 +961,8 @@ export function PreviewCanvas({
         <button
           type="button"
           className={splitActive ? 'btn btn--ghost btn--sm btn--icon btn--on' : 'btn btn--ghost btn--sm btn--icon'}
-          onClick={() => setSplit((v) => !v)}
-          disabled={compareMode || cropActive}
+          onClick={onToggleSplit}
+          disabled={!onToggleSplit || cropActive}
           title="Before / after split (Y)"
           aria-label="Before / after split"
           aria-pressed={splitActive}

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdSlot } from './components/AdSlot'
 import { AdjustmentsPanel } from './components/AdjustmentsPanel'
+import { CarouselStudio } from './components/CarouselStudio'
+import { CollageStudio } from './components/CollageStudio'
 import { ColorPanel } from './components/ColorPanel'
 import { CropPanel } from './components/CropPanel'
 import { EffectsPanel } from './components/EffectsPanel'
@@ -17,13 +19,27 @@ import { ToneCurvePanel } from './components/ToneCurvePanel'
 import { Toolbar } from './components/Toolbar'
 import { PANELS, useEditorSession, type PanelId } from './hooks/useEditorSession'
 import { PHONE_QUERY, useMediaQuery } from './hooks/useMediaQuery'
+import type { StudioApi, StudioFormat } from './hooks/useStudio'
+import { createCarouselDoc, type CarouselDoc } from './lib/carousel'
+import { createCollageDoc, type CollageDoc } from './lib/collage'
 import { aspectRatioFor } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
 import { DEFAULT_EDITS } from './types/edits'
 
+export type AppMode = 'edit' | 'collage'
+
 export default function App() {
-  const session = useEditorSession()
+  const [mode, setMode] = useState<AppMode>('edit')
+  const modeRef = useRef(mode)
+  useEffect(() => {
+    modeRef.current = mode
+  })
+  const session = useEditorSession({ keyboard: mode === 'edit' })
+  const [collage, setCollage] = useState<CollageDoc | null>(null)
+  const [carousel, setCarousel] = useState<CarouselDoc | null>(null)
+  const [studioFormat, setStudioFormat] = useState<StudioFormat>('collage')
+  const studioApi = useRef<StudioApi | null>(null)
   const canEdit = Boolean(session.activePhoto)
   const edits = session.activePhoto?.edits ?? DEFAULT_EDITS
   const [histogram, setHistogram] = useState<{
@@ -106,6 +122,7 @@ export default function App() {
       ) {
         return
       }
+      if (modeRef.current !== 'edit') return
       if (e.key === '?') {
         e.preventDefault()
         setShortcutsOpen((v) => !v)
@@ -123,6 +140,45 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // A studio's first visit starts from the filmstrip selection (or the photo being edited).
+  const startingPhotos = () => {
+    const selected = session.photos.filter((p) => session.selectedIds.includes(p.id)).map((p) => p.id)
+    return selected.length > 1 ? selected : session.activeId ? [session.activeId] : []
+  }
+
+  const openStudio = (format: StudioFormat) => {
+    if (format === 'collage' && !collage) setCollage(createCollageDoc(startingPhotos()))
+    if (format === 'carousel' && !carousel) {
+      // Carry over the collage's photos when there are some.
+      const fromCollage = [
+        ...new Set(collage?.slides.flatMap((s) => s.cells.flatMap((c) => (c.photoId ? [c.photoId] : []))) ?? []),
+      ]
+      setCarousel(
+        createCarouselDoc(fromCollage.length > 0 ? fromCollage.slice(0, 9) : startingPhotos(), collage?.aspect ?? '4:5'),
+      )
+    }
+    setStudioFormat(format)
+  }
+
+  const changeMode = (next: AppMode) => {
+    if (next === 'collage') openStudio(studioFormat)
+    setMode(next)
+  }
+
+  const updateCollage = useCallback((update: (doc: CollageDoc) => CollageDoc) => {
+    setCollage((doc) => (doc ? update(doc) : doc))
+  }, [])
+
+  const updateCarousel = useCallback((update: (doc: CarouselDoc) => CarouselDoc) => {
+    setCarousel((doc) => (doc ? update(doc) : doc))
+  }, [])
+
+  const hasPhoto = (id: string | null) => id !== null && session.photos.some((p) => p.id === id)
+  const studioHasPhotos =
+    studioFormat === 'collage'
+      ? Boolean(collage?.slides.some((s) => s.cells.some((c) => hasPhoto(c.photoId))))
+      : Boolean(carousel?.frames.some((f) => hasPhoto(f.photoId)))
+
   const onHistogram = useCallback((bins: HistogramBins, clipping: ClippingStats) => {
     setHistogram({ bins, clipping })
   }, [])
@@ -139,11 +195,13 @@ export default function App() {
   return (
     <div className="app">
       <Toolbar
+        mode={mode}
+        onModeChange={changeMode}
+        canExport={mode === 'collage' ? studioHasPhotos : canEdit}
         canEdit={canEdit}
         hasClipboard={Boolean(session.clipboard)}
         canUndo={session.canUndo}
         canRedo={session.canRedo}
-        compareMode={session.compareMode}
         status={session.status}
         selectionCount={session.selectedIds.length}
         onOpen={session.handleOpen}
@@ -152,227 +210,252 @@ export default function App() {
         onCopy={session.copyEdits}
         onPaste={session.pasteEdits}
         onSync={session.syncSelected}
-        onToggleCompare={() => session.setCompareMode(!session.compareMode)}
-        onExport={() => session.setExportOpen(true)}
+        onExport={() =>
+          mode === 'collage' ? studioApi.current?.exportSlides() : session.setExportOpen(true)
+        }
         onShowShortcuts={() => setShortcutsOpen(true)}
       />
 
-      <div
-        className={
-          session.filmstripVisible
-            ? 'workspace'
-            : 'workspace workspace--no-filmstrip'
-        }
-      >
-        <Filmstrip
-          photos={session.visiblePhotos}
-          totalCount={session.photos.length}
-          activeId={session.activeId}
-          selectedIds={session.selectedIds}
-          visible={session.filmstripVisible}
-          filter={session.filmstripFilter}
-          onFilterChange={session.setFilmstripFilter}
-          onSelect={session.selectPhoto}
-          onOpen={session.handleOpen}
-          onSync={session.syncSelected}
+      {mode === 'collage' && studioFormat === 'carousel' && carousel ? (
+        <CarouselStudio
+          photos={session.photos}
+          doc={carousel}
+          onChange={updateCarousel}
+          onFormatChange={openStudio}
+          onOpen={() => session.handleOpen()}
+          onNotify={session.showToast}
+          apiRef={studioApi}
         />
-
-        <main className="stage">
-          <PreviewCanvas
-            src={session.activePhoto?.objectUrl ?? null}
-            rawFile={
-              session.activePhoto && isRawFile(session.activePhoto.file)
-                ? session.activePhoto.file
-                : null
-            }
-            edits={edits}
-            name={session.activePhoto?.name}
-            compareMode={session.compareMode}
-            showClipping={session.showClipping}
-            scrubbing={scrubbing}
-            onRotate={
-              canEdit
-                ? (rotate) => session.updateEdits({ rotate }, { commit: true })
-                : undefined
-            }
-            onHistogram={onHistogram}
-            onFrameSize={setFrameSize}
-            onOpen={() => session.handleOpen()}
-            cropOverlay={
-              canEdit && session.panelFocus === 'crop' && session.cropMode
-                ? {
-                    crop: edits.crop,
-                    aspect: aspectRatioFor(cropAspect.id, cropAspect.flipped, frameSize),
-                    onChange: (crop) => session.updateEdits({ crop }),
-                    onBegin: begin,
-                    onCommit: commit,
-                  }
-                : null
-            }
-            maskOverlay={
-              canEdit && session.panelFocus === 'local'
-                ? {
-                    items: edits.localAdjustments,
-                    selectedId: selectedMaskId,
-                    brush,
-                    onSelect: setSelectedMaskId,
-                    onChange: session.updateLocal,
-                    onBegin: begin,
-                    onCommit: commit,
-                  }
-                : null
-            }
-            maskTint={canEdit && session.panelFocus === 'local' && showMaskTint ? selectedMask : null}
-            onPickWhiteBalance={
-              canEdit && pickingWhiteBalance
-                ? (wb) => {
-                    session.updateEdits(wb, { commit: true })
-                    setPickingWhiteBalance(false)
-                  }
-                : null
-            }
-            apiRef={previewApi}
-          />
-        </main>
-
-        <aside
-          className={sheetOpen ? 'sidebar' : 'sidebar sidebar--collapsed'}
-          aria-label="Editor panels"
+      ) : mode === 'collage' && collage ? (
+        <CollageStudio
+          photos={session.photos}
+          doc={collage}
+          onChange={updateCollage}
+          onFormatChange={openStudio}
+          onOpen={() => session.handleOpen()}
+          onNotify={session.showToast}
+          apiRef={studioApi}
+        />
+      ) : (
+        <div
+          className={
+            session.filmstripVisible
+              ? 'workspace'
+              : 'workspace workspace--no-filmstrip'
+          }
         >
-          <button
-            type="button"
-            className="sheet-handle"
-            aria-label={sheetOpen ? 'Hide tools' : 'Show tools'}
-            aria-expanded={sheetOpen}
-            onClick={() => setSheetCollapsed((v) => !v)}
+          <Filmstrip
+            photos={session.visiblePhotos}
+            totalCount={session.photos.length}
+            activeId={session.activeId}
+            selectedIds={session.selectedIds}
+            visible={session.filmstripVisible}
+            filter={session.filmstripFilter}
+            onFilterChange={session.setFilmstripFilter}
+            onSelect={session.selectPhoto}
+            onOpen={session.handleOpen}
+            onSync={session.syncSelected}
           />
-          <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
-            {PANELS.map(({ id, label }, index) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={session.panelFocus === id}
-                className={
-                  session.panelFocus === id ? 'panel-tab panel-tab--active' : 'panel-tab'
-                }
-                title={`${label} (⇧${index + 1})`}
-                onClick={() => selectPanel(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
 
-          <div className="sidebar__scroll" hidden={!sheetOpen}>
-            <HistogramPanel
-              bins={histogram?.bins ?? null}
-              clipping={histogram?.clipping ?? null}
+          <main className="stage">
+            <PreviewCanvas
+              src={session.activePhoto?.objectUrl ?? null}
+              rawFile={
+                session.activePhoto && isRawFile(session.activePhoto.file)
+                  ? session.activePhoto.file
+                  : null
+              }
+              edits={edits}
+              name={session.activePhoto?.name}
+              compareMode={session.compareMode}
+              split={session.splitMode}
+              onToggleSplit={canEdit ? session.toggleSplit : undefined}
               showClipping={session.showClipping}
-              onToggleClipping={() => session.setShowClipping(!session.showClipping)}
+              scrubbing={scrubbing}
+              onRotate={
+                canEdit
+                  ? (rotate) => session.updateEdits({ rotate }, { commit: true })
+                  : undefined
+              }
+              onHistogram={onHistogram}
+              onFrameSize={setFrameSize}
+              onOpen={() => session.handleOpen()}
+              cropOverlay={
+                canEdit && session.panelFocus === 'crop' && session.cropMode
+                  ? {
+                      crop: edits.crop,
+                      aspect: aspectRatioFor(cropAspect.id, cropAspect.flipped, frameSize),
+                      onChange: (crop) => session.updateEdits({ crop }),
+                      onBegin: begin,
+                      onCommit: commit,
+                    }
+                  : null
+              }
+              maskOverlay={
+                canEdit && session.panelFocus === 'local'
+                  ? {
+                      items: edits.localAdjustments,
+                      selectedId: selectedMaskId,
+                      brush,
+                      onSelect: setSelectedMaskId,
+                      onChange: session.updateLocal,
+                      onBegin: begin,
+                      onCommit: commit,
+                    }
+                  : null
+              }
+              maskTint={canEdit && session.panelFocus === 'local' && showMaskTint ? selectedMask : null}
+              onPickWhiteBalance={
+                canEdit && pickingWhiteBalance
+                  ? (wb) => {
+                      session.updateEdits(wb, { commit: true })
+                      setPickingWhiteBalance(false)
+                    }
+                  : null
+              }
+              apiRef={previewApi}
             />
+          </main>
 
-            {session.panelFocus === 'adjust' && (
-              <AdjustmentsPanel
-                edits={edits}
-                disabled={!canEdit}
-                pickingWhiteBalance={pickingWhiteBalance}
-                onChange={session.updateEdits}
-                onReset={session.resetEdits}
-                onAutoTone={autoTone}
-                onAutoWhiteBalance={autoWhiteBalance}
-                onTogglePicker={() => setPickingWhiteBalance((v) => !v)}
-                onBegin={begin}
-                onCommit={commit}
+          <aside
+            className={sheetOpen ? 'sidebar' : 'sidebar sidebar--collapsed'}
+            aria-label="Editor panels"
+          >
+            <button
+              type="button"
+              className="sheet-handle"
+              aria-label={sheetOpen ? 'Hide tools' : 'Show tools'}
+              aria-expanded={sheetOpen}
+              onClick={() => setSheetCollapsed((v) => !v)}
+            />
+            <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
+              {PANELS.map(({ id, label }, index) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={session.panelFocus === id}
+                  className={
+                    session.panelFocus === id ? 'panel-tab panel-tab--active' : 'panel-tab'
+                  }
+                  title={`${label} (⇧${index + 1})`}
+                  onClick={() => selectPanel(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="sidebar__scroll" hidden={!sheetOpen}>
+              <HistogramPanel
+                bins={histogram?.bins ?? null}
+                clipping={histogram?.clipping ?? null}
+                showClipping={session.showClipping}
+                onToggleClipping={() => session.setShowClipping(!session.showClipping)}
               />
-            )}
 
-            {session.panelFocus === 'color' && (
-              <ColorPanel
-                edits={edits}
-                disabled={!canEdit}
-                onChange={session.updateEdits}
-                onBegin={begin}
-                onCommit={commit}
-              />
-            )}
+              {session.panelFocus === 'adjust' && (
+                <AdjustmentsPanel
+                  edits={edits}
+                  disabled={!canEdit}
+                  pickingWhiteBalance={pickingWhiteBalance}
+                  onChange={session.updateEdits}
+                  onReset={session.resetEdits}
+                  onAutoTone={autoTone}
+                  onAutoWhiteBalance={autoWhiteBalance}
+                  onTogglePicker={() => setPickingWhiteBalance((v) => !v)}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
 
-            {session.panelFocus === 'effects' && (
-              <EffectsPanel
-                edits={edits}
-                disabled={!canEdit}
-                onChange={session.updateEdits}
-                onBegin={begin}
-                onCommit={commit}
-              />
-            )}
+              {session.panelFocus === 'color' && (
+                <ColorPanel
+                  edits={edits}
+                  disabled={!canEdit}
+                  onChange={session.updateEdits}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
 
-            {session.panelFocus === 'curve' && (
-              <ToneCurvePanel
-                edits={edits}
-                disabled={!canEdit}
-                histogram={histogram?.bins ?? null}
-                onChange={session.updateEdits}
-                onBegin={begin}
-                onCommit={commit}
-              />
-            )}
+              {session.panelFocus === 'effects' && (
+                <EffectsPanel
+                  edits={edits}
+                  disabled={!canEdit}
+                  onChange={session.updateEdits}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
 
-            {session.panelFocus === 'crop' && (
-              <CropPanel
-                edits={edits}
-                disabled={!canEdit}
-                cropMode={session.cropMode}
-                onToggleCropMode={() => session.setCropMode(!session.cropMode)}
-                aspectId={cropAspect.id}
-                aspectFlipped={cropAspect.flipped}
-                onAspectChange={(id, flipped) => setCropAspect({ id, flipped })}
-                frameSize={frameSize}
-                onChange={session.updateEdits}
-                onBegin={begin}
-                onCommit={commit}
-              />
-            )}
+              {session.panelFocus === 'curve' && (
+                <ToneCurvePanel
+                  edits={edits}
+                  disabled={!canEdit}
+                  histogram={histogram?.bins ?? null}
+                  onChange={session.updateEdits}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
 
-            {session.panelFocus === 'local' && (
-              <LocalAdjustPanel
-                edits={edits}
-                disabled={!canEdit}
-                selectedId={selectedMaskId}
-                brush={brush}
-                showOverlay={showMaskTint}
-                onSelect={setSelectedMaskId}
-                onAdd={session.addLocal}
-                onUpdate={session.updateLocal}
-                onRemove={session.removeLocal}
-                onBrushChange={setBrush}
-                onToggleOverlay={() => setShowMaskTint((v) => !v)}
-                onBegin={begin}
-                onCommit={commit}
-              />
-            )}
+              {session.panelFocus === 'crop' && (
+                <CropPanel
+                  edits={edits}
+                  disabled={!canEdit}
+                  cropMode={session.cropMode}
+                  onToggleCropMode={() => session.setCropMode(!session.cropMode)}
+                  aspectId={cropAspect.id}
+                  aspectFlipped={cropAspect.flipped}
+                  onAspectChange={(id, flipped) => setCropAspect({ id, flipped })}
+                  frameSize={frameSize}
+                  onChange={session.updateEdits}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
 
-            {session.panelFocus === 'presets' && (
-              <PresetsPanel
-                presets={session.presets}
-                selectedPresetId={session.selectedPresetId}
-                intensity={session.presetIntensity}
-                disabled={!canEdit}
-                onSave={session.savePreset}
-                onUpdateSelected={session.updateSelectedPreset}
-                onApply={session.applyPreset}
-                onIntensityChange={session.setPresetIntensity}
-                onDelete={session.deletePreset}
-                onExport={session.exportPreset}
-                onExportAll={session.exportAllPresets}
-                onImport={session.importPreset}
-              />
-            )}
-          </div>
+              {session.panelFocus === 'local' && (
+                <LocalAdjustPanel
+                  edits={edits}
+                  disabled={!canEdit}
+                  selectedId={selectedMaskId}
+                  brush={brush}
+                  showOverlay={showMaskTint}
+                  onSelect={setSelectedMaskId}
+                  onAdd={session.addLocal}
+                  onUpdate={session.updateLocal}
+                  onRemove={session.removeLocal}
+                  onBrushChange={setBrush}
+                  onToggleOverlay={() => setShowMaskTint((v) => !v)}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
 
-          <AdSlot id="sidebar" height={250} />
-        </aside>
-      </div>
+              {session.panelFocus === 'presets' && (
+                <PresetsPanel
+                  presets={session.presets}
+                  selectedPresetId={session.selectedPresetId}
+                  intensity={session.presetIntensity}
+                  disabled={!canEdit}
+                  onSave={session.savePreset}
+                  onUpdateSelected={session.updateSelectedPreset}
+                  onApply={session.applyPreset}
+                  onIntensityChange={session.setPresetIntensity}
+                  onDelete={session.deletePreset}
+                  onExport={session.exportPreset}
+                  onExportAll={session.exportAllPresets}
+                  onImport={session.importPreset}
+                />
+              )}
+            </div>
+
+            <AdSlot id="sidebar" height={250} />
+          </aside>
+        </div>
+      )}
 
       <ExportDialog
         open={session.exportOpen}

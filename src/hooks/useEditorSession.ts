@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { downloadBlob, openImages } from '../lib/files'
+import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
 import { buildExportFilename, type RenderSource } from '../lib/imageProcessing'
 import { exportEditedImage } from '../lib/renderPipeline'
 import {
@@ -102,7 +103,7 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 /** Full-resolution export source: RAWs are developed from the sensor data. */
-async function loadExportSource(photo: PhotoSession): Promise<RenderSource> {
+export async function loadExportSource(photo: PhotoSession): Promise<RenderSource> {
   if (isRawFile(photo.file)) {
     try {
       return await decodeRawLinear(photo.file, { halfSize: false })
@@ -117,7 +118,12 @@ function revokeAll(photos: PhotoSession[]) {
   for (const photo of photos) URL.revokeObjectURL(photo.objectUrl)
 }
 
-export function useEditorSession() {
+export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {}) {
+  // Other modes (the collage studio) turn the editor's shortcuts off.
+  const keyboardRef = useRef(keyboard)
+  useEffect(() => {
+    keyboardRef.current = keyboard
+  })
   const [photos, setPhotos] = useState<PhotoSession[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -128,6 +134,12 @@ export function useEditorSession() {
   const [clipboard, setClipboard] = useState<EditParams | null>(null)
   const [status, setStatus] = useState('Open JPEG, PNG, or RAW files to begin')
   const [compareMode, setCompareMode] = useState(false)
+  const [splitMode, setSplitMode] = useState(false)
+  // The split slider over the image is the main before/after view; it replaces a whole-image "Before".
+  const toggleSplit = useCallback(() => {
+    setCompareMode(false)
+    setSplitMode((v) => !v)
+  }, [])
   const [showClipping, setShowClipping] = useState(false)
   const [cropMode, setCropMode] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
@@ -549,7 +561,7 @@ export function useEditorSession() {
   }, [])
 
   const updateSelectedPreset = useCallback(() => {
-    if (!selectedPresetId || !activeIdRef.current) return
+    if (!selectedPresetId || isBuiltinPreset(selectedPresetId) || !activeIdRef.current) return
     const photo = photosRef.current.find((p) => p.id === activeIdRef.current)
     if (!photo) return
     let updatedName = ''
@@ -587,7 +599,9 @@ export function useEditorSession() {
     (intensity: number) => {
       const next = Math.min(100, Math.max(0, Math.round(intensity)))
       setPresetIntensityState(next)
-      const preset = presetsRef.current.find((p) => p.id === selectedPresetId)
+      const preset = [...BUILTIN_PRESETS, ...presetsRef.current].find(
+        (p) => p.id === selectedPresetId,
+      )
       if (!preset) return
       const targets =
         selectedIdsRef.current.length > 0
@@ -791,6 +805,7 @@ export function useEditorSession() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (!keyboardRef.current) return
       const target = e.target as HTMLElement | null
       if (
         target &&
@@ -923,6 +938,7 @@ export function useEditorSession() {
     clipboard,
     status,
     compareMode,
+    splitMode,
     showClipping,
     cropMode,
     exportOpen,
@@ -933,6 +949,7 @@ export function useEditorSession() {
     canRedo,
     toast,
     dismissToast,
+    showToast,
     handleOpen,
     selectPhoto,
     selectAll,
@@ -954,6 +971,7 @@ export function useEditorSession() {
     exportAllPresets,
     importPreset,
     setCompareMode,
+    toggleSplit,
     setShowClipping,
     setCropMode,
     setExportOpen,

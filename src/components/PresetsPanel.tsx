@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
 import type { Preset } from '../types/edits'
 import { Slider } from './Slider'
 
@@ -33,9 +34,10 @@ export function PresetsPanel({
 }: PresetsPanelProps) {
   const [name, setName] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const selected = presets.find((p) => p.id === selectedPresetId) ?? null
+  const selected = [...BUILTIN_PRESETS, ...presets].find((p) => p.id === selectedPresetId) ?? null
+  const selectedIsBuiltin = Boolean(selected && isBuiltinPreset(selected.id))
   const canSave = Boolean(!disabled && name.trim())
-  const canUpdate = Boolean(!disabled && selected)
+  const canUpdate = Boolean(!disabled && selected && !selectedIsBuiltin)
 
   return (
     <section className="panel panel--presets" aria-label="Presets">
@@ -90,17 +92,51 @@ export function PresetsPanel({
             format={(v) => `${v}%`}
             onChange={(value) => onIntensityChange(value)}
           />
-          <button
-            type="button"
-            className="link-btn preset-applied__update"
-            disabled={!canUpdate}
-            title={`Overwrite “${selected.name}” with current adjustments`}
-            onClick={onUpdateSelected}
-          >
-            Update preset with current edits
-          </button>
+          {!selectedIsBuiltin && (
+            <button
+              type="button"
+              className="link-btn preset-applied__update"
+              disabled={!canUpdate}
+              title={`Overwrite “${selected.name}” with current adjustments`}
+              onClick={onUpdateSelected}
+            >
+              Update preset with current edits
+            </button>
+          )}
         </div>
       )}
+
+      <div className="field-row">
+        <span>Filters</span>
+        <span className="field-row__count">{BUILTIN_PRESETS.length}</span>
+      </div>
+      <ul className="preset-list preset-list--builtin">
+        {BUILTIN_PRESETS.map((preset) => {
+          const isSelected = preset.id === selectedPresetId
+          return (
+            <li
+              key={preset.id}
+              className={
+                isSelected ? 'preset-list__item preset-list__item--active' : 'preset-list__item'
+              }
+            >
+              <button
+                type="button"
+                className="preset-list__apply"
+                disabled={disabled}
+                aria-pressed={isSelected}
+                onClick={() => onApply(preset)}
+                title={`Apply “${preset.name}”`}
+              >
+                <span className="preset-list__check" aria-hidden="true">
+                  {isSelected ? '✓' : ''}
+                </span>
+                <span className="preset-list__name">{preset.name}</span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
 
       <form
         className="preset-save"
@@ -128,7 +164,7 @@ export function PresetsPanel({
       {presets.length === 0 ? (
         <div className="empty-state">
           <p className="empty-state__text">
-            No presets yet. Save your current look above, or import a JSON, Lightroom XMP or CUBE
+            No custom presets yet. Save your current look above, or import a JSON, Lightroom XMP or CUBE
             file.
           </p>
         </div>
