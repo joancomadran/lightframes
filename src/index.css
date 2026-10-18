@@ -2398,6 +2398,18 @@ button:disabled {
   filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.7));
 }
 
+.heal-header {
+  margin-bottom: 0.6rem;
+}
+
+.heal-actions {
+  gap: 0.35rem;
+}
+
+.heal-toggle {
+  padding: 0.35rem 0.75rem;
+}
+
 .heal-draft {
   stroke: rgba(255, 255, 255, 0.35);
 }

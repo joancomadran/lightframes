@@ -8,6 +8,8 @@ type HealPanelProps = {
   disabled?: boolean
   selectedId: string | null
   tool: HealTool
+  showOutlines: boolean
+  onToggleOutlines: () => void
   onToolChange: (tool: HealTool) => void
   onSelect: (id: string | null) => void
   onUpdate: (id: string, patch: Partial<HealSpot>, opts?: { commit?: boolean }) => void
@@ -28,6 +30,8 @@ export function HealPanel({
   disabled,
   selectedId,
   tool,
+  showOutlines,
+  onToggleOutlines,
   onToolChange,
   onSelect,
   onUpdate,
@@ -49,7 +53,7 @@ export function HealPanel({
     onUpdate(selected.id, patch, opts)
   }
 
-  // Delete removes the selected spot, / looks for another source, Esc deselects.
+  // Delete removes the selected spot, / looks for another source, Esc deselects, H hides the outlines.
   useEffect(() => {
     if (disabled) return
     const onKey = (e: KeyboardEvent) => {
@@ -66,7 +70,10 @@ export function HealPanel({
       ) {
         return
       }
-      if (e.key === 'Escape' && selectedId) {
+      if (e.key.toLowerCase() === 'h') {
+        e.preventDefault()
+        onToggleOutlines()
+      } else if (e.key === 'Escape' && selectedId) {
         onSelect(null)
       } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
         e.preventDefault()
@@ -78,16 +85,28 @@ export function HealPanel({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [disabled, selectedId, onSelect, onRemove, onNewSource])
+  }, [disabled, selectedId, onSelect, onRemove, onNewSource, onToggleOutlines])
 
   return (
     <section className="panel" aria-label="Spot removal">
-      <div className="adjust-group__header">
+      <div className="adjust-group__header heal-header">
         <h3 className="adjust-group__title">Spot removal</h3>
         {spots.length > 0 && (
-          <button type="button" className="link-btn" disabled={disabled} onClick={onClear}>
-            Clear all
-          </button>
+          <div className="btn-group heal-actions">
+            <button
+              type="button"
+              className={showOutlines ? 'btn btn--ghost btn--sm btn--on heal-toggle' : 'btn btn--ghost btn--sm heal-toggle'}
+              disabled={disabled}
+              onClick={onToggleOutlines}
+              aria-pressed={showOutlines}
+              title="Show or hide the spot outlines to judge the result (H)"
+            >
+              Show spots
+            </button>
+            <button type="button" className="btn btn--ghost btn--sm" disabled={disabled} onClick={onClear}>
+              Clear all
+            </button>
+          </div>
         )}
       </div>
 
@@ -182,7 +201,9 @@ export function HealPanel({
       <p className="field-hint">
         {spots.length === 0
           ? 'Paint over a blemish, dust spot or small object to remove it. Click for a dot, drag for a stroke.'
-          : `${spots.length} spot${spots.length === 1 ? '' : 's'}. Click a spot to select it, then drag its green outline to change where the fix comes from.`}
+          : showOutlines
+            ? `${spots.length} spot${spots.length === 1 ? '' : 's'}. Click a spot to select it, then drag its green outline to change where the fix comes from. H hides the outlines.`
+            : `${spots.length} spot${spots.length === 1 ? '' : 's'}, outlines hidden. Press H to show them again.`}
       </p>
     </section>
   )

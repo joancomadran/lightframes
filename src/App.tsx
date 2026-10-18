@@ -61,6 +61,8 @@ export default function App() {
   const [brush, setBrush] = useState<BrushSettings>({ size: 0.05, feather: 0.6, flow: 1, erase: false })
   const [healTool, setHealTool] = useState<HealTool>({ mode: 'heal', size: 0.015, feather: 0.3, opacity: 1 })
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
+  const [showSpots, setShowSpots] = useState(true)
+  const toggleSpots = useCallback(() => setShowSpots((v) => !v), [])
   const previewApi = useRef<PreviewApi | null>(null)
   const phone = useMediaQuery(PHONE_QUERY)
   // Phones show the panels as a bottom sheet that can fold away to reveal the whole photo.
@@ -334,6 +336,7 @@ export default function App() {
                       spots: edits.heal,
                       selectedId: selectedSpot,
                       tool: healTool,
+                      showOutlines: showSpots,
                       onSelect: setSelectedSpotId,
                       onAdd: (spot) => {
                         setHeal([...edits.heal, spot], { commit: true })
@@ -463,6 +466,8 @@ export default function App() {
                   disabled={!canEdit}
                   selectedId={selectedSpot}
                   tool={healTool}
+                  showOutlines={showSpots}
+                  onToggleOutlines={toggleSpots}
                   onToolChange={setHealTool}
                   onSelect={setSelectedSpotId}
                   onUpdate={updateSpot}

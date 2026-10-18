@@ -20,6 +20,7 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
       ['W', 'White balance picker'],
       ['R', 'Crop'],
       ['Q', 'Spot removal'],
+      ['H', 'Show / hide spot outlines'],
     ],
   },
   {

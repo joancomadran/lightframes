@@ -20,6 +20,8 @@ export type HealOverlayConfig = {
   spots: HealSpot[]
   selectedId: string | null
   tool: HealTool
+  /** Off: no outlines, so the result can be judged; painting still works. */
+  showOutlines: boolean
   onSelect: (id: string | null) => void
   onAdd: (spot: HealSpot) => void
   onChange: (id: string, patch: Partial<HealSpot>) => void
@@ -77,7 +79,7 @@ export function HealOverlay({
   /** Best source for a freshly painted spot, from the preview's pixels. */
   pickSource: (spot: HealSpot) => { dx: number; dy: number } | null
 }) {
-  const { spots, selectedId, tool, onSelect, onAdd, onChange, onBegin, onCommit } = config
+  const { spots, selectedId, tool, showOutlines, onSelect, onAdd, onChange, onBegin, onCommit } = config
   const [cursor, setCursor] = useState<Point | null>(null)
   const [draft, setDraft] = useState<{ pointerId: number; points: number[] } | null>(null)
   const dragRef = useRef<{ id: string; pointerId: number; startX: number; startY: number; spot: HealSpot } | null>(null)
@@ -155,7 +157,9 @@ export function HealOverlay({
   }
 
   // The selected spot draws last so its handles sit on top.
-  const ordered = [...spots.filter((s) => s.id !== selectedId), ...spots.filter((s) => s.id === selectedId)]
+  const ordered = showOutlines
+    ? [...spots.filter((s) => s.id !== selectedId), ...spots.filter((s) => s.id === selectedId)]
+    : []
 
   return (
     <div
