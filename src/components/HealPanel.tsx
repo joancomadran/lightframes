@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
+import { getInpaintStatus, preloadInpaint, subscribeInpaint, type InpaintStatus } from '../lib/inpaint'
 import type { HealMode, HealSpot } from '../types/edits'
 import type { HealTool } from './HealOverlay'
 import { Slider } from './Slider'
@@ -23,7 +24,17 @@ type HealPanelProps = {
 const MODES: { id: HealMode; label: string; hint: string }[] = [
   { id: 'heal', label: 'Heal', hint: 'Blend the fix into its surroundings' },
   { id: 'clone', label: 'Clone', hint: 'Copy the source exactly' },
+  { id: 'remove', label: 'Remove', hint: 'AI fill, best for objects. Runs on your device' },
 ]
+
+function statusText(status: InpaintStatus): string | null {
+  if (status.phase === 'downloading') {
+    return `Downloading the removal model (28 MB, once)… ${Math.round(status.progress * 100)}%`
+  }
+  if (status.phase === 'working') return 'Removing…'
+  if (status.phase === 'error') return `Removal failed: ${status.message}`
+  return null
+}
 
 export function HealPanel({
   spots,
@@ -42,12 +53,16 @@ export function HealPanel({
   onCommit,
 }: HealPanelProps) {
   const selected = spots.find((s) => s.id === selectedId) ?? null
+  const inpaint = useSyncExternalStore(subscribeInpaint, getInpaintStatus)
+  const inpaintText = statusText(inpaint)
   // The sliders show (and edit) the selected spot; new spots use the same settings.
   const shown = selected ?? tool
   // onUpdate opens the history step; a reset closes it once state has landed.
   const commitSoon = () => window.setTimeout(() => onCommit?.(), 0)
 
   const change = (patch: Partial<HealTool>, opts?: { commit?: boolean }) => {
+    // Fetch the model as soon as the tool is picked, not on the first stroke.
+    if (patch.mode === 'remove') preloadInpaint()
     onToolChange({ ...tool, ...patch })
     if (!selected) return
     onUpdate(selected.id, patch, opts)
@@ -78,14 +93,14 @@ export function HealPanel({
       } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
         e.preventDefault()
         onRemove(selectedId)
-      } else if (e.key === '/' && selectedId) {
+      } else if (e.key === '/' && selected && selected.mode !== 'remove') {
         e.preventDefault()
-        onNewSource(selectedId)
+        onNewSource(selected.id)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [disabled, selectedId, onSelect, onRemove, onNewSource, onToggleOutlines])
+  }, [disabled, selectedId, selected, onSelect, onRemove, onNewSource, onToggleOutlines])
 
   return (
     <section className="panel" aria-label="Spot removal">
@@ -177,15 +192,19 @@ export function HealPanel({
 
       {selected ? (
         <div className="mask-card__actions">
-          <button
-            type="button"
-            className="btn btn--sm"
-            disabled={disabled}
-            onClick={() => onNewSource(selected.id)}
-            title="Try another place to copy from (/)"
-          >
-            New source
-          </button>
+          {selected.mode === 'remove' ? (
+            <span />
+          ) : (
+            <button
+              type="button"
+              className="btn btn--sm"
+              disabled={disabled}
+              onClick={() => onNewSource(selected.id)}
+              title="Try another place to copy from (/)"
+            >
+              New source
+            </button>
+          )}
           <button
             type="button"
             className="link-btn"
@@ -198,6 +217,12 @@ export function HealPanel({
         </div>
       ) : null}
 
+      {inpaintText && (
+        <p className={inpaint.phase === 'error' ? 'field-hint heal-status heal-status--error' : 'field-hint heal-status'} role="status">
+          {inpaintText}
+        </p>
+      )}
+
       <p className="field-hint">
         {spots.length === 0
           ? 'Paint over a blemish, dust spot or small object to remove it. Click for a dot, drag for a stroke.'
@@ -205,6 +230,16 @@ export function HealPanel({
             ? `${spots.length} spot${spots.length === 1 ? '' : 's'}. Click a spot to select it, then drag its green outline to change where the fix comes from. H hides the outlines.`
             : `${spots.length} spot${spots.length === 1 ? '' : 's'}, outlines hidden. Press H to show them again.`}
       </p>
+
+      {shown.mode === 'remove' && (
+        <p className="field-hint heal-credit">
+          Remove uses{' '}
+          <a href="https://github.com/Picsart-AI-Research/MI-GAN" target="_blank" rel="noreferrer">
+            MI-GAN
+          </a>{' '}
+          by Picsart AI Research (MIT). The model runs on your device; your photo is never uploaded.
+        </p>
+      )}
     </section>
   )
 }

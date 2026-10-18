@@ -117,6 +117,11 @@ export function HealOverlay({
       dx: 0,
       dy: 0,
     }
+    // Removal is filled by the model: there is no source to pick.
+    if (spot.mode === 'remove') {
+      onAdd(spot)
+      return
+    }
     const source = pickSource(spot)
     if (source) {
       onAdd({ ...spot, ...source })
@@ -201,7 +206,8 @@ export function HealOverlay({
           const c = centroid(spot.points)
           const from = toScreen(c.x + spot.dx, c.y + spot.dy)
           const to = toScreen(c.x, c.y)
-          const source = selected ? screenPath(spot.points, spot.dx, spot.dy) : ''
+          const hasSource = selected && spot.mode !== 'remove'
+          const source = hasSource ? screenPath(spot.points, spot.dx, spot.dy) : ''
           return (
             <g key={spot.id} className={selected ? 'heal-spot heal-spot--selected' : 'heal-spot'}>
               <Outline id={spot.id} d={target} radius={radius} className="heal-spot__outline" />
@@ -215,7 +221,7 @@ export function HealOverlay({
                   onSelect(spot.id)
                 }}
               />
-              {selected && (
+              {hasSource && (
                 <>
                   <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} className="heal-spot__link" />
                   <Outline

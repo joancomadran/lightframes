@@ -9,6 +9,7 @@ import { EffectsPanel } from './components/EffectsPanel'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ExportDialog } from './components/ExportDialog'
 import { Filmstrip } from './components/Filmstrip'
+import { GithubStar } from './components/GithubStar'
 import type { HealTool } from './components/HealOverlay'
 import { HealPanel } from './components/HealPanel'
 import { HistogramPanel } from './components/HistogramPanel'
@@ -109,11 +110,19 @@ export default function App() {
   const selectedSpot = edits.heal.some((s) => s.id === selectedSpotId) ? selectedSpotId : null
 
   const setHeal = (heal: HealSpot[], opts?: { commit?: boolean }) => session.updateEdits({ heal }, opts)
-  const updateSpot = (id: string, patch: Partial<HealSpot>, opts?: { commit?: boolean }) =>
+  const updateSpot = (id: string, patch: Partial<HealSpot>, opts?: { commit?: boolean }) => {
+    const spot = edits.heal.find((s) => s.id === id)
+    if (!spot) return
+    let next = { ...spot, ...patch, id }
+    // A removal has no source to copy from: switching it to heal / clone needs one.
+    if (spot.mode === 'remove' && next.mode !== 'remove') {
+      next = { ...next, ...previewApi.current?.healSource(next) }
+    }
     setHeal(
-      edits.heal.map((s) => (s.id === id ? { ...s, ...patch, id } : s)),
+      edits.heal.map((s) => (s.id === id ? next : s)),
       opts,
     )
+  }
   const removeSpot = (id: string) => setHeal(edits.heal.filter((s) => s.id !== id), { commit: true })
   const newSpotSource = (id: string) => {
     const spot = edits.heal.find((s) => s.id === id)
@@ -517,6 +526,9 @@ export default function App() {
             </div>
 
             <AdSlot id="sidebar" height={250} />
+            <div className="sidebar__github">
+              <GithubStar />
+            </div>
           </aside>
         </div>
       )}

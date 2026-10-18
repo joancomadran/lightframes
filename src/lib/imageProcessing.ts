@@ -1812,7 +1812,17 @@ function healLinear(src: LinearImage, spots: HealSpot[]): LinearImage {
   return (
     cachedHeal(src, src.width, src.height, spots, () => {
       const data = src.data.slice()
-      applyHeal({ data, width: src.width, height: src.height, stride: 3, max: 65535 }, spots)
+      applyHeal(
+        {
+          data,
+          width: src.width,
+          height: src.height,
+          stride: 3,
+          max: 65535,
+          fromSrgb8: (v) => srgbToLinear(v / 255) / src.scale,
+        },
+        spots,
+      )
       return { ...src, data }
     }) ?? src
   )
@@ -1847,6 +1857,94 @@ function healCanvas(source: HTMLImageElement | ImageBitmap, w: number, h: number
     ctx.putImageData(pixels, area.x0, area.y0)
     return canvas
   })
+}
+
+/** Pixel size of the source as decoded (a half-size RAW preview reports its own size). */
+export function sourceDimensions(source: RenderSource): { width: number; height: number } {
+  if (source instanceof HTMLImageElement) return { width: source.naturalWidth, height: source.naturalHeight }
+  return { width: source.width, height: source.height }
+}
+
+const REGION_MAX_PIXELS = 4_000_000
+
+/**
+ * 8-bit RGBA of `rect` (0–1 of the source) with `spots` applied, scaled so
+ * the long side is at most `maxEdge` (never enlarged). What the inpainting
+ * model sees. The rect comes back snapped to whole pixels.
+ */
+export function sourceRegion(
+  source: RenderSource,
+  spots: HealSpot[],
+  rect: { x0: number; y0: number; x1: number; y1: number },
+  maxEdge: number,
+): { data: Uint8ClampedArray<ArrayBuffer>; width: number; height: number; rect: typeof rect } | null {
+  const { width: sw, height: sh } = sourceDimensions(source)
+  const scale = Math.min(1, maxEdge / Math.max((rect.x1 - rect.x0) * sw, (rect.y1 - rect.y0) * sh))
+  const fw = Math.max(1, Math.round(sw * scale))
+  const fh = Math.max(1, Math.round(sh * scale))
+  const crop = {
+    x0: Math.floor(rect.x0 * fw),
+    y0: Math.floor(rect.y0 * fh),
+    x1: Math.max(Math.floor(rect.x0 * fw) + 1, Math.ceil(rect.x1 * fw)),
+    y1: Math.max(Math.floor(rect.y0 * fh) + 1, Math.ceil(rect.y1 * fh)),
+  }
+  // Read enough around the crop for earlier spots to find their sources (unless that gets huge).
+  let area = crop
+  const touched = healBounds(spots, fw, fh)
+  if (touched) {
+    const union = {
+      x0: Math.min(crop.x0, touched.x0),
+      y0: Math.min(crop.y0, touched.y0),
+      x1: Math.max(crop.x1, touched.x1),
+      y1: Math.max(crop.y1, touched.y1),
+    }
+    if ((union.x1 - union.x0) * (union.y1 - union.y0) <= REGION_MAX_PIXELS) area = union
+  }
+  const aw = area.x1 - area.x0
+  const ah = area.y1 - area.y0
+
+  let data: Uint8ClampedArray<ArrayBuffer>
+  if (isLinearImage(source)) {
+    data = new Uint8ClampedArray(aw * ah * 4)
+    for (let y = 0; y < ah; y++) {
+      const sy = Math.min(sh - 1, Math.floor(((area.y0 + y + 0.5) * sh) / fh))
+      for (let x = 0; x < aw; x++) {
+        const sx = Math.min(sw - 1, Math.floor(((area.x0 + x + 0.5) * sw) / fw))
+        const j = (sy * sw + sx) * 3
+        const i = (y * aw + x) * 4
+        data[i] = encodeSrgb(source.data[j]! * source.scale) * 255
+        data[i + 1] = encodeSrgb(source.data[j + 1]! * source.scale) * 255
+        data[i + 2] = encodeSrgb(source.data[j + 2]! * source.scale) * 255
+        data[i + 3] = 255
+      }
+    }
+  } else {
+    const canvas = document.createElement('canvas')
+    canvas.width = aw
+    canvas.height = ah
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return null
+    ctx.drawImage(source, area.x0 / scale, area.y0 / scale, aw / scale, ah / scale, 0, 0, aw, ah)
+    data = ctx.getImageData(0, 0, aw, ah).data
+  }
+  applyHeal(
+    { data, width: aw, height: ah, stride: 4, max: 255, left: area.x0, top: area.y0, fullWidth: fw, fullHeight: fh },
+    spots,
+  )
+
+  const cw = crop.x1 - crop.x0
+  const ch = crop.y1 - crop.y0
+  const out = new Uint8ClampedArray(cw * ch * 4)
+  for (let y = 0; y < ch; y++) {
+    const from = ((crop.y0 - area.y0 + y) * aw + (crop.x0 - area.x0)) * 4
+    out.set(data.subarray(from, from + cw * 4), y * cw * 4)
+  }
+  return {
+    data: out,
+    width: cw,
+    height: ch,
+    rect: { x0: crop.x0 / fw, y0: crop.y0 / fh, x1: crop.x1 / fw, y1: crop.y1 / fh },
+  }
 }
 
 /**

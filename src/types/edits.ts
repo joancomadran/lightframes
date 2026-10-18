@@ -106,7 +106,7 @@ export type LocalAdjustmentPatch = Partial<
     Omit<BrushAdjustment, 'id' | 'type'>
 >
 
-export type HealMode = 'heal' | 'clone'
+export type HealMode = 'heal' | 'clone' | 'remove'
 
 /**
  * Spot removal: pixels painted over are replaced with pixels from elsewhere in the photo.
@@ -114,7 +114,10 @@ export type HealMode = 'heal' | 'clone'
  */
 export type HealSpot = {
   id: string
-  /** Heal blends the copied pixels into their surroundings; clone copies them as they are. */
+  /**
+   * Heal blends the copied pixels into their surroundings; clone copies them as they are;
+   * remove fills the area with an inpainting model (no source: dx / dy are unused).
+   */
   mode: HealMode
   /** Flat [x0, y0, x1, y1, …] in source image space (0–1). */
   points: number[]
@@ -868,7 +871,7 @@ function normalizeHeal(value: unknown): HealSpot[] {
     if (points.length < 2) continue
     out.push({
       id: typeof obj.id === 'string' ? obj.id : crypto.randomUUID(),
-      mode: obj.mode === 'clone' ? 'clone' : 'heal',
+      mode: obj.mode === 'clone' || obj.mode === 'remove' ? obj.mode : 'heal',
       points: points.length % 2 === 0 ? points : points.slice(0, -1),
       size: Math.min(0.25, Math.max(0.001, num(obj.size, 0.02))),
       feather: clamp01(num(obj.feather, 0.3)),

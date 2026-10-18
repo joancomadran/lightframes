@@ -26,9 +26,15 @@ export default defineConfig({
       workbox: {
         // Precache the LibRaw WASM so RAW decoding works offline too
         globPatterns: ['**/*.{js,css,html,svg,png,wasm}'],
-        globIgnores: ['og-image.png', 'samples/**'],
+        globIgnores: ['og-image.png', 'samples/**', 'assets/ort-*.wasm'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
+          {
+            // The inpainting runtime (~14 MB) is too big to precache: keep it once it has been used
+            urlPattern: ({ url }) => /\/assets\/ort-.*\.wasm$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: { cacheName: 'inpaint-runtime', expiration: { maxEntries: 2 } },
+          },
           {
             // Demo photos are fetched on demand, then kept for offline use
             urlPattern: ({ url }) => url.pathname.startsWith('/samples/'),
@@ -49,7 +55,8 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    exclude: ['libraw-wasm'],
+    // Pre-bundling moves these packages away from the .wasm files they load relative to themselves
+    exclude: ['libraw-wasm', 'onnxruntime-web'],
   },
   worker: {
     format: 'es',

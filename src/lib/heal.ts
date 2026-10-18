@@ -10,6 +10,9 @@ import { isFullCrop } from './crop'
  *          the copy meet the surrounding colours exactly at the border —
  *          a Laplace fill of (target − source) along the boundary, which is
  *          what Poisson / seamless cloning amounts to.
+ *   remove: fill from an inpainting model (MI-GAN, see inpaint.ts). The model
+ *          runs asynchronously, once per spot; its output is kept as a patch
+ *          and pasted here like any other fill. Until it lands, the spot is skipped.
  *
  * Spots live in source image space (before orientation and crop), so the
  * healing runs on source pixels before any other edit and reframing never
@@ -30,6 +33,33 @@ export type HealImage = {
   top?: number
   fullWidth?: number
   fullHeight?: number
+  /** 8-bit sRGB (0–255, fractional) → this buffer's values; inpainting patches are 8-bit. */
+  fromSrgb8?: (v: number) => number
+}
+
+/** An inpainted region: 8-bit RGBA covering `rect` (0–1 of the source). */
+export type InpaintPatch = {
+  rect: { x0: number; y0: number; x1: number; y1: number }
+  width: number
+  height: number
+  data: Uint8ClampedArray
+}
+
+/** What a patch depends on: the painted area, not its feather or opacity. */
+export function patchKey(spot: HealSpot): string {
+  return `${spot.id}|${spot.size}|${spot.points.join(',')}`
+}
+
+const patches = new Map<string, InpaintPatch>()
+
+export function getPatch(spot: HealSpot): InpaintPatch | null {
+  return patches.get(patchKey(spot)) ?? null
+}
+
+/** Store a spot's patch, dropping the ones made for earlier versions of it. */
+export function setPatch(spot: HealSpot, patch: InpaintPatch): void {
+  for (const key of patches.keys()) if (key.startsWith(`${spot.id}|`)) patches.delete(key)
+  patches.set(patchKey(spot), patch)
 }
 
 type Rect = { x0: number; y0: number; x1: number; y1: number }
@@ -241,6 +271,10 @@ function applySpot(img: HealImage, spot: HealSpot): void {
     fullHeight,
   )
   if (!mask) return
+  if (spot.mode === 'remove') {
+    applyPatch(img, spot, mask)
+    return
+  }
   const ox = Math.round(spot.dx * fullWidth)
   const oy = Math.round(spot.dy * fullHeight)
   if (ox === 0 && oy === 0) return
@@ -314,6 +348,80 @@ function applySpot(img: HealImage, spot: HealSpot): void {
   }
 }
 
+/** Paste a spot's inpainted patch (bilinear) inside its feathered mask. */
+function applyPatch(img: HealImage, spot: HealSpot, mask: SpotMask): void {
+  const patch = getPatch(spot)
+  if (!patch) return
+  const { data, stride, max } = img
+  const { left, top, fullWidth, fullHeight } = fullSize(img)
+  const convert = img.fromSrgb8 ?? ((v: number) => (v * max) / 255)
+  const { rect, width: pw, height: ph } = patch
+  const px = pw / ((rect.x1 - rect.x0) * fullWidth)
+  const py = ph / ((rect.y1 - rect.y0) * fullHeight)
+  const mw = mask.x1 - mask.x0
+  const x0 = Math.max(left, mask.x0)
+  const y0 = Math.max(top, mask.y0)
+  const x1 = Math.min(left + img.width, mask.x1)
+  const y1 = Math.min(top + img.height, mask.y1)
+  for (let y = y0; y < y1; y++) {
+    const fy = Math.min(ph - 1, Math.max(0, (y + 0.5 - rect.y0 * fullHeight) * py - 0.5))
+    const ty = Math.floor(fy)
+    const by = Math.min(ph - 1, ty + 1)
+    const wy = fy - ty
+    for (let x = x0; x < x1; x++) {
+      const a = mask.alpha[(y - mask.y0) * mw + (x - mask.x0)]! * spot.opacity
+      if (a <= 0) continue
+      const fx = Math.min(pw - 1, Math.max(0, (x + 0.5 - rect.x0 * fullWidth) * px - 0.5))
+      const lx = Math.floor(fx)
+      const rx = Math.min(pw - 1, lx + 1)
+      const wx = fx - lx
+      const t = ((y - top) * img.width + (x - left)) * stride
+      for (let c = 0; c < 3; c++) {
+        const tl = patch.data[(ty * pw + lx) * 4 + c]!
+        const tr = patch.data[(ty * pw + rx) * 4 + c]!
+        const bl = patch.data[(by * pw + lx) * 4 + c]!
+        const br = patch.data[(by * pw + rx) * 4 + c]!
+        const top8 = tl + (tr - tl) * wx
+        const fill = convert(top8 + (bl + (br - bl) * wx - top8) * wy)
+        const v = data[t + c]! + (fill - data[t + c]!) * a
+        data[t + c] = v < 0 ? 0 : v > max ? max : v
+      }
+    }
+  }
+}
+
+/**
+ * The area to remove as a hole mask over `rect` (0–1 of the source) sampled
+ * at `width`×`height`: 0 = fill this, 255 = keep. Grown by `grow` pixels so
+ * the model also replaces the soft fringe of what is being removed.
+ */
+export function holeMask(
+  spot: Pick<HealSpot, 'points' | 'size'>,
+  rect: InpaintPatch['rect'],
+  width: number,
+  height: number,
+  sourceWidth: number,
+  sourceHeight: number,
+  grow = 3,
+): Uint8Array<ArrayBuffer> {
+  // Radius in patch pixels: source pixels times the patch's scale.
+  const fullWidth = width / (rect.x1 - rect.x0)
+  const radius = spot.size * Math.max(sourceWidth, sourceHeight) * (fullWidth / sourceWidth) + grow
+  const local = spot.points.map((v, i) =>
+    i % 2 === 0 ? (v - rect.x0) / (rect.x1 - rect.x0) : (v - rect.y0) / (rect.y1 - rect.y0),
+  )
+  const mask = rasterizeStroke(local, radius, 0, width, height)
+  const out = new Uint8Array(width * height).fill(255)
+  if (!mask) return out
+  const mw = mask.x1 - mask.x0
+  for (let y = mask.y0; y < mask.y1; y++) {
+    for (let x = mask.x0; x < mask.x1; x++) {
+      if (mask.alpha[(y - mask.y0) * mw + (x - mask.x0)]! > 0) out[y * width + x] = 0
+    }
+  }
+  return out
+}
+
 /** Heal every spot in order (later spots see earlier fixes), in place. */
 export function applyHeal(img: HealImage, spots: HealSpot[]): void {
   for (const spot of spots) applySpot(img, spot)
@@ -337,9 +445,11 @@ export function healBounds(spots: HealSpot[], fullWidth: number, fullHeight: num
   return out
 }
 
-/** Stable cache key for a list of spots. */
+/** Stable cache key for a list of spots, including which inpainting patches have landed. */
 export function healKey(spots: HealSpot[]): string {
-  return spots.length === 0 ? '' : JSON.stringify(spots)
+  if (spots.length === 0) return ''
+  const ready = spots.map((s) => (s.mode === 'remove' && getPatch(s) ? 1 : 0)).join('')
+  return `${JSON.stringify(spots)}|${ready}`
 }
 
 /* ——— Picking a source automatically ——— */

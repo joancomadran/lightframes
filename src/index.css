@@ -892,7 +892,7 @@ button:disabled {
   text-underline-offset: 2px;
 }
 
-.preview__empty-note a.preview__empty-github {
+a.github-star {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -916,12 +916,12 @@ button:disabled {
   color: var(--text);
 }
 
-.preview__empty-github > svg:last-child {
+.github-star > svg:last-child {
   color: #f5c84c;
 }
 
 @media (hover: hover) {
-  .preview__empty-note a.preview__empty-github:hover {
+  a.github-star:hover {
     border-color: rgba(232, 239, 228, 0.35);
     background: var(--bg-elevated);
   }
@@ -971,6 +971,14 @@ button:disabled {
   .sidebar > .ad-slot {
     height: 100px;
   }
+}
+
+.sidebar__github {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.6rem 0.75rem;
+  border-top: 1px solid var(--line);
 }
 
 .panel {
@@ -2408,6 +2416,19 @@ button:disabled {
 
 .heal-toggle {
   padding: 0.35rem 0.75rem;
+}
+
+.heal-status {
+  color: var(--text);
+}
+
+.heal-status--error {
+  color: var(--danger-soft);
+}
+
+.heal-credit a {
+  color: inherit;
+  text-decoration: underline;
 }
 
 .heal-draft {
@@ -4062,7 +4083,8 @@ kbd {
     -webkit-overflow-scrolling: touch;
   }
 
-  .sidebar > .ad-slot {
+  .sidebar > .ad-slot,
+  .sidebar__github {
     display: none;
   }
 

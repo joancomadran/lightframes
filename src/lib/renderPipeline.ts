@@ -1,5 +1,6 @@
 import { DEFAULT_EDITS, type EditParams, type ExportOptions } from '../types/edits'
 import { poolSize, runInPool } from './developPool'
+import { ensurePatches } from './inpaint'
 import {
   MIME_BY_FORMAT,
   buildBrushMasks,
@@ -165,6 +166,8 @@ export async function exportEditedImage(
 ): Promise<{ blob: Blob; filename: string }> {
   const frame = options.frame
   const maxEdge = frame ? Math.max(frame.width, frame.height) : options.maxEdge
+  // "Remove" spots need their inpainted patches before the pixels can be prepared.
+  await ensurePatches(source, edits.heal)
   const base = prepareBase(source, edits, maxEdge)
   if (!base) throw new Error('Could not prepare image')
   const developed = await developBase(base, edits)
