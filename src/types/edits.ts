@@ -106,6 +106,28 @@ export type LocalAdjustmentPatch = Partial<
     Omit<BrushAdjustment, 'id' | 'type'>
 >
 
+export type HealMode = 'heal' | 'clone'
+
+/**
+ * Spot removal: pixels painted over are replaced with pixels from elsewhere in the photo.
+ * Lives in source image space (before rotation and crop) so reframing doesn't move it.
+ */
+export type HealSpot = {
+  id: string
+  /** Heal blends the copied pixels into their surroundings; clone copies them as they are. */
+  mode: HealMode
+  /** Flat [x0, y0, x1, y1, …] in source image space (0–1). */
+  points: number[]
+  /** Radius as a fraction of the source's long edge. */
+  size: number
+  /** 0 = hard edge, 1 = fully soft. */
+  feather: number
+  opacity: number
+  /** Where the replacement comes from, relative to the painted area (0–1 of width / height). */
+  dx: number
+  dy: number
+}
+
 export type GradeZone = {
   /** 0–360 degrees. */
   hue: number
@@ -153,6 +175,8 @@ export type EditParams = {
   crop: CropRect
   toneCurve: ToneCurve
   localAdjustments: LocalAdjustment[]
+  /** Spot removal, applied to the source pixels before everything else. */
+  heal: HealSpot[]
   hsl: HslEdits
   /** Optional look-up table applied after parametric edits (from .cube). */
   lut?: Lut3D
@@ -169,6 +193,7 @@ export type BasicEditKey = Exclude<
   | 'crop'
   | 'toneCurve'
   | 'localAdjustments'
+  | 'heal'
   | 'colorGrading'
 >
 
@@ -334,6 +359,7 @@ export const DEFAULT_EDITS: EditParams = {
   crop: createDefaultCrop(),
   toneCurve: createDefaultToneCurve(),
   localAdjustments: [],
+  heal: [],
   hsl: createDefaultHsl(),
 }
 
@@ -441,6 +467,8 @@ export function cloneEdits(edits: EditParams): EditParams {
     crop: cloneCrop(edits.crop ?? createDefaultCrop()),
     toneCurve: cloneToneCurve(edits.toneCurve ?? createDefaultToneCurve()),
     localAdjustments: cloneLocalAdjustments(edits.localAdjustments ?? []),
+    // Spot paths are treated as immutable and shared, like brush strokes.
+    heal: (edits.heal ?? []).map((spot) => ({ ...spot })),
     colorGrading: cloneColorGrading(edits.colorGrading ?? createDefaultColorGrading()),
   }
   if (edits.lut) next.lut = cloneLut(edits.lut)
@@ -458,10 +486,12 @@ export function mergeEdits(base: EditParams, patch: Partial<EditParams>): EditPa
     crop: cropPatch,
     toneCurve: curvePatch,
     localAdjustments: localPatch,
+    heal: healPatch,
     colorGrading: gradingPatch,
     ...rest
   } = patch
   const next = cloneEdits({ ...base, ...rest })
+  if (healPatch) next.heal = healPatch.map((spot) => ({ ...spot }))
   if (hslPatch) {
     for (const channel of HSL_CHANNELS) {
       const bandPatch = hslPatch[channel.id]
@@ -743,6 +773,7 @@ export function isNeutralEdits(edits: EditParams): boolean {
     isNeutralToneCurve(edits.toneCurve) &&
     isNeutralColorGrading(edits.colorGrading) &&
     edits.localAdjustments.length === 0 &&
+    edits.heal.length === 0 &&
     !edits.lut
   )
 }
@@ -824,6 +855,31 @@ function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
   return out
 }
 
+function normalizeHeal(value: unknown): HealSpot[] {
+  if (!Array.isArray(value)) return []
+  const out: HealSpot[] = []
+  const num = (v: unknown, fallback: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback
+  for (const raw of value) {
+    if (!raw || typeof raw !== 'object') continue
+    const obj = raw as Record<string, unknown>
+    if (!Array.isArray(obj.points)) continue
+    const points = obj.points.filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+    if (points.length < 2) continue
+    out.push({
+      id: typeof obj.id === 'string' ? obj.id : crypto.randomUUID(),
+      mode: obj.mode === 'clone' ? 'clone' : 'heal',
+      points: points.length % 2 === 0 ? points : points.slice(0, -1),
+      size: Math.min(0.25, Math.max(0.001, num(obj.size, 0.02))),
+      feather: clamp01(num(obj.feather, 0.3)),
+      opacity: clamp01(num(obj.opacity, 1)),
+      dx: Math.min(1, Math.max(-1, num(obj.dx, 0.05))),
+      dy: Math.min(1, Math.max(-1, num(obj.dy, 0))),
+    })
+  }
+  return out
+}
+
 /** Normalize possibly-partial preset/import data into a full EditParams. */
 export function normalizeEdits(value: unknown): EditParams | null {
   if (!value || typeof value !== 'object') return null
@@ -847,6 +903,7 @@ export function normalizeEdits(value: unknown): EditParams | null {
   if (obj.localAdjustments !== undefined) {
     next.localAdjustments = normalizeLocalAdjustments(obj.localAdjustments)
   }
+  if (obj.heal !== undefined) next.heal = normalizeHeal(obj.heal)
 
   const hslRaw = obj.hsl
   if (hslRaw && typeof hslRaw === 'object') {

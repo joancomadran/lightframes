@@ -905,6 +905,17 @@ button:disabled {
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
+.install__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem 0.2rem 0.5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
 .preview__empty-github > svg:last-child {
   color: #f5c84c;
 }
@@ -1380,9 +1391,10 @@ button:disabled {
   grid-template-areas: 'stage side';
 }
 
+/* Two rows of four on desktop: eight tabs in one row don't fit the sidebar. */
 .panel-tabs {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
   padding: 0;
   border-bottom: 1px solid var(--line);
@@ -2330,6 +2342,64 @@ button:disabled {
 
 .brush-cursor--erase {
   border-color: #ff8a8a;
+}
+
+/* ——— Spot removal ——— */
+
+.heal-overlay {
+  position: absolute;
+  z-index: 3;
+  cursor: none;
+  touch-action: none;
+}
+
+.heal-overlay__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.heal-overlay__svg path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.heal-spot__outline {
+  stroke: rgba(255, 255, 255, 0.55);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.7));
+}
+
+.heal-spot--selected .heal-spot__outline {
+  stroke: #fff;
+}
+
+.heal-spot--selected .heal-spot__outline--source {
+  stroke: var(--accent);
+}
+
+.heal-spot__hit {
+  stroke: transparent;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.heal-spot__hit--source {
+  cursor: move;
+}
+
+.heal-spot__link {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.7));
+}
+
+.heal-draft {
+  stroke: rgba(255, 255, 255, 0.35);
 }
 
 /* ——— Pro tools: panels ——— */
@@ -3986,6 +4056,8 @@ kbd {
 
   .panel-tabs {
     order: 2;
+    display: flex;
+    flex-wrap: nowrap;
     overflow-x: auto;
     scroll-snap-type: x proximity;
     scrollbar-width: none;

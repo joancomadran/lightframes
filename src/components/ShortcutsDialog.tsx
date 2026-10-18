@@ -19,6 +19,7 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
       [`${MOD} E`, 'Export'],
       ['W', 'White balance picker'],
       ['R', 'Crop'],
+      ['Q', 'Spot removal'],
     ],
   },
   {
@@ -40,7 +41,7 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
       ['F', 'Full screen'],
       ['B', 'Black / white background'],
       ['G', 'Show / hide filmstrip'],
-      ['⇧ 1 … 7', 'Switch panel'],
+      ['⇧ 1 … 8', 'Switch panel'],
     ],
   },
   {

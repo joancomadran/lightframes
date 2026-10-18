@@ -9,6 +9,8 @@ import { EffectsPanel } from './components/EffectsPanel'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ExportDialog } from './components/ExportDialog'
 import { Filmstrip } from './components/Filmstrip'
+import type { HealTool } from './components/HealOverlay'
+import { HealPanel } from './components/HealPanel'
 import { HistogramPanel } from './components/HistogramPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import type { BrushSettings } from './components/MaskOverlay'
@@ -26,7 +28,7 @@ import { createCollageDoc, type CollageDoc } from './lib/collage'
 import { aspectRatioFor } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
-import { DEFAULT_EDITS } from './types/edits'
+import { DEFAULT_EDITS, type HealSpot } from './types/edits'
 
 export type AppMode = 'edit' | 'collage'
 
@@ -57,6 +59,8 @@ export default function App() {
   const [clearOpen, setClearOpen] = useState(false)
   const closeClear = useCallback(() => setClearOpen(false), [])
   const [brush, setBrush] = useState<BrushSettings>({ size: 0.05, feather: 0.6, flow: 1, erase: false })
+  const [healTool, setHealTool] = useState<HealTool>({ mode: 'heal', size: 0.015, feather: 0.3, opacity: 1 })
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
   const previewApi = useRef<PreviewApi | null>(null)
   const phone = useMediaQuery(PHONE_QUERY)
   // Phones show the panels as a bottom sheet that can fold away to reveal the whole photo.
@@ -100,6 +104,20 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maskKey])
   const selectedMask = edits.localAdjustments.find((m) => m.id === selectedMaskId) ?? null
+  const selectedSpot = edits.heal.some((s) => s.id === selectedSpotId) ? selectedSpotId : null
+
+  const setHeal = (heal: HealSpot[], opts?: { commit?: boolean }) => session.updateEdits({ heal }, opts)
+  const updateSpot = (id: string, patch: Partial<HealSpot>, opts?: { commit?: boolean }) =>
+    setHeal(
+      edits.heal.map((s) => (s.id === id ? { ...s, ...patch, id } : s)),
+      opts,
+    )
+  const removeSpot = (id: string) => setHeal(edits.heal.filter((s) => s.id !== id), { commit: true })
+  const newSpotSource = (id: string) => {
+    const spot = edits.heal.find((s) => s.id === id)
+    const source = spot ? previewApi.current?.healSource(spot, true) : null
+    if (source) updateSpot(id, source, { commit: true })
+  }
 
   const autoTone = () => {
     const values = previewApi.current?.autoTone()
@@ -310,6 +328,23 @@ export default function App() {
                     }
                   : null
               }
+              healOverlay={
+                canEdit && session.panelFocus === 'heal'
+                  ? {
+                      spots: edits.heal,
+                      selectedId: selectedSpot,
+                      tool: healTool,
+                      onSelect: setSelectedSpotId,
+                      onAdd: (spot) => {
+                        setHeal([...edits.heal, spot], { commit: true })
+                        setSelectedSpotId(spot.id)
+                      },
+                      onChange: updateSpot,
+                      onBegin: begin,
+                      onCommit: commit,
+                    }
+                  : null
+              }
               maskTint={canEdit && session.panelFocus === 'local' && showMaskTint ? selectedMask : null}
               onPickWhiteBalance={
                 canEdit && pickingWhiteBalance
@@ -417,6 +452,23 @@ export default function App() {
                   onAspectChange={(id, flipped) => setCropAspect({ id, flipped })}
                   frameSize={frameSize}
                   onChange={session.updateEdits}
+                  onBegin={begin}
+                  onCommit={commit}
+                />
+              )}
+
+              {session.panelFocus === 'heal' && (
+                <HealPanel
+                  spots={edits.heal}
+                  disabled={!canEdit}
+                  selectedId={selectedSpot}
+                  tool={healTool}
+                  onToolChange={setHealTool}
+                  onSelect={setSelectedSpotId}
+                  onUpdate={updateSpot}
+                  onRemove={removeSpot}
+                  onClear={() => setHeal([], { commit: true })}
+                  onNewSource={newSpotSource}
                   onBegin={begin}
                   onCommit={commit}
                 />

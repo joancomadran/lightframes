@@ -36,15 +36,16 @@ import {
   type Preset,
 } from '../types/edits'
 
-export type PanelId = 'adjust' | 'color' | 'effects' | 'curve' | 'crop' | 'local' | 'presets'
+export type PanelId = 'adjust' | 'color' | 'effects' | 'curve' | 'crop' | 'heal' | 'local' | 'presets'
 
-/** Panels in tab order; Shift + 1…7 jumps to them. */
+/** Panels in tab order; Shift + 1…8 jumps to them. */
 export const PANELS: { id: PanelId; label: string }[] = [
   { id: 'adjust', label: 'Adjust' },
   { id: 'color', label: 'Color' },
   { id: 'effects', label: 'Effects' },
   { id: 'curve', label: 'Curve' },
   { id: 'crop', label: 'Crop' },
+  { id: 'heal', label: 'Heal' },
   { id: 'local', label: 'Local' },
   { id: 'presets', label: 'Presets' },
 ]
@@ -514,6 +515,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
             ...cloneEdits(DEFAULT_EDITS),
             rotate: p.edits.rotate,
             crop: cloneEdits(p.edits).crop,
+            heal: cloneEdits(p.edits).heal,
           },
         }
       }),
@@ -533,6 +535,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
           const blended = blendEdits(DEFAULT_EDITS, preset.edits, amount)
           blended.rotate = photo.edits.rotate
           blended.crop = cloneEdits(photo.edits).crop
+          blended.heal = cloneEdits(photo.edits).heal
           return { ...photo, edits: blended }
         }),
       )
@@ -562,7 +565,8 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     }
     setPhotos((prev) =>
       prev.map((photo) =>
-        targets.includes(photo.id) ? { ...photo, edits: cloneEdits(clipboard) } : photo,
+        // Spot removal belongs to the photo it was painted on.
+        targets.includes(photo.id) ? { ...photo, edits: { ...cloneEdits(clipboard), heal: photo.edits.heal } } : photo,
       ),
     )
     setStatus(`Pasted edits to ${targets.length} photo${targets.length === 1 ? '' : 's'}`)
@@ -587,6 +591,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
         const next = cloneEdits(edits)
         next.rotate = photo.edits.rotate
         next.crop = cloneEdits(photo.edits).crop
+        next.heal = cloneEdits(photo.edits).heal
         return { ...photo, edits: next }
       }),
     )
@@ -614,7 +619,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       prev.map((preset) => {
         if (preset.id !== selectedPresetId) return preset
         updatedName = preset.name
-        return { ...preset, edits: cloneEdits(photo.edits) }
+        return { ...preset, edits: { ...cloneEdits(photo.edits), heal: [] } }
       }),
     )
     setPresetIntensityState(100)
@@ -960,7 +965,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
         setShowClipping((v) => !v)
         return
       }
-      // Shift + 1…7 picks a panel (e.code: Shift changes e.key on most layouts).
+      // Shift + 1…8 picks a panel (e.code: Shift changes e.key on most layouts).
       const digit = /^Digit([0-9])$/.exec(e.code)?.[1]
       if (e.shiftKey && !mod && digit) {
         const panel = PANELS[Number(digit) - 1]
@@ -995,6 +1000,11 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       if (!mod && key === 'k') {
         e.preventDefault()
         addLocal('brush')
+        return
+      }
+      if (!mod && key === 'q') {
+        e.preventDefault()
+        setPanelFocus('heal')
         return
       }
       if (key === '[' || key === 'arrowup') {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useInstallPrompt } from '../hooks/useInstallPrompt'
 
 type ToolbarProps = {
   mode: ToolbarMode
@@ -84,6 +85,7 @@ export function Toolbar({
   onClearWorkspace,
 }: ToolbarProps) {
   const editing = mode === 'edit'
+  const { state: installState, install } = useInstallPrompt()
   const [menuOpen, setMenuOpen] = useState(false)
   // The launch hint duplicates the empty state, so the compact status chip skips it.
   const [initialStatus] = useState(status)
@@ -267,6 +269,16 @@ export function Toolbar({
                     Sync to selection
                     {selectionCount > 1 && <span className="menu__hint">{selectionCount}</span>}
                   </button>
+                  {installState.kind === 'prompt' && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="menu__item"
+                      onClick={menuAction(() => void install())}
+                    >
+                      Install app
+                    </button>
+                  )}
                   <button
                     type="button"
                     role="menuitem"

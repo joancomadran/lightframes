@@ -9,18 +9,20 @@ import {
   normalizeRotate,
   type BrushAdjustment,
   type ColorGrading,
-  type CropRect,
   type EditParams,
   type ExportFormat,
   type ExportOptions,
   type GradeZone,
+  type HealSpot,
   type HslEdits,
   type LinearAdjustment,
   type LocalAdjustment,
   type RadialAdjustment,
   type ToneCurve,
 } from '../types/edits'
+import { isFullCrop } from './crop'
 import { applyLutToImageData } from './cubeLut'
+import { applyHeal, healBounds, healKey } from './heal'
 import type { LinearImage } from './rawDecode'
 
 /*
@@ -1623,16 +1625,6 @@ export function computeAutoTone(
   }
 }
 
-function isFullCrop(crop: CropRect): boolean {
-  return (
-    crop.x <= 0.0001 &&
-    crop.y <= 0.0001 &&
-    crop.width >= 0.999 &&
-    crop.height >= 0.999 &&
-    Math.abs(crop.straighten) < 0.01
-  )
-}
-
 /** What the editor renders from: a decoded browser image or RAW linear data. */
 export type RenderSource = HTMLImageElement | ImageBitmap | LinearImage
 
@@ -1786,13 +1778,116 @@ function transformLinear(
   }
 }
 
+/** Healed copies only stay cached at preview sizes; exports are one-off and large. */
+const HEAL_CACHE_PIXELS = 2400 * 2400
+
+const healCache = new WeakMap<object, Map<string, { key: string; image: HTMLCanvasElement | LinearImage }>>()
+
+function cachedHeal<T extends HTMLCanvasElement | LinearImage>(
+  owner: object,
+  width: number,
+  height: number,
+  spots: HealSpot[],
+  build: () => T | null,
+): T | null {
+  const size = `${width}x${height}`
+  const key = healKey(spots)
+  const cached = healCache.get(owner)?.get(size)
+  if (cached?.key === key) return cached.image as T
+  const image = build()
+  if (image && width * height <= HEAL_CACHE_PIXELS) {
+    let bySize = healCache.get(owner)
+    if (!bySize) {
+      bySize = new Map()
+      healCache.set(owner, bySize)
+    }
+    bySize.set(size, { key, image })
+  }
+  return image
+}
+
+/** Linear source with spot removal applied (a copy; the decoded original stays untouched). */
+function healLinear(src: LinearImage, spots: HealSpot[]): LinearImage {
+  if (spots.length === 0) return src
+  return (
+    cachedHeal(src, src.width, src.height, spots, () => {
+      const data = src.data.slice()
+      applyHeal({ data, width: src.width, height: src.height, stride: 3, max: 65535 }, spots)
+      return { ...src, data }
+    }) ?? src
+  )
+}
+
+/** The source drawn at `w`×`h` with spot removal applied; only the touched window is read back. */
+function healCanvas(source: HTMLImageElement | ImageBitmap, w: number, h: number, spots: HealSpot[]) {
+  return cachedHeal(source, w, h, spots, () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return null
+    ctx.drawImage(source, 0, 0, w, h)
+    const area = healBounds(spots, w, h)
+    if (!area) return canvas
+    const pixels = ctx.getImageData(area.x0, area.y0, area.x1 - area.x0, area.y1 - area.y0)
+    applyHeal(
+      {
+        data: pixels.data,
+        width: pixels.width,
+        height: pixels.height,
+        stride: 4,
+        max: 255,
+        left: area.x0,
+        top: area.y0,
+        fullWidth: w,
+        fullHeight: h,
+      },
+      spots,
+    )
+    ctx.putImageData(pixels, area.x0, area.y0)
+    return canvas
+  })
+}
+
+/**
+ * Small 8-bit RGBA copy of the source (spot removal applied) in source image
+ * space — what the automatic source search compares.
+ */
+export function healSearchImage(
+  source: RenderSource,
+  spots: HealSpot[],
+  maxEdge = 640,
+): { data: Uint8ClampedArray; width: number; height: number; stride: number; max: number } | null {
+  if (isLinearImage(source)) {
+    const image = healLinear(scaleLinear(source, maxEdge), spots)
+    const data = new Uint8ClampedArray(image.width * image.height * 4)
+    for (let k = 0, j = 0, i = 0; k < image.width * image.height; k++, j += 3, i += 4) {
+      data[i] = encodeSrgb(image.data[j]! * image.scale) * 255
+      data[i + 1] = encodeSrgb(image.data[j + 1]! * image.scale) * 255
+      data[i + 2] = encodeSrgb(image.data[j + 2]! * image.scale) * 255
+      data[i + 3] = 255
+    }
+    return { data, width: image.width, height: image.height, stride: 4, max: 255 }
+  }
+  const scale = Math.min(1, maxEdge / Math.max(source.width, source.height))
+  const w = Math.max(1, Math.round(source.width * scale))
+  const h = Math.max(1, Math.round(source.height * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) return null
+  ctx.drawImage(spots.length > 0 ? (healCanvas(source, w, h, spots) ?? source) : source, 0, 0, w, h)
+  return { data: ctx.getImageData(0, 0, w, h).data, width: w, height: h, stride: 4, max: 255 }
+}
+
 /** Geometry-transformed pixels (orientation, straighten, crop, preview scale) the develop passes start from. */
 export type BaseImage = BaseSample
 
 /** Orientation, straighten, crop and downscale — everything but the colour work. */
 export function prepareBase(source: RenderSource, edits: EditParams, maxEdge = 2400): BaseImage | null {
   if (isLinearImage(source)) {
-    const { image, alpha } = transformLinear(scaleLinear(source, maxEdge), edits)
+    const { image, alpha } = transformLinear(healLinear(scaleLinear(source, maxEdge), edits.heal ?? []), edits)
     const data = new Uint8ClampedArray(image.width * image.height * 4)
     for (let k = 0, i = 3; k < image.width * image.height; k++, i += 4) {
       data[i] = alpha ? alpha[k]! : 255
@@ -1830,7 +1925,8 @@ export function prepareBase(source: RenderSource, edits: EditParams, maxEdge = 2
     sctx.translate(0, orientedH)
     sctx.rotate(-Math.PI / 2)
   }
-  sctx.drawImage(source, 0, 0, w, h)
+  const spots = edits.heal ?? []
+  sctx.drawImage(spots.length > 0 ? (healCanvas(source, w, h, spots) ?? source) : source, 0, 0, w, h)
   sctx.restore()
 
   let work = scratch

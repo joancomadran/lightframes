@@ -18,18 +18,22 @@ import {
   computeAutoTone,
   computeAutoWhiteBalance,
   computeMaskPreview,
+  healSearchImage,
   prepareBase,
   sampleBaseLinear,
   whiteBalanceForNeutral,
   type BaseImage,
   type RenderSource,
 } from '../lib/imageProcessing'
+import { healKey, rankHealSources } from '../lib/heal'
 import { loadRawPreview } from '../lib/rawDecode'
 import { developBase } from '../lib/renderPipeline'
-import { stepRotate, type EditParams, type LocalAdjustment } from '../types/edits'
+import { stepRotate, type EditParams, type HealSpot, type LocalAdjustment } from '../types/edits'
 import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { AppMark } from './AppMark'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
+import { HealOverlay, type HealOverlayConfig } from './HealOverlay'
+import { InstallButton } from './InstallButton'
 import { MaskOverlay, type MaskOverlayConfig } from './MaskOverlay'
 import { PrivacyBadge } from './PrivacyBadge'
 
@@ -37,6 +41,11 @@ import { PrivacyBadge } from './PrivacyBadge'
 export type PreviewApi = {
   autoTone: () => ReturnType<typeof computeAutoTone> | null
   autoWhiteBalance: () => ReturnType<typeof computeAutoWhiteBalance> | null
+  /**
+   * Where a spot's replacement should come from. With `next`, the candidate
+   * after the one it uses now (to cycle through alternatives).
+   */
+  healSource: (spot: HealSpot, next?: boolean) => { dx: number; dy: number } | null
 }
 
 type WhiteBalance = { temperature: number; tint: number }
@@ -59,6 +68,8 @@ type PreviewCanvasProps = {
   cropOverlay?: CropOverlayConfig | null
   /** When set, draw editable local masks (and the brush) over the image. */
   maskOverlay?: MaskOverlayConfig | null
+  /** When set, paint and edit spot removal over the image. */
+  healOverlay?: HealOverlayConfig | null
   /** Mask to tint red over the image (mask overlay, O). */
   maskTint?: LocalAdjustment | null
   /** While set, clicking the image picks a neutral point for white balance. */
@@ -159,6 +170,7 @@ export function PreviewCanvas({
   onHistogram,
   cropOverlay = null,
   maskOverlay = null,
+  healOverlay = null,
   maskTint = null,
   onPickWhiteBalance = null,
   apiRef,
@@ -217,6 +229,8 @@ export function PreviewCanvas({
   const [background, setBackground] = useState<PreviewBackground>(loadBackground)
   const [fullscreen, setFullscreen] = useState(false)
   const [sourceVersion, setSourceVersion] = useState(0)
+  /** Full-size dimensions of the loaded source (spot removal maps through them). */
+  const [sourceDims, setSourceDims] = useState<Size | null>(null)
   /** The `src` whose pixels are loaded; a RAW is still developing until it matches. */
   const [readySrc, setReadySrc] = useState<string | null>(null)
   const developingRaw = Boolean(rawFile) && readySrc !== src
@@ -314,7 +328,7 @@ export function PreviewCanvas({
 
   const getBase = useCallback((source: RenderSource, renderEdits: EditParams, maxEdge: number) => {
     const c = renderEdits.crop
-    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}`
+    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}`
     const cached = baseCacheRef.current
     if (cached && cached.source === source && cached.key === key) return cached.base
     const base = prepareBase(source, renderEdits, maxEdge)
@@ -415,6 +429,26 @@ export function PreviewCanvas({
     setHolding(false)
   }
 
+  const findHealSource = useCallback((spot: HealSpot, next = false) => {
+    const source = sourceRef.current
+    if (!source) return null
+    // Search the photo as healed by the spots applied before this one, so fixes can build on each other.
+    const spots = latestRef.current.edits.heal
+    const index = spots.findIndex((s) => s.id === spot.id)
+    const pixels = healSearchImage(source, index >= 0 ? spots.slice(0, index) : spots)
+    if (!pixels) return null
+    const ranked = rankHealSources(pixels, spot)
+    if (!next) return ranked[0] ?? null
+    if (ranked.length === 0) return null
+    // Step past the candidate closest to the current source.
+    let current = 0
+    ranked.forEach((r, i) => {
+      const best = ranked[current]!
+      if (Math.hypot(r.dx - spot.dx, r.dy - spot.dy) < Math.hypot(best.dx - spot.dx, best.dy - spot.dy)) current = i
+    })
+    return ranked[(current + 1) % ranked.length]!
+  }, [])
+
   useEffect(() => {
     if (!apiRef) return
     apiRef.current = {
@@ -426,11 +460,12 @@ export function PreviewCanvas({
         const base = pickBase()
         return base ? computeAutoWhiteBalance(base) : null
       },
+      healSource: findHealSource,
     }
     return () => {
       apiRef.current = null
     }
-  }, [apiRef])
+  }, [apiRef, findHealSource])
 
   const toggleBackground = useCallback(() => {
     setBackground((prev) => {
@@ -532,6 +567,7 @@ export function PreviewCanvas({
       if (cancelled) return
       sourceRef.current = source
       setSourceVersion((v) => v + 1)
+      setSourceDims(sourceSize(source))
       setReadySrc(src)
     }
     const loadImage = () => {
@@ -651,7 +687,7 @@ export function PreviewCanvas({
       lastTapRef.current = null
     } else if (pointersRef.current.size === 1) {
       startDrag(e.pointerId, e.clientX, e.clientY)
-      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay) {
+      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay && !healOverlay) {
         const hold = { timer: 0, x: e.clientX, y: e.clientY, fired: false }
         hold.timer = window.setTimeout(() => {
           hold.fired = true
@@ -798,6 +834,7 @@ export function PreviewCanvas({
         </div>
         <p className="preview__empty-note">
           <PrivacyBadge label="100% private" align="center" />
+          <InstallButton />
           <a
             className="preview__empty-github"
             href="https://github.com/joancomadran/lightframes"
@@ -912,6 +949,14 @@ export function PreviewCanvas({
         )}
         {maskOverlay && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
           <MaskOverlay frame={overlayFrame} config={maskOverlay} />
+        )}
+        {healOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+          <HealOverlay
+            frame={overlayFrame}
+            geometry={{ width: sourceDims.w, height: sourceDims.h, rotate: renderEdits.rotate, crop: renderEdits.crop }}
+            config={healOverlay}
+            pickSource={findHealSource}
+          />
         )}
       </div>
 

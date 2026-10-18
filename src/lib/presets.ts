@@ -161,7 +161,8 @@ export function createPreset(name: string, edits: EditParams): Preset {
   return {
     id: crypto.randomUUID(),
     name: name.trim() || 'Untitled preset',
-    edits: cloneEdits(edits),
+    // Spots only make sense on the photo they were painted on.
+    edits: { ...cloneEdits(edits), heal: [] },
     createdAt: new Date().toISOString(),
   }
 }
