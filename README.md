@@ -1,8 +1,12 @@
 # Lightframes
 
-Free, open-source, **local** photo editor focused on custom presets and copy/paste edits — a Lightroom-like workflow without the cloud.
+**[Try it now → lightframes.vercel.app](https://lightframes.vercel.app)**
 
-Runs entirely in the browser. Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh.
+Free, open-source, **local** photo editor focused on custom presets and copy/paste edits — a Lightroom-like workflow without the cloud. Your photos never leave your device: no uploads, no account.
+
+![Lightframes](public/og-image.png)
+
+Runs entirely in the browser. Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. Installable as an app (PWA) and works offline once loaded.
 
 ## Features
 
@@ -42,8 +46,8 @@ npm run preview
 
 ### Offline use
 
-1. Build or run the app once while online (fonts load from Google Fonts on first visit).
-2. After that, image open / edit / preset / export work without a network connection.
+1. Open the production build once while online. A service worker precaches the app, including the LibRaw WASM, and caches Google Fonts on first visit.
+2. After that, the app loads and image open / edit / preset / export work without a network connection. In Chromium you can also install it from the address bar.
 3. For a fully air-gapped install, self-host the font files and remove the Google Fonts `<link>` tags in `index.html`.
 
 ## Presets
