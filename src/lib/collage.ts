@@ -109,12 +109,16 @@ export function layoutById(id: string): CollageLayout {
   return LAYOUT_BY_ID.get(id) ?? COLLAGE_LAYOUTS[1]![0]!
 }
 
-/** Instagram feed and story sizes; every slide of a post shares one. */
+/** Output sizes, tallest to widest; every slide of a post shares one. */
 export const COLLAGE_ASPECTS = [
+  { id: '9:16', label: '9:16', hint: 'Story', width: 1080, height: 1920 },
+  { id: '3:4', label: '3:4', hint: 'Tall', width: 1080, height: 1440 },
   { id: '4:5', label: '4:5', hint: 'Portrait', width: 1080, height: 1350 },
   { id: '1:1', label: '1:1', hint: 'Square', width: 1080, height: 1080 },
-  { id: '3:4', label: '3:4', hint: 'Tall', width: 1080, height: 1440 },
-  { id: '9:16', label: '9:16', hint: 'Story', width: 1080, height: 1920 },
+  { id: '4:3', label: '4:3', hint: 'Classic', width: 1440, height: 1080 },
+  { id: '3:2', label: '3:2', hint: 'Photo', width: 1620, height: 1080 },
+  { id: '16:9', label: '16:9', hint: 'Widescreen', width: 1920, height: 1080 },
+  { id: '1.91:1', label: '1.91:1', hint: 'Landscape', width: 1080, height: 566 },
 ] as const
 
 export type CollageAspectId = (typeof COLLAGE_ASPECTS)[number]['id']

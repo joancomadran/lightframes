@@ -103,3 +103,5 @@ Optional **Tauri** desktop wrap is planned post-MVP; this repo ships as a local 
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
+Sample photos in `public/samples/` are from [Unsplash](https://unsplash.com) and are used under the [Unsplash License](https://unsplash.com/license).

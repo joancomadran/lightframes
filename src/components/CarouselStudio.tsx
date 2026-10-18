@@ -16,6 +16,7 @@ import {
 import { MAX_ZOOM, MIN_ZOOM, aspectById, coverWindow } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
+import { AspectPicker } from './AspectPicker'
 import { Slider } from './Slider'
 import {
   createExportLoader,
@@ -707,20 +708,11 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
                   {n} × {aspect.width} × {aspect.height}
                 </span>
               </div>
-              <div className="segmented" role="group" aria-label="Aspect ratio">
-                {CAROUSEL_ASPECTS.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    className={a.id === doc.aspect ? 'segmented__btn segmented__btn--active' : 'segmented__btn'}
-                    aria-pressed={a.id === doc.aspect}
-                    title={a.hint}
-                    onClick={() => onChange((d) => ({ ...d, aspect: a.id }))}
-                  >
-                    {a.label}
-                  </button>
-                ))}
-              </div>
+              <AspectPicker
+                aspects={CAROUSEL_ASPECTS}
+                value={doc.aspect}
+                onChange={(aspect) => onChange((d) => ({ ...d, aspect }))}
+              />
               <Slider
                 label="Slides"
                 value={n}

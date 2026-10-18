@@ -18,6 +18,7 @@ type ToolbarProps = {
   onSync: () => void
   onExport: () => void
   onShowShortcuts: () => void
+  onClearWorkspace: () => void
 }
 
 type ToolbarMode = 'edit' | 'collage'
@@ -80,6 +81,7 @@ export function Toolbar({
   onSync,
   onExport,
   onShowShortcuts,
+  onClearWorkspace,
 }: ToolbarProps) {
   const editing = mode === 'edit'
   const [menuOpen, setMenuOpen] = useState(false)
@@ -264,6 +266,15 @@ export function Toolbar({
                   >
                     Sync to selection
                     {selectionCount > 1 && <span className="menu__hint">{selectionCount}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="menu__item menu__item--danger"
+                    disabled={!canEdit}
+                    onClick={menuAction(onClearWorkspace)}
+                  >
+                    Clear workspace…
                   </button>
                   <p className="menu__note">Long-press thumbnails to select several photos.</p>
                 </div>

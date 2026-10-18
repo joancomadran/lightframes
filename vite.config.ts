@@ -26,9 +26,15 @@ export default defineConfig({
       workbox: {
         // Precache the LibRaw WASM so RAW decoding works offline too
         globPatterns: ['**/*.{js,css,html,svg,png,wasm}'],
-        globIgnores: ['og-image.png'],
+        globIgnores: ['og-image.png', 'samples/**'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
+          {
+            // Demo photos are fetched on demand, then kept for offline use
+            urlPattern: ({ url }) => url.pathname.startsWith('/samples/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'samples', expiration: { maxEntries: 10 } },
+          },
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
             handler: 'StaleWhileRevalidate',

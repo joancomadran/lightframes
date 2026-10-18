@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { downloadBlob, openImages } from '../lib/files'
+import { downloadBlob, fetchSampleImages, openImages } from '../lib/files'
 import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
 import { buildExportFilename, type RenderSource } from '../lib/imageProcessing'
 import { exportEditedImage } from '../lib/renderPipeline'
@@ -131,6 +131,8 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
   const [presetsLoaded, setPresetsLoaded] = useState(false)
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
   const [presetIntensity, setPresetIntensityState] = useState(100)
+  /** Per-photo edits from before the current preset was applied, restored on remove. */
+  const presetBaseRef = useRef(new Map<string, EditParams>())
   const [clipboard, setClipboard] = useState<EditParams | null>(null)
   const [status, setStatus] = useState('Open JPEG, PNG, or RAW files to begin')
   const [compareMode, setCompareMode] = useState(false)
@@ -380,10 +382,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     syncHistoryFlags()
   }, [applyEditsToPhoto, syncHistoryFlags])
 
-  const handleOpen = useCallback(async (opts?: { folder?: boolean }) => {
-    const files = await openImages(opts)
-    if (files.length === 0) return
-
+  const loadFiles = useCallback(async (files: File[], edits?: EditParams): Promise<PhotoSession[]> => {
     const rawCount = files.filter(isRawFile).length
     setStatus(
       rawCount > 0
@@ -394,7 +393,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     const next: PhotoSession[] = []
     try {
       for (const file of files) {
-        next.push(await makePhoto(file))
+        next.push(await makePhoto(file, edits))
       }
       const append = photosRef.current.length > 0
       setPhotos((prev) => (append ? [...prev, ...next] : next))
@@ -411,11 +410,55 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
           ? `Added ${next.length} image${next.length === 1 ? '' : 's'}`
           : `Loaded ${next.length} image${next.length === 1 ? '' : 's'}`,
       )
+      return next
     } catch (err) {
       revokeAll(next)
       const message = err instanceof Error ? err.message : 'Failed to open images'
       setStatus(message)
+      return []
     }
+  }, [syncHistoryFlags])
+
+  const handleOpen = useCallback(async (opts?: { folder?: boolean }): Promise<PhotoSession[]> => {
+    const files = await openImages(opts)
+    if (files.length === 0) return []
+    return loadFiles(files)
+  }, [loadFiles])
+
+  /** First-visit demo: sample photos with a built-in look already applied. */
+  const openSamples = useCallback(async () => {
+    setStatus('Loading sample photos…')
+    let files: File[]
+    try {
+      files = await fetchSampleImages()
+    } catch {
+      showToast('Could not load sample photos', 'error')
+      setStatus('Open JPEG, PNG, or RAW files to begin')
+      return
+    }
+    const preset = BUILTIN_PRESETS.find((p) => p.id === 'builtin:japan-film') ?? BUILTIN_PRESETS[0]!
+    const loaded = await loadFiles(files, preset.edits)
+    if (loaded.length === 0) return
+    for (const photo of loaded) presetBaseRef.current.set(photo.id, cloneEdits(DEFAULT_EDITS))
+    setSelectedPresetId(preset.id)
+    setPresetIntensityState(100)
+    showToast(`Sample photos from Unsplash, with “${preset.name}” applied — compare before/after`)
+  }, [loadFiles, showToast])
+
+  /** Drop every open photo and its history; presets and the clipboard stay. */
+  const clearWorkspace = useCallback(() => {
+    const count = photosRef.current.length
+    revokeAll(photosRef.current)
+    setPhotos([])
+    setActiveId(null)
+    setSelectedIds([])
+    pastRef.current = []
+    futureRef.current = []
+    syncHistoryFlags()
+    presetBaseRef.current.clear()
+    setSelectedPresetId(null)
+    setPresetIntensityState(100)
+    setStatus(`Cleared ${count} photo${count === 1 ? '' : 's'} from the workspace`)
   }, [syncHistoryFlags])
 
   const selectPhoto = useCallback((id: string, opts?: { additive?: boolean; range?: boolean }) => {
@@ -555,6 +598,8 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     if (!photo) return
     const preset = createPreset(name, photo.edits)
     setPresets((prev) => [preset, ...prev])
+    // The saved preset is the photo's own look, so there is nothing to revert to
+    presetBaseRef.current.clear()
     setSelectedPresetId(preset.id)
     setPresetIntensityState(100)
     setStatus(`Saved custom preset “${preset.name}”`)
@@ -586,7 +631,10 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
             : []
       for (const id of targets) {
         const photo = photosRef.current.find((p) => p.id === id)
-        if (photo) pushHistory(id, photo.edits)
+        if (!photo) continue
+        pushHistory(id, photo.edits)
+        // Switching presets keeps the original base, not the previous preset's look
+        if (!presetBaseRef.current.has(id)) presetBaseRef.current.set(id, cloneEdits(photo.edits))
       }
       setSelectedPresetId(preset.id)
       applyPresetAtIntensity(preset, intensityRef.current, targets)
@@ -594,6 +642,42 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     },
     [applyPresetAtIntensity, pushHistory],
   )
+
+  const removePreset = useCallback(() => {
+    const preset = [...BUILTIN_PRESETS, ...presetsRef.current].find(
+      (p) => p.id === selectedPresetId,
+    )
+    const targets =
+      selectedIdsRef.current.length > 0
+        ? selectedIdsRef.current
+        : activeIdRef.current
+          ? [activeIdRef.current]
+          : []
+    const restore = new Map<string, EditParams>()
+    for (const id of targets) {
+      const base = presetBaseRef.current.get(id)
+      const photo = photosRef.current.find((p) => p.id === id)
+      if (!base || !photo) continue
+      pushHistory(id, photo.edits)
+      restore.set(id, base)
+      presetBaseRef.current.delete(id)
+    }
+    if (restore.size > 0) {
+      setPhotos((prev) =>
+        prev.map((photo) => {
+          const base = restore.get(photo.id)
+          if (!base) return photo
+          const next = cloneEdits(base)
+          next.rotate = photo.edits.rotate
+          next.crop = cloneEdits(photo.edits).crop
+          return { ...photo, edits: next }
+        }),
+      )
+    }
+    setSelectedPresetId(null)
+    setPresetIntensityState(100)
+    setStatus(preset ? `Removed “${preset.name}”` : 'Preset removed')
+  }, [selectedPresetId, pushHistory])
 
   const setPresetIntensity = useCallback(
     (intensity: number) => {
@@ -951,6 +1035,8 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     dismissToast,
     showToast,
     handleOpen,
+    openSamples,
+    clearWorkspace,
     selectPhoto,
     selectAll,
     updateEdits,
@@ -965,6 +1051,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     savePreset,
     updateSelectedPreset,
     applyPreset,
+    removePreset,
     setPresetIntensity,
     deletePreset,
     exportPreset,

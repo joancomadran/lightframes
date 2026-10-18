@@ -23,6 +23,7 @@ import {
 } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
+import { AspectPicker } from './AspectPicker'
 import { Slider } from './Slider'
 import {
   createExportLoader,
@@ -42,7 +43,8 @@ type CollageStudioProps = {
   doc: CollageDoc
   onChange: (update: (doc: CollageDoc) => CollageDoc) => void
   onFormatChange: (format: StudioFormat) => void
-  onOpen: () => void
+  /** Opens the file picker; resolves with the photos it added. */
+  onOpen: () => Promise<PhotoSession[]>
   onNotify: Notify
   apiRef?: { current: StudioApi | null }
 }
@@ -160,7 +162,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
     return () => ro.disconnect()
   }, [])
 
-  // The slide frame: as large as fits, keeping the Instagram aspect.
+  // The slide frame: as large as fits, keeping the chosen aspect.
   const frameW = Math.max(0, Math.min(stageSize.w, stageSize.h * ratio))
   const frameH = frameW / ratio
   const rects = cellRects(layout, frameW, frameH, borderWidth(doc.border, frameW), doc.border.outer)
@@ -192,6 +194,24 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
     // Move on to the next empty cell so tapping photos fills the slide in order.
     const nextEmpty = cells.findIndex((c, i) => i !== target && (!c.photoId || !photoById.has(c.photoId)))
     setSelectedCell(nextEmpty >= 0 ? nextEmpty : target)
+  }
+
+  /** The empty cell's +: open files straight into it, overflow into the next empty cells. */
+  const openIntoCell = async (index: number) => {
+    const added = await onOpen()
+    if (added.length === 0) return
+    const targets = [
+      index,
+      ...cells.flatMap((c, i) => (i !== index && (!c.photoId || !photoById.has(c.photoId)) ? [i] : [])),
+    ]
+    updateSlide(slide.id, (s) => {
+      const next = visibleCells(s).slice()
+      added.slice(0, targets.length).forEach((photo, k) => {
+        next[targets[k]!] = emptyCell(photo.id)
+      })
+      return { ...s, cells: [...next, ...s.cells.slice(next.length)] }
+    })
+    setSelectedCell(index)
   }
 
   const swapCells = (a: number, b: number, restoreA: CollageCell) => {
@@ -450,7 +470,15 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                     />
                   ) : (
                     <span className="collage-cell__hint">
-                      <span aria-hidden="true">+</span>
+                      <button
+                        type="button"
+                        className="collage-cell__add"
+                        title="Open photos into this cell"
+                        aria-label={`Open photos into cell ${i + 1}`}
+                        onClick={() => void openIntoCell(i)}
+                      >
+                        +
+                      </button>
                       {r.w > 90 && <span>{coarsePointer ? 'Tap a photo' : 'Drop or pick a photo'}</span>}
                     </span>
                   )}
@@ -556,20 +584,11 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                   {aspect.width} × {aspect.height}
                 </span>
               </div>
-              <div className="segmented" role="group" aria-label="Aspect ratio">
-                {COLLAGE_ASPECTS.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    className={a.id === doc.aspect ? 'segmented__btn segmented__btn--active' : 'segmented__btn'}
-                    aria-pressed={a.id === doc.aspect}
-                    title={a.hint}
-                    onClick={() => onChange((d) => ({ ...d, aspect: a.id }))}
-                  >
-                    {a.label}
-                  </button>
-                ))}
-              </div>
+              <AspectPicker
+                aspects={COLLAGE_ASPECTS}
+                value={doc.aspect}
+                onChange={(aspect) => onChange((d) => ({ ...d, aspect }))}
+              />
             </div>
 
             <div className="adjust-group">
@@ -738,7 +757,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                     : 'Export collage'}
               </button>
               <p className="field-hint">
-                JPEG, {aspect.width} × {aspect.height} px per slide — Instagram's full size.
+                JPEG, {aspect.width} × {aspect.height} px per slide.
               </p>
             </div>
           </section>

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { FilmstripFilter } from '../hooks/useEditorSession'
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
@@ -14,6 +14,7 @@ type FilmstripProps = {
   onSelect: (id: string, opts?: { additive?: boolean; range?: boolean }) => void
   onOpen: (opts?: { folder?: boolean }) => void
   onSync?: () => void
+  onClear?: () => void
 }
 
 const FILTERS: { id: FilmstripFilter; label: string }[] = [
@@ -30,6 +31,17 @@ const FILTERS: { id: FilmstripFilter; label: string }[] = [
 
 /** Touch has no ⌘/Shift: a long press adds a photo to the selection instead. */
 const LONG_PRESS_MS = 450
+const LAYOUT_KEY = 'lightframes:filmstrip-layout'
+
+type FilmstripLayout = 'list' | 'grid'
+
+function loadLayout(): FilmstripLayout {
+  try {
+    return localStorage.getItem(LAYOUT_KEY) === 'grid' ? 'grid' : 'list'
+  } catch {
+    return 'list'
+  }
+}
 
 export function Filmstrip({
   photos,
@@ -42,8 +54,19 @@ export function Filmstrip({
   onSelect,
   onOpen,
   onSync,
+  onClear,
 }: FilmstripProps) {
   const pressRef = useRef<{ id: string; timer: number; x: number; y: number; fired: boolean } | null>(null)
+  const [layout, setLayout] = useState(loadLayout)
+  const toggleLayout = () => {
+    const next = layout === 'list' ? 'grid' : 'list'
+    setLayout(next)
+    try {
+      localStorage.setItem(LAYOUT_KEY, next)
+    } catch {
+      // Storage unavailable — keep the choice for this session only.
+    }
+  }
   const cancelPress = () => {
     if (pressRef.current) window.clearTimeout(pressRef.current.timer)
   }
@@ -52,7 +75,13 @@ export function Filmstrip({
 
   return (
     <aside
-      className={totalCount <= 1 ? 'filmstrip filmstrip--sparse' : 'filmstrip'}
+      className={[
+        'filmstrip',
+        totalCount <= 1 ? 'filmstrip--sparse' : '',
+        layout === 'grid' ? 'filmstrip--grid' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-label="Filmstrip"
     >
       <div className="filmstrip__header">
@@ -98,6 +127,47 @@ export function Filmstrip({
           <span className="filmstrip__count">
             {photos.length}/{totalCount}
           </span>
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm btn--icon filmstrip__layout"
+            title={layout === 'list' ? 'Show as 2-column grid' : 'Show as single column'}
+            aria-label={layout === 'list' ? 'Show as grid' : 'Show as list'}
+            aria-pressed={layout === 'grid'}
+            onClick={toggleLayout}
+          >
+            {layout === 'list' ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+                <rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+                <rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+                <rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="5" y="4" width="14" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+                <rect x="5" y="13" width="14" height="7" rx="1.5" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            )}
+          </button>
+          {onClear && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm btn--icon filmstrip__clear"
+              title="Clear workspace"
+              aria-label="Clear workspace"
+              onClick={onClear}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
@@ -124,6 +194,7 @@ export function Filmstrip({
                   .filter(Boolean)
                   .join(' ')}
                 aria-pressed={selected}
+                title={photo.name}
                 onPointerDown={(e) => {
                   if (e.pointerType === 'mouse') return
                   cancelPress()

@@ -39,8 +39,9 @@ export type CarouselDoc = {
 export const MIN_CAROUSEL_SLIDES = 2
 export const MAX_CAROUSEL_SLIDES = 10
 
-/** Feed sizes only: a seamless carousel lives in the feed, not in stories. */
-export const CAROUSEL_ASPECTS = COLLAGE_ASPECTS.filter((a) => a.id !== '9:16')
+/** Instagram feed sizes only: a seamless carousel lives in the feed, not in stories. */
+const CAROUSEL_ASPECT_IDS: readonly string[] = ['4:5', '1:1', '3:4']
+export const CAROUSEL_ASPECTS = COLLAGE_ASPECTS.filter((a) => CAROUSEL_ASPECT_IDS.includes(a.id))
 
 export function createFrame(photoId: string, x: number, y: number, w: number, h: number): CarouselFrame {
   return { id: crypto.randomUUID(), photoId, x, y, w, h, fx: 0.5, fy: 0.5, zoom: 1 }

@@ -11,6 +11,7 @@ type PresetsPanelProps = {
   onSave: (name: string) => void
   onUpdateSelected: () => void
   onApply: (preset: Preset) => void
+  onRemove: () => void
   onIntensityChange: (intensity: number) => void
   onDelete: (id: string) => void
   onExport: (preset: Preset) => void
@@ -26,6 +27,7 @@ export function PresetsPanel({
   onSave,
   onUpdateSelected,
   onApply,
+  onRemove,
   onIntensityChange,
   onDelete,
   onExport,
@@ -80,6 +82,15 @@ export function PresetsPanel({
           <div className="preset-applied__head">
             <span className="preset-applied__label">Applied</span>
             <span className="preset-applied__name">{selected.name}</span>
+            <button
+              type="button"
+              className="link-btn preset-applied__remove"
+              disabled={disabled}
+              title={`Remove “${selected.name}” and restore the previous edits`}
+              onClick={onRemove}
+            >
+              Remove
+            </button>
           </div>
           <Slider
             label="Intensity"
@@ -125,8 +136,8 @@ export function PresetsPanel({
                 className="preset-list__apply"
                 disabled={disabled}
                 aria-pressed={isSelected}
-                onClick={() => onApply(preset)}
-                title={`Apply “${preset.name}”`}
+                onClick={() => (isSelected ? onRemove() : onApply(preset))}
+                title={isSelected ? `Remove “${preset.name}”` : `Apply “${preset.name}”`}
               >
                 <span className="preset-list__check" aria-hidden="true">
                   {isSelected ? '✓' : ''}
@@ -189,8 +200,8 @@ export function PresetsPanel({
                     className="preset-list__apply"
                     disabled={disabled}
                     aria-pressed={isSelected}
-                    onClick={() => onApply(preset)}
-                    title={`Apply “${preset.name}”`}
+                    onClick={() => (isSelected ? onRemove() : onApply(preset))}
+                    title={isSelected ? `Remove “${preset.name}”` : `Apply “${preset.name}”`}
                   >
                     <span className="preset-list__check" aria-hidden="true">
                       {isSelected ? '✓' : ''}

@@ -146,6 +146,19 @@ export async function openImages(opts?: { folder?: boolean }): Promise<File[]> {
   return pickImageFiles()
 }
 
+/** Demo photos served from /public/samples (Unsplash License). */
+const SAMPLE_PHOTOS = ['lake.jpg', 'desert-road.jpg', 'city.jpg']
+
+export async function fetchSampleImages(): Promise<File[]> {
+  return Promise.all(
+    SAMPLE_PHOTOS.map(async (name) => {
+      const res = await fetch(`/samples/${name}`)
+      if (!res.ok) throw new Error('Could not load sample photos')
+      return new File([await res.blob()], name, { type: 'image/jpeg' })
+    }),
+  )
+}
+
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

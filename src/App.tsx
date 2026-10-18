@@ -6,6 +6,7 @@ import { CollageStudio } from './components/CollageStudio'
 import { ColorPanel } from './components/ColorPanel'
 import { CropPanel } from './components/CropPanel'
 import { EffectsPanel } from './components/EffectsPanel'
+import { ConfirmDialog } from './components/ConfirmDialog'
 import { ExportDialog } from './components/ExportDialog'
 import { Filmstrip } from './components/Filmstrip'
 import { HistogramPanel } from './components/HistogramPanel'
@@ -53,6 +54,8 @@ export default function App() {
   const [pickingWhiteBalance, setPickingWhiteBalance] = useState(false)
   const [showMaskTint, setShowMaskTint] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [clearOpen, setClearOpen] = useState(false)
+  const closeClear = useCallback(() => setClearOpen(false), [])
   const [brush, setBrush] = useState<BrushSettings>({ size: 0.05, feather: 0.6, flow: 1, erase: false })
   const previewApi = useRef<PreviewApi | null>(null)
   const phone = useMediaQuery(PHONE_QUERY)
@@ -214,6 +217,7 @@ export default function App() {
           mode === 'collage' ? studioApi.current?.exportSlides() : session.setExportOpen(true)
         }
         onShowShortcuts={() => setShortcutsOpen(true)}
+        onClearWorkspace={() => setClearOpen(true)}
       />
 
       {mode === 'collage' && studioFormat === 'carousel' && carousel ? (
@@ -255,6 +259,7 @@ export default function App() {
             onSelect={session.selectPhoto}
             onOpen={session.handleOpen}
             onSync={session.syncSelected}
+            onClear={() => setClearOpen(true)}
           />
 
           <main className="stage">
@@ -280,6 +285,7 @@ export default function App() {
               onHistogram={onHistogram}
               onFrameSize={setFrameSize}
               onOpen={() => session.handleOpen()}
+              onOpenSamples={session.openSamples}
               cropOverlay={
                 canEdit && session.panelFocus === 'crop' && session.cropMode
                   ? {
@@ -443,6 +449,7 @@ export default function App() {
                   onSave={session.savePreset}
                   onUpdateSelected={session.updateSelectedPreset}
                   onApply={session.applyPreset}
+                  onRemove={session.removePreset}
                   onIntensityChange={session.setPresetIntensity}
                   onDelete={session.deletePreset}
                   onExport={session.exportPreset}
@@ -466,6 +473,25 @@ export default function App() {
       />
 
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+
+      <ConfirmDialog
+        open={clearOpen}
+        title="Clear workspace?"
+        confirmLabel={`Remove ${session.photos.length} photo${session.photos.length === 1 ? '' : 's'}`}
+        onCancel={closeClear}
+        onConfirm={() => {
+          session.clearWorkspace()
+          setCollage(null)
+          setCarousel(null)
+          closeClear()
+        }}
+      >
+        <p>
+          This removes all {session.photos.length} open photo{session.photos.length === 1 ? '' : 's'}, their
+          edits and the undo history. It can't be undone.
+        </p>
+        <p className="confirm__note">Your original files and your presets are not affected.</p>
+      </ConfirmDialog>
 
       <Toast toast={session.toast} onDismiss={session.dismissToast} />
     </div>
