@@ -1,6 +1,6 @@
 # Lightframes
 
-**[Try it now → lightframes.vercel.app](https://lightframes.vercel.app)**
+**[Try it now → lightframes.vercel.app](https://lightframes.si)**
 
 Free, **open-source**, local photo editor focused on custom presets and copy/paste edits. The code is MIT-licensed and your photos never leave your device: no uploads, no account, no cloud.
 
@@ -10,8 +10,8 @@ Runs entirely in the browser. Edits stay non-destructive until you export. Sessi
 
 ## Screenshots
 
-| Start screen | Carousel |
-| --- | --- |
+| Start screen                                     | Carousel                                                                             |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | ![Empty start screen](docs/screenshots/home.jpg) | ![Carousel mode splitting a panorama across 4 slides](docs/screenshots/carousel.jpg) |
 
 ## Features
@@ -66,20 +66,20 @@ Presets are named `EditParams` stacks stored in `localStorage` and exportable as
 
 ## Shortcuts
 
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl/Cmd+Z` | Undo |
-| `Ctrl/Cmd+Shift+Z` / `Ctrl/Cmd+Y` | Redo |
-| `Ctrl/Cmd+C` / `V` | Copy / paste edits |
-| `Ctrl/Cmd+A` | Select all in filmstrip |
-| `Ctrl/Cmd+S` | Sync active edits to selection |
-| `Ctrl/Cmd+E` | Export dialog |
-| `\` | Before / after compare |
-| `R` | Crop panel |
-| `G` | Toggle filmstrip |
-| `J` | Clipping overlay |
-| `1`–`5` | Adjust / Curve / Crop / Local / Presets |
-| `[` / `]` | Previous / next photo |
+| Shortcut                          | Action                                  |
+| --------------------------------- | --------------------------------------- |
+| `Ctrl/Cmd+Z`                      | Undo                                    |
+| `Ctrl/Cmd+Shift+Z` / `Ctrl/Cmd+Y` | Redo                                    |
+| `Ctrl/Cmd+C` / `V`                | Copy / paste edits                      |
+| `Ctrl/Cmd+A`                      | Select all in filmstrip                 |
+| `Ctrl/Cmd+S`                      | Sync active edits to selection          |
+| `Ctrl/Cmd+E`                      | Export dialog                           |
+| `\`                               | Before / after compare                  |
+| `R`                               | Crop panel                              |
+| `G`                               | Toggle filmstrip                        |
+| `J`                               | Clipping overlay                        |
+| `1`–`5`                           | Adjust / Curve / Crop / Local / Presets |
+| `[` / `]`                         | Previous / next photo                   |
 
 (Ignored when focus is in a text field.)
 
@@ -87,10 +87,10 @@ Presets are named `EditParams` stacks stored in `localStorage` and exportable as
 
 Layout reserves quiet regions for future monetization (no ad network wired):
 
-| Slot | `data-ad-slot` | Placement |
-| --- | --- | --- |
-| Sidebar | `sidebar` | Below presets (~120px) |
-| Filmstrip | `filmstrip` | Below the file list (~90px) |
+| Slot      | `data-ad-slot` | Placement                   |
+| --------- | -------------- | --------------------------- |
+| Sidebar   | `sidebar`      | Below presets (~120px)      |
+| Filmstrip | `filmstrip`    | Below the file list (~90px) |
 
 Hidden by default. Enable reserved placeholders with:
 
@@ -115,9 +115,9 @@ Sample photos in `public/samples/` are © the Lightframes author, all rights res
 
 ---
 
-[![Lightframes — the open-source photo editor that stays on your device](public/og-image.png)](https://lightframes.vercel.app)
+[![Lightframes — the open-source photo editor that stays on your device](public/og-image.png)](https://lightframes.si)
 
 <p align="center">
   Your photos, your presets, your device.<br>
-  <strong><a href="https://lightframes.vercel.app">Open Lightframes →</a></strong> · if it saves you time, a ⭐ on the repo helps others find it.
+  <strong><a href="https://lightframes.si">Open Lightframes →</a></strong> · if it saves you time, a ⭐ on the repo helps others find it.
 </p>
