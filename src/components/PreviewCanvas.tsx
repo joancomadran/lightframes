@@ -20,14 +20,16 @@ import {
   computeAutoWhiteBalance,
   computeMaskPreview,
   healSearchImage,
-  prepareBase,
+  prepareBaseWithCutout,
   sampleBaseLinear,
   whiteBalanceForNeutral,
   type BaseImage,
   type RenderSource,
 } from '../lib/imageProcessing'
 import { healKey, rankHealSources } from '../lib/heal'
-import { ensurePatches, getInpaintVersion, subscribeInpaint } from '../lib/inpaint'
+import { getAiVersion, subscribeAi } from '../lib/ai'
+import { ensureCutout, getCutout, setSourceKey } from '../lib/cutout'
+import { ensurePatches } from '../lib/inpaint'
 import { loadRawPreview } from '../lib/rawDecode'
 import { developBase } from '../lib/renderPipeline'
 import { stepRotate, type EditParams, type HealSpot, type LocalAdjustment } from '../types/edits'
@@ -234,8 +236,8 @@ export function PreviewCanvas({
   const [sourceVersion, setSourceVersion] = useState(0)
   /** Full-size dimensions of the loaded source (spot removal maps through them). */
   const [sourceDims, setSourceDims] = useState<Size | null>(null)
-  /** Changes when an inpainted patch lands, so the render picks it up. */
-  const inpaintVersion = useSyncExternalStore(subscribeInpaint, getInpaintVersion)
+  /** Changes when a model result lands (inpainted patch, cutout), so the render picks it up. */
+  const aiVersion = useSyncExternalStore(subscribeAi, getAiVersion)
   /** The `src` whose pixels are loaded; a RAW is still developing until it matches. */
   const [readySrc, setReadySrc] = useState<string | null>(null)
   const developingRaw = Boolean(rawFile) && readySrc !== src
@@ -333,10 +335,11 @@ export function PreviewCanvas({
 
   const getBase = useCallback((source: RenderSource, renderEdits: EditParams, maxEdge: number) => {
     const c = renderEdits.crop
-    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}`
+    const cutout = renderEdits.background.mode === 'original' ? null : getCutout(source)
+    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}|${cutout ? 'cut' : ''}`
     const cached = baseCacheRef.current
     if (cached && cached.source === source && cached.key === key) return cached.base
-    const base = prepareBase(source, renderEdits, maxEdge)
+    const base = prepareBaseWithCutout(source, renderEdits, maxEdge, cutout)
     if (base) baseCacheRef.current = { source, key, base }
     return base
   }, [])
@@ -571,6 +574,8 @@ export function PreviewCanvas({
     const showSource = (source: RenderSource) => {
       if (cancelled) return
       sourceRef.current = source
+      // Every decode of this photo (preview, export) shares one background cutout.
+      setSourceKey(source, src)
       setSourceVersion((v) => v + 1)
       setSourceDims(sourceSize(source))
       setReadySrc(src)
@@ -602,15 +607,22 @@ export function PreviewCanvas({
     cancelAnimationFrame(frameRef.current)
     frameRef.current = requestAnimationFrame(() => void renderNow())
     return () => cancelAnimationFrame(frameRef.current)
-  }, [renderEdits, src, sourceVersion, inpaintVersion, maxEdge, compareMode, showClipping, splitActive, onHistogram, renderNow])
+  }, [renderEdits, src, sourceVersion, aiVersion, maxEdge, compareMode, showClipping, splitActive, onHistogram, renderNow])
 
   // Fill any "remove" spot that has no inpainted patch yet (new, resized, or after a reload).
   useEffect(() => {
     const source = sourceRef.current
     if (!source || !edits.heal.some((s) => s.mode === 'remove')) return
-    // Failures surface through the inpaint status in the Heal panel.
+    // Failures surface through the model status in the Retouch panel.
     ensurePatches(source, edits.heal).catch(() => {})
   }, [edits.heal, sourceVersion])
+
+  const removingBackground = edits.background.mode !== 'original'
+  useEffect(() => {
+    const source = sourceRef.current
+    if (!source || !removingBackground) return
+    ensureCutout(source).catch(() => {})
+  }, [removingBackground, sourceVersion])
 
   // Red mask tint: a small grid of the selected mask's weights, scaled up by CSS.
   useEffect(() => {
@@ -905,7 +917,11 @@ export function PreviewCanvas({
           />
           <canvas
             ref={canvasRef}
-            className="preview__canvas"
+            className={
+              edits.background.mode === 'transparent' && !compareMode
+                ? 'preview__canvas preview__canvas--cutout'
+                : 'preview__canvas'
+            }
             aria-label={name ?? 'Preview'}
             style={
               holdingBefore
@@ -952,6 +968,7 @@ export function PreviewCanvas({
         {healOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
           <HealOverlay
             frame={overlayFrame}
+            viewport={viewportSize}
             geometry={{ width: sourceDims.w, height: sourceDims.h, rotate: renderEdits.rotate, crop: renderEdits.crop }}
             config={healOverlay}
             pickSource={findHealSource}

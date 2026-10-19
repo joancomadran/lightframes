@@ -1,10 +1,45 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
+import { usePresetThumbnails, type ThumbGeometry } from '../hooks/usePresetThumbnails'
 import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
 import type { Preset } from '../types/edits'
 import { Slider } from './Slider'
 
+type PresetTileProps = {
+  preset: Preset
+  thumb: string | undefined
+  selected: boolean
+  disabled?: boolean
+  onApply: (preset: Preset) => void
+  onRemove: () => void
+  actions?: ReactNode
+}
+
+function PresetTile({ preset, thumb, selected, disabled, onApply, onRemove, actions }: PresetTileProps) {
+  return (
+    <li className={selected ? 'preset-grid__item preset-grid__item--active' : 'preset-grid__item'}>
+      <button
+        type="button"
+        className="preset-grid__apply"
+        disabled={disabled}
+        aria-pressed={selected}
+        onClick={() => (selected ? onRemove() : onApply(preset))}
+        title={selected ? `Remove “${preset.name}”` : `Apply “${preset.name}”`}
+      >
+        <span className="preset-grid__thumb">
+          {thumb && <img src={thumb} alt="" draggable={false} />}
+        </span>
+        <span className="preset-grid__name">{preset.name}</span>
+      </button>
+      {actions && <div className="preset-grid__actions">{actions}</div>}
+    </li>
+  )
+}
+
 type PresetsPanelProps = {
   presets: Preset[]
+  /** Active photo the previews are rendered from. */
+  previewSrc: string | null
+  previewGeometry: ThumbGeometry | null
   selectedPresetId: string | null
   intensity: number
   disabled?: boolean
@@ -21,6 +56,8 @@ type PresetsPanelProps = {
 
 export function PresetsPanel({
   presets,
+  previewSrc,
+  previewGeometry,
   selectedPresetId,
   intensity,
   disabled,
@@ -40,6 +77,8 @@ export function PresetsPanel({
   const selectedIsBuiltin = Boolean(selected && isBuiltinPreset(selected.id))
   const canSave = Boolean(!disabled && name.trim())
   const canUpdate = Boolean(!disabled && selected && !selectedIsBuiltin)
+  const builtinThumbs = usePresetThumbnails(BUILTIN_PRESETS, previewSrc, previewGeometry)
+  const customThumbs = usePresetThumbnails(presets, previewSrc, previewGeometry)
 
   return (
     <section className="panel panel--presets" aria-label="Presets">
@@ -121,32 +160,18 @@ export function PresetsPanel({
         <span>Filters</span>
         <span className="field-row__count">{BUILTIN_PRESETS.length}</span>
       </div>
-      <ul className="preset-list preset-list--builtin">
-        {BUILTIN_PRESETS.map((preset) => {
-          const isSelected = preset.id === selectedPresetId
-          return (
-            <li
-              key={preset.id}
-              className={
-                isSelected ? 'preset-list__item preset-list__item--active' : 'preset-list__item'
-              }
-            >
-              <button
-                type="button"
-                className="preset-list__apply"
-                disabled={disabled}
-                aria-pressed={isSelected}
-                onClick={() => (isSelected ? onRemove() : onApply(preset))}
-                title={isSelected ? `Remove “${preset.name}”` : `Apply “${preset.name}”`}
-              >
-                <span className="preset-list__check" aria-hidden="true">
-                  {isSelected ? '✓' : ''}
-                </span>
-                <span className="preset-list__name">{preset.name}</span>
-              </button>
-            </li>
-          )
-        })}
+      <ul className="preset-grid">
+        {BUILTIN_PRESETS.map((preset) => (
+          <PresetTile
+            key={preset.id}
+            preset={preset}
+            thumb={builtinThumbs[preset.id]}
+            selected={preset.id === selectedPresetId}
+            disabled={disabled}
+            onApply={onApply}
+            onRemove={onRemove}
+          />
+        ))}
       </ul>
 
       <form
@@ -185,30 +210,18 @@ export function PresetsPanel({
             <span>My presets</span>
             <span className="field-row__count">{presets.length}</span>
           </div>
-          <ul className="preset-list">
-            {presets.map((preset) => {
-              const isSelected = preset.id === selectedPresetId
-              return (
-                <li
-                  key={preset.id}
-                  className={
-                    isSelected ? 'preset-list__item preset-list__item--active' : 'preset-list__item'
-                  }
-                >
-                  <button
-                    type="button"
-                    className="preset-list__apply"
-                    disabled={disabled}
-                    aria-pressed={isSelected}
-                    onClick={() => (isSelected ? onRemove() : onApply(preset))}
-                    title={isSelected ? `Remove “${preset.name}”` : `Apply “${preset.name}”`}
-                  >
-                    <span className="preset-list__check" aria-hidden="true">
-                      {isSelected ? '✓' : ''}
-                    </span>
-                    <span className="preset-list__name">{preset.name}</span>
-                  </button>
-                  <div className="preset-list__actions">
+          <ul className="preset-grid">
+            {presets.map((preset) => (
+              <PresetTile
+                key={preset.id}
+                preset={preset}
+                thumb={customThumbs[preset.id]}
+                selected={preset.id === selectedPresetId}
+                disabled={disabled}
+                onApply={onApply}
+                onRemove={onRemove}
+                actions={
+                  <>
                     <button
                       type="button"
                       className="btn btn--ghost btn--sm btn--icon"
@@ -235,10 +248,10 @@ export function PresetsPanel({
                     >
                       ×
                     </button>
-                  </div>
-                </li>
-              )
-            })}
+                  </>
+                }
+              />
+            ))}
           </ul>
         </>
       )}

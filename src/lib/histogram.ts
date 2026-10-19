@@ -28,9 +28,12 @@ export function computeHistogram(imageData: ImageData): {
   const { data } = imageData
   let shadowPixels = 0
   let highlightPixels = 0
-  const totalPixels = imageData.width * imageData.height
+  let totalPixels = 0
 
   for (let i = 0; i < data.length; i += 4) {
+    // Transparent pixels (removed background, straighten corners) aren't part of the picture.
+    if (data[i + 3] === 0) continue
+    totalPixels++
     const r = data[i]!
     const g = data[i + 1]!
     const b = data[i + 2]!

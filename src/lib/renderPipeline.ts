@@ -1,4 +1,5 @@
-import { DEFAULT_EDITS, type EditParams, type ExportOptions } from '../types/edits'
+import { DEFAULT_EDITS, type BackgroundEdit, type EditParams, type ExportOptions } from '../types/edits'
+import { ensureCutout, getCutout } from './cutout'
 import { poolSize, runInPool } from './developPool'
 import { ensurePatches } from './inpaint'
 import {
@@ -9,7 +10,7 @@ import {
   buildLumMask,
   detailMargin,
   needsDetailPass,
-  prepareBase,
+  prepareBaseWithCutout,
   processImageSync,
   type BaseImage,
   type RenderSource,
@@ -103,18 +104,27 @@ function developSync(base: BaseImage, edits: EditParams): ImageData {
   return imageData
 }
 
-/**
- * Develop a prepared base image with every edit, in parallel on the worker
- * pool when available. With `bypass`, returns the unedited rendering (RAW
- * files still get their base tone curve).
- */
-export async function developBase(
-  base: BaseImage,
-  edits: EditParams,
-  opts: { bypass?: boolean } = {},
-): Promise<ImageData> {
-  const effective = opts.bypass ? (base.linear ? DEFAULT_EDITS : null) : edits
-  if (!effective) return new ImageData(base.data.slice(), base.width, base.height)
+/** Cut the subject out: onto transparency, or onto a solid colour (then fully opaque). */
+function applyBackground(image: ImageData, cutout: Uint8Array, background: BackgroundEdit): void {
+  const { data } = image
+  const hex = Number.parseInt(background.color.slice(1), 16)
+  const fill = [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255]
+  const opaque = background.mode === 'color'
+  for (let k = 0, i = 0; k < cutout.length; k++, i += 4) {
+    const a = (cutout[k]! * data[i + 3]!) / 255
+    if (opaque) {
+      const t = a / 255
+      data[i] = fill[0]! + (data[i]! - fill[0]!) * t
+      data[i + 1] = fill[1]! + (data[i + 1]! - fill[1]!) * t
+      data[i + 2] = fill[2]! + (data[i + 2]! - fill[2]!) * t
+      data[i + 3] = 255
+    } else {
+      data[i + 3] = a
+    }
+  }
+}
+
+async function developEdits(base: BaseImage, effective: EditParams): Promise<ImageData> {
   const workers = poolSize()
   if (workers === 0) return developSync(base, effective)
   try {
@@ -126,6 +136,26 @@ export async function developBase(
   } catch {
     return developSync(base, effective)
   }
+}
+
+/**
+ * Develop a prepared base image with every edit, in parallel on the worker
+ * pool when available. With `bypass`, returns the unedited rendering (RAW
+ * files still get their base tone curve, and the background stays).
+ */
+export async function developBase(
+  base: BaseImage,
+  edits: EditParams,
+  opts: { bypass?: boolean } = {},
+): Promise<ImageData> {
+  const effective = opts.bypass ? (base.linear ? DEFAULT_EDITS : null) : edits
+  const image = effective
+    ? await developEdits(base, effective)
+    : new ImageData(base.data.slice(), base.width, base.height)
+  if (!opts.bypass && base.cutout && edits.background.mode !== 'original') {
+    applyBackground(image, base.cutout, edits.background)
+  }
+  return image
 }
 
 function drawWatermark(
@@ -166,9 +196,10 @@ export async function exportEditedImage(
 ): Promise<{ blob: Blob; filename: string }> {
   const frame = options.frame
   const maxEdge = frame ? Math.max(frame.width, frame.height) : options.maxEdge
-  // "Remove" spots need their inpainted patches before the pixels can be prepared.
+  // "Remove" spots and background removal need their model output before the pixels can be prepared.
   await ensurePatches(source, edits.heal)
-  const base = prepareBase(source, edits, maxEdge)
+  if (edits.background.mode !== 'original') await ensureCutout(source)
+  const base = prepareBaseWithCutout(source, edits, maxEdge, getCutout(source))
   if (!base) throw new Error('Could not prepare image')
   const developed = await developBase(base, edits)
 
@@ -197,17 +228,19 @@ export async function exportEditedImage(
   const ctx = canvas.getContext('2d')
   if (ctx) drawWatermark(ctx, options, area)
 
-  const mime = MIME_BY_FORMAT[options.format]
-  const quality = options.format === 'png' ? undefined : Math.min(1, Math.max(0.1, options.quality))
+  // JPEG has no transparency: a cut-out subject on transparency goes out as PNG instead.
+  const format = edits.background.mode === 'transparent' && options.format === 'jpeg' ? 'png' : options.format
+  const mime = MIME_BY_FORMAT[format]
+  const quality = format === 'png' ? undefined : Math.min(1, Math.max(0.1, options.quality))
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (result) => {
         if (result) resolve(result)
-        else reject(new Error(`Failed to encode ${options.format}`))
+        else reject(new Error(`Failed to encode ${format}`))
       },
       mime,
       quality,
     )
   })
-  return { blob, filename: buildExportFilename(baseName, options) }
+  return { blob, filename: buildExportFilename(baseName, { ...options, format }) }
 }

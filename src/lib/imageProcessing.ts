@@ -22,7 +22,7 @@ import {
 } from '../types/edits'
 import { isFullCrop } from './crop'
 import { applyLutToImageData } from './cubeLut'
-import { applyHeal, healBounds, healKey } from './heal'
+import { applyHeal, frameToSource, healBounds, healKey, type HealGeometry } from './heal'
 import type { LinearImage } from './rawDecode'
 
 /*
@@ -1979,8 +1979,94 @@ export function healSearchImage(
   return { data: ctx.getImageData(0, 0, w, h).data, width: w, height: h, stride: 4, max: 255 }
 }
 
+/** The whole source stretched to `size`×`size` 8-bit RGBA: what the segmentation model takes. */
+export function sourceSquare(source: RenderSource, size: number): Uint8ClampedArray<ArrayBuffer> | null {
+  if (isLinearImage(source)) {
+    const { width: sw, height: sh } = source
+    const data = new Uint8ClampedArray(size * size * 4)
+    for (let y = 0; y < size; y++) {
+      const sy = Math.min(sh - 1, Math.floor(((y + 0.5) * sh) / size))
+      for (let x = 0; x < size; x++) {
+        const sx = Math.min(sw - 1, Math.floor(((x + 0.5) * sw) / size))
+        const j = (sy * sw + sx) * 3
+        const i = (y * size + x) * 4
+        data[i] = encodeSrgb(source.data[j]! * source.scale) * 255
+        data[i + 1] = encodeSrgb(source.data[j + 1]! * source.scale) * 255
+        data[i + 2] = encodeSrgb(source.data[j + 2]! * source.scale) * 255
+        data[i + 3] = 255
+      }
+    }
+    return data
+  }
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) return null
+  ctx.drawImage(source, 0, 0, size, size)
+  return ctx.getImageData(0, 0, size, size).data
+}
+
+/**
+ * A square source-space mask (the background cutout) as alpha over the
+ * framed image: `width`×`height` after orientation, straighten and crop.
+ */
+function framedMask(mask: Uint8ClampedArray, geometry: HealGeometry, width: number, height: number): Uint8Array {
+  const n = Math.round(Math.sqrt(mask.length))
+  // Framed → source is affine: find it from three points instead of per pixel.
+  const o = frameToSource(geometry, 0, 0)
+  const ux = frameToSource(geometry, 1, 0)
+  const vy = frameToSource(geometry, 0, 1)
+  const ax = ux.x - o.x
+  const ay = ux.y - o.y
+  const bx = vy.x - o.x
+  const by = vy.y - o.y
+  const out = new Uint8Array(width * height)
+  for (let y = 0; y < height; y++) {
+    const v = (y + 0.5) / height
+    for (let x = 0; x < width; x++) {
+      const u = (x + 0.5) / width
+      const sx = (o.x + ax * u + bx * v) * n - 0.5
+      const sy = (o.y + ay * u + by * v) * n - 0.5
+      if (sx < -0.5 || sy < -0.5 || sx > n - 0.5 || sy > n - 0.5) continue
+      const fx = Math.min(n - 1, Math.max(0, sx))
+      const fy = Math.min(n - 1, Math.max(0, sy))
+      const x0 = Math.floor(fx)
+      const y0 = Math.floor(fy)
+      const x1 = Math.min(n - 1, x0 + 1)
+      const y1 = Math.min(n - 1, y0 + 1)
+      const tx = fx - x0
+      const ty = fy - y0
+      const top = mask[y0 * n + x0]! + (mask[y0 * n + x1]! - mask[y0 * n + x0]!) * tx
+      const bottom = mask[y1 * n + x0]! + (mask[y1 * n + x1]! - mask[y1 * n + x0]!) * tx
+      out[y * width + x] = top + (bottom - top) * ty
+    }
+  }
+  return out
+}
+
 /** Geometry-transformed pixels (orientation, straighten, crop, preview scale) the develop passes start from. */
-export type BaseImage = BaseSample
+export type BaseImage = BaseSample & {
+  /** Subject alpha over these pixels when the background is being removed. */
+  cutout?: Uint8Array
+}
+
+/**
+ * prepareBase plus the background cutout: `cutout` is the square
+ * source-space mask from cutout.ts, or null while it is still being made.
+ */
+export function prepareBaseWithCutout(
+  source: RenderSource,
+  edits: EditParams,
+  maxEdge: number,
+  cutout: Uint8ClampedArray | null,
+): BaseImage | null {
+  const base = prepareBase(source, edits, maxEdge)
+  if (!base || !cutout || edits.background.mode === 'original') return base
+  const { width, height } = sourceDimensions(source)
+  const geometry = { width, height, rotate: normalizeRotate(edits.rotate ?? 0), crop: edits.crop }
+  return { ...base, cutout: framedMask(cutout, geometry, base.width, base.height) }
+}
 
 /** Orientation, straighten, crop and downscale — everything but the colour work. */
 export function prepareBase(source: RenderSource, edits: EditParams, maxEdge = 2400): BaseImage | null {

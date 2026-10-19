@@ -173,7 +173,21 @@ export function Filmstrip({
 
       <ul className="filmstrip__list">
         {totalCount === 0 && (
-          <li className="filmstrip__empty">No images yet</li>
+          <li>
+            <button
+              type="button"
+              className="filmstrip__add"
+              title="Open JPEG, PNG or RAW files"
+              onClick={() => onOpen()}
+            >
+              <span className="filmstrip__add-tile" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </span>
+              <span className="filmstrip__add-label">Add photos</span>
+            </button>
+          </li>
         )}
         {totalCount > 0 && photos.length === 0 && (
           <li className="filmstrip__empty">No photos match this filter</li>

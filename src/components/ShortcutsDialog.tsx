@@ -19,7 +19,7 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
       [`${MOD} E`, 'Export'],
       ['W', 'White balance picker'],
       ['R', 'Crop'],
-      ['Q', 'Spot removal'],
+      ['Q', 'Retouch: spots & background'],
       ['H', 'Show / hide spot outlines'],
     ],
   },

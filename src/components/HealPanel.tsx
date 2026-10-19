@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { getInpaintStatus, preloadInpaint, subscribeInpaint, type InpaintStatus } from '../lib/inpaint'
+import { getAiStatus, preloadModel, subscribeAi, type AiStatus } from '../lib/ai'
 import type { HealMode, HealSpot } from '../types/edits'
 import type { HealTool } from './HealOverlay'
 import { Slider } from './Slider'
@@ -17,6 +17,8 @@ type HealPanelProps = {
   onRemove: (id: string) => void
   onClear: () => void
   onNewSource: (id: string) => void
+  /** The size slider moved: show the brush size on the photo for a moment. */
+  onSizePreview: () => void
   onBegin?: () => void
   onCommit?: () => void
 }
@@ -27,7 +29,7 @@ const MODES: { id: HealMode; label: string; hint: string }[] = [
   { id: 'remove', label: 'Remove', hint: 'AI fill, best for objects. Runs on your device' },
 ]
 
-function statusText(status: InpaintStatus): string | null {
+function statusText(status: AiStatus): string | null {
   if (status.phase === 'downloading') {
     return `Downloading the removal model (28 MB, once)… ${Math.round(status.progress * 100)}%`
   }
@@ -49,11 +51,12 @@ export function HealPanel({
   onRemove,
   onClear,
   onNewSource,
+  onSizePreview,
   onBegin,
   onCommit,
 }: HealPanelProps) {
   const selected = spots.find((s) => s.id === selectedId) ?? null
-  const inpaint = useSyncExternalStore(subscribeInpaint, getInpaintStatus)
+  const inpaint = useSyncExternalStore(subscribeAi, () => getAiStatus('inpaint'))
   const inpaintText = statusText(inpaint)
   // The sliders show (and edit) the selected spot; new spots use the same settings.
   const shown = selected ?? tool
@@ -62,7 +65,7 @@ export function HealPanel({
 
   const change = (patch: Partial<HealTool>, opts?: { commit?: boolean }) => {
     // Fetch the model as soon as the tool is picked, not on the first stroke.
-    if (patch.mode === 'remove') preloadInpaint()
+    if (patch.mode === 'remove') preloadModel('inpaint')
     onToolChange({ ...tool, ...patch })
     if (!selected) return
     onUpdate(selected.id, patch, opts)
@@ -151,6 +154,7 @@ export function HealPanel({
           format={(v) => v.toFixed(1)}
           onChange={(v, opts) => {
             change({ size: v / 100 })
+            onSizePreview()
             if (opts?.commit && selected) commitSoon()
           }}
           onBegin={onBegin}

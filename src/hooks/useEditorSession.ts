@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { downloadBlob, fetchSampleImages, openImages } from '../lib/files'
 import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
-import { buildExportFilename, type RenderSource } from '../lib/imageProcessing'
+import { setSourceKey } from '../lib/cutout'
+import { type RenderSource } from '../lib/imageProcessing'
 import { exportEditedImage } from '../lib/renderPipeline'
 import {
   createPreset,
@@ -45,7 +46,7 @@ export const PANELS: { id: PanelId; label: string }[] = [
   { id: 'effects', label: 'Effects' },
   { id: 'curve', label: 'Curve' },
   { id: 'crop', label: 'Crop' },
-  { id: 'heal', label: 'Heal' },
+  { id: 'heal', label: 'Retouch' },
   { id: 'local', label: 'Local' },
   { id: 'presets', label: 'Presets' },
 ]
@@ -105,14 +106,18 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
 
 /** Full-resolution export source: RAWs are developed from the sensor data. */
 export async function loadExportSource(photo: PhotoSession): Promise<RenderSource> {
+  let source: RenderSource | null = null
   if (isRawFile(photo.file)) {
     try {
-      return await decodeRawLinear(photo.file, { halfSize: false })
+      source = await decodeRawLinear(photo.file, { halfSize: false })
     } catch {
       // LibRaw could not develop it — export from the embedded JPEG instead.
     }
   }
-  return loadImage(photo.objectUrl)
+  source ??= await loadImage(photo.objectUrl)
+  // Reuse the preview's background cutout instead of finding the subject again.
+  setSourceKey(source, photo.objectUrl)
+  return source
 }
 
 function revokeAll(photos: PhotoSession[]) {
@@ -426,7 +431,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     return loadFiles(files)
   }, [loadFiles])
 
-  /** First-visit demo: sample photos with a built-in look already applied. */
+  /** First-visit demo: sample photos opened unedited, like a fresh RAW import. */
   const openSamples = useCallback(async () => {
     setStatus('Loading sample photos…')
     let files: File[]
@@ -437,13 +442,9 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       setStatus('Open JPEG, PNG, or RAW files to begin')
       return
     }
-    const preset = BUILTIN_PRESETS.find((p) => p.id === 'builtin:japan-film') ?? BUILTIN_PRESETS[0]!
-    const loaded = await loadFiles(files, preset.edits)
+    const loaded = await loadFiles(files)
     if (loaded.length === 0) return
-    for (const photo of loaded) presetBaseRef.current.set(photo.id, cloneEdits(DEFAULT_EDITS))
-    setSelectedPresetId(preset.id)
-    setPresetIntensityState(100)
-    showToast(`Sample photos from Unsplash, with “${preset.name}” applied — compare before/after`)
+    showToast('Sample photos straight from RAW — try a preset or the sliders')
   }, [loadFiles, showToast])
 
   /** Drop every open photo and its history; presets and the clipboard stay. */
@@ -516,6 +517,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
             rotate: p.edits.rotate,
             crop: cloneEdits(p.edits).crop,
             heal: cloneEdits(p.edits).heal,
+            background: { ...p.edits.background },
           },
         }
       }),
@@ -536,6 +538,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
           blended.rotate = photo.edits.rotate
           blended.crop = cloneEdits(photo.edits).crop
           blended.heal = cloneEdits(photo.edits).heal
+          blended.background = { ...photo.edits.background }
           return { ...photo, edits: blended }
         }),
       )
@@ -619,7 +622,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       prev.map((preset) => {
         if (preset.id !== selectedPresetId) return preset
         updatedName = preset.name
-        return { ...preset, edits: { ...cloneEdits(photo.edits), heal: [] } }
+        return { ...preset, edits: { ...cloneEdits(photo.edits), heal: [], background: { ...DEFAULT_EDITS.background } } }
       }),
     )
     setPresetIntensityState(100)
@@ -752,6 +755,8 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       setExportOpen(false)
       setStatus(targets.length > 1 ? `Exporting ${targets.length}…` : 'Exporting…')
       try {
+        // The export may change the extension (a transparent cutout saves as PNG): report what was written.
+        let lastFilename = ''
         for (const id of targets) {
           const photo = photosRef.current.find((p) => p.id === id)
           if (!photo) continue
@@ -759,14 +764,9 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
           const source = await loadExportSource(photo)
           const { blob, filename } = await exportEditedImage(source, photo.edits, options, photo.name)
           downloadBlob(blob, filename)
+          lastFilename = filename
         }
-        const message =
-          targets.length === 1
-            ? `Exported ${buildExportFilename(
-                photosRef.current.find((p) => p.id === targets[0])?.name ?? 'photo',
-                options,
-              )}`
-            : `Exported ${targets.length} files`
+        const message = targets.length === 1 ? `Exported ${lastFilename}` : `Exported ${targets.length} files`
         setStatus(message)
         showToast(message)
       } catch {

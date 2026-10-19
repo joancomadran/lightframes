@@ -46,10 +46,15 @@ export function HistogramPanel({
           }
           onClick={onToggleClipping}
           aria-pressed={showClipping}
-          title="Show clipped pixels on the image (J)"
+          aria-describedby="histogram-clip-tip"
         >
           Clipping
         </button>
+        <span id="histogram-clip-tip" role="tooltip" className="histogram-clip__tip">
+          Highlights the parts of the photo that have lost detail: <strong className="histogram-clip__hi">red</strong>{' '}
+          for highlights blown to pure white, <strong className="histogram-clip__lo">blue</strong> for shadows
+          crushed to pure black. <kbd>J</kbd> toggles it.
+        </span>
       </div>
     </section>
   )

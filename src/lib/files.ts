@@ -146,8 +146,8 @@ export async function openImages(opts?: { folder?: boolean }): Promise<File[]> {
   return pickImageFiles()
 }
 
-/** Demo photos served from /public/samples (Unsplash License). */
-const SAMPLE_PHOTOS = ['lake.jpg', 'desert-road.jpg', 'city.jpg']
+/** Demo photos served from /public/samples, developed flat from the author's own RAWs. */
+const SAMPLE_PHOTOS = ['pagoda.jpg', 'twelve-apostles.jpg', 'opera-night.jpg']
 
 export async function fetchSampleImages(): Promise<File[]> {
   return Promise.all(

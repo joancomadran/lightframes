@@ -31,6 +31,24 @@ body,
   margin: 0;
 }
 
+html {
+  background-color: var(--bg-panel);
+}
+
+/* Safari 26 blurs page content under the status bar unless a fixed element touches the top edge;
+   with one it tints the bar with that element's colour instead. */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: max(env(safe-area-inset-top), 1px);
+  background: var(--bg-panel);
+  pointer-events: none;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -402,6 +420,53 @@ button:disabled {
   padding: 1rem 0.5rem;
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.filmstrip__add {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.35rem;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  font: inherit;
+  color: var(--text-muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.filmstrip__add-tile {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px dashed var(--line-strong);
+  border-radius: 3px;
+  background: var(--bg-void);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.filmstrip__add-label {
+  font-size: 0.72rem;
+  transition: color 0.15s ease;
+}
+
+.filmstrip__add:hover .filmstrip__add-tile,
+.filmstrip__add:focus-visible .filmstrip__add-tile {
+  border-color: var(--accent);
+  background: rgba(200, 245, 96, 0.06);
+  color: var(--accent);
+}
+
+.filmstrip__add:hover .filmstrip__add-label,
+.filmstrip__add:focus-visible .filmstrip__add-label {
+  color: var(--text);
+}
+
+.filmstrip__add:focus-visible {
+  outline: none;
 }
 
 .filmstrip__item {
@@ -994,6 +1059,7 @@ a.github-star {
   flex: 1;
   border-bottom: none;
   min-height: 12rem;
+  overflow-y: auto;
 }
 
 .panel__header {
@@ -1309,85 +1375,105 @@ a.github-star {
   font-variant-numeric: tabular-nums;
 }
 
-.preset-list {
+.preset-grid {
   list-style: none;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.preset-grid__item {
+  position: relative;
+  min-width: 0;
+}
+
+.preset-grid__apply {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-}
-
-.preset-list--builtin {
-  flex: none;
-}
-
-.preset-list__item {
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius);
-  padding-right: 0.15rem;
-}
-
-.preset-list__item:hover {
-  background: var(--bg-elevated);
-}
-
-.preset-list__item--active,
-.preset-list__item--active:hover {
-  background: rgba(200, 245, 96, 0.08);
-}
-
-.preset-list__apply {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  text-align: left;
+  gap: 0.3rem;
   border: none;
   background: transparent;
-  padding: 0.4rem 0.35rem;
+  padding: 0;
   font: inherit;
-  font-size: 0.8rem;
-  color: var(--text);
+  color: var(--text-muted);
   cursor: pointer;
+  text-align: left;
 }
 
-.preset-list__check {
-  width: 0.8rem;
-  flex-shrink: 0;
-  color: var(--accent);
+.preset-grid__apply:disabled {
+  cursor: default;
+}
+
+.preset-grid__thumb {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color 0.12s ease;
+}
+
+.preset-grid__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: preset-thumb-in 0.2s ease;
+}
+
+@keyframes preset-thumb-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.preset-grid__apply:not(:disabled):hover .preset-grid__thumb {
+  outline-color: var(--line-strong);
+}
+
+.preset-grid__item--active .preset-grid__thumb,
+.preset-grid__item--active .preset-grid__apply:hover .preset-grid__thumb {
+  outline-color: var(--accent);
+}
+
+.preset-grid__name {
   font-size: 0.75rem;
-}
-
-.preset-list__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.preset-list__item--active .preset-list__name {
+.preset-grid__apply:not(:disabled):hover .preset-grid__name {
+  color: var(--text);
+}
+
+.preset-grid__item--active .preset-grid__name {
   color: var(--accent);
 }
 
-.preset-list__actions {
+.preset-grid__actions {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
   display: flex;
-  flex-shrink: 0;
+  border-radius: var(--radius);
+  background: rgba(12, 16, 14, 0.75);
   opacity: 0;
   transition: opacity 0.12s ease;
 }
 
-.preset-list__item:hover .preset-list__actions,
-.preset-list__item:focus-within .preset-list__actions {
+.preset-grid__item:hover .preset-grid__actions,
+.preset-grid__item:focus-within .preset-grid__actions {
   opacity: 1;
 }
 
 @media (hover: none) {
-  .preset-list__actions {
+  .preset-grid__actions {
     opacity: 1;
   }
 }
@@ -1413,8 +1499,12 @@ a.github-star {
   appearance: none;
   flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
   margin: 0;
-  padding: 0.65rem 0.1rem 0.55rem;
+  padding: 0.55rem 0.1rem 0.5rem;
   border: none;
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -1439,6 +1529,15 @@ a.github-star {
   color: var(--text);
   border-bottom-color: var(--accent);
   background: transparent;
+}
+
+.panel-tab svg {
+  opacity: 0.85;
+}
+
+.panel-tab--active svg {
+  color: var(--accent);
+  opacity: 1;
 }
 
 .panel-tab--active:hover {
@@ -1508,6 +1607,63 @@ a.github-star {
   border-color: transparent;
   background: var(--accent);
   color: var(--accent-ink);
+}
+
+/* Same look as the privacy tooltip; opens below since the histogram sits at the top. */
+.histogram-clip__tip {
+  position: absolute;
+  top: 1.75rem;
+  right: 0;
+  z-index: 30;
+  width: max-content;
+  max-width: min(16rem, calc(100vw - 2rem));
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s;
+}
+
+.histogram-clip:focus-visible + .histogram-clip__tip {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (hover: hover) {
+  .histogram-clip:hover + .histogram-clip__tip {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0.25s;
+  }
+}
+
+.histogram-clip__hi {
+  color: #ff6b6b;
+}
+
+.histogram-clip__lo {
+  color: #6aa5ff;
+}
+
+.histogram-clip__tip kbd {
+  padding: 0 0.3rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.72rem;
 }
 
 .curve-canvas {
@@ -2431,6 +2587,58 @@ a.github-star {
   text-decoration: underline;
 }
 
+.brush-cursor--preview {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ——— Background removal ——— */
+
+/* Transparency shows as a checkerboard, as in every image editor. */
+.preview__canvas--cutout {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #d6d6d6 25%, transparent 25%),
+    linear-gradient(-45deg, #d6d6d6 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d6d6d6 75%),
+    linear-gradient(-45deg, transparent 75%, #d6d6d6 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.bg-swatches {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.bg-swatch {
+  position: relative;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.bg-swatch--active {
+  box-shadow: 0 0 0 2px var(--bg-panel), 0 0 0 3.5px var(--accent);
+}
+
+.bg-swatch--custom {
+  background: conic-gradient(#e25555, #e6c84a, #4caf6a, #3db8b0, #4a7fd4, #8b6ad9, #e25555);
+}
+
+.bg-swatch--custom input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
 .heal-draft {
   stroke: rgba(255, 255, 255, 0.35);
 }
@@ -2619,7 +2827,10 @@ a.github-star {
 }
 
 .filmstrip__filter select {
+  flex: 1;
   min-width: 0;
+  height: 1.75rem;
+  padding-block: 0;
 }
 
 .filmstrip__layout,
@@ -2644,7 +2855,32 @@ a.github-star {
 }
 
 select.field {
-  appearance: auto;
+  appearance: none;
+  /* Dark native option list. */
+  color-scheme: dark;
+  padding-right: 1.6rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='m1 1 4 4 4-4' stroke='%238f9c90' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 0.6rem auto;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+select.field:hover {
+  border-color: rgba(232, 239, 228, 0.3);
+  background-color: var(--bg-hover);
+}
+
+select.field:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+select.field option {
+  background: var(--bg-panel);
+  color: var(--text);
 }
 
 .filmstrip__thumb-wrap {
@@ -2909,7 +3145,6 @@ kbd {
     grid-template-columns: repeat(8, minmax(0, 2rem));
   }
 
-  .preset-list__apply,
   .mask-card__select {
     min-height: 2.75rem;
   }
@@ -3781,6 +4016,7 @@ kbd {
   }
 
   .filmstrip__filter .field {
+    flex: none;
     width: 7.5rem;
   }
 
@@ -3813,7 +4049,8 @@ kbd {
     scroll-snap-align: start;
   }
 
-  .filmstrip__item {
+  .filmstrip__item,
+  .filmstrip__add {
     width: 4.75rem;
     flex-shrink: 0;
     gap: 0.15rem;
@@ -3997,6 +4234,7 @@ kbd {
   }
 
   .filmstrip__filter .field {
+    flex: none;
     width: 7.25rem;
   }
 
@@ -4139,7 +4377,9 @@ kbd {
   .panel-tab {
     flex: 1 0 auto;
     min-width: 2.75rem;
-    min-height: 3rem;
+    min-height: 3.25rem;
+    justify-content: center;
+    gap: 0.2rem;
     padding: 0 0.35rem;
     border-bottom: none;
     border-top: 2px solid transparent;

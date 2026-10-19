@@ -131,6 +131,15 @@ export type HealSpot = {
   dy: number
 }
 
+export type BackgroundMode = 'original' | 'transparent' | 'color'
+
+/** Background removal: keep the photo as is, or cut the subject out onto transparency or a colour. */
+export type BackgroundEdit = {
+  mode: BackgroundMode
+  /** CSS hex colour used by `color` mode. */
+  color: string
+}
+
 export type GradeZone = {
   /** 0–360 degrees. */
   hue: number
@@ -180,6 +189,7 @@ export type EditParams = {
   localAdjustments: LocalAdjustment[]
   /** Spot removal, applied to the source pixels before everything else. */
   heal: HealSpot[]
+  background: BackgroundEdit
   hsl: HslEdits
   /** Optional look-up table applied after parametric edits (from .cube). */
   lut?: Lut3D
@@ -197,6 +207,7 @@ export type BasicEditKey = Exclude<
   | 'toneCurve'
   | 'localAdjustments'
   | 'heal'
+  | 'background'
   | 'colorGrading'
 >
 
@@ -363,6 +374,7 @@ export const DEFAULT_EDITS: EditParams = {
   toneCurve: createDefaultToneCurve(),
   localAdjustments: [],
   heal: [],
+  background: { mode: 'original', color: '#ffffff' },
   hsl: createDefaultHsl(),
 }
 
@@ -472,6 +484,7 @@ export function cloneEdits(edits: EditParams): EditParams {
     localAdjustments: cloneLocalAdjustments(edits.localAdjustments ?? []),
     // Spot paths are treated as immutable and shared, like brush strokes.
     heal: (edits.heal ?? []).map((spot) => ({ ...spot })),
+    background: { ...(edits.background ?? DEFAULT_EDITS.background) },
     colorGrading: cloneColorGrading(edits.colorGrading ?? createDefaultColorGrading()),
   }
   if (edits.lut) next.lut = cloneLut(edits.lut)
@@ -490,11 +503,13 @@ export function mergeEdits(base: EditParams, patch: Partial<EditParams>): EditPa
     toneCurve: curvePatch,
     localAdjustments: localPatch,
     heal: healPatch,
+    background: backgroundPatch,
     colorGrading: gradingPatch,
     ...rest
   } = patch
   const next = cloneEdits({ ...base, ...rest })
   if (healPatch) next.heal = healPatch.map((spot) => ({ ...spot }))
+  if (backgroundPatch) next.background = { ...next.background, ...backgroundPatch }
   if (hslPatch) {
     for (const channel of HSL_CHANNELS) {
       const bandPatch = hslPatch[channel.id]
@@ -777,6 +792,7 @@ export function isNeutralEdits(edits: EditParams): boolean {
     isNeutralColorGrading(edits.colorGrading) &&
     edits.localAdjustments.length === 0 &&
     edits.heal.length === 0 &&
+    edits.background.mode === 'original' &&
     !edits.lut
   )
 }
@@ -907,6 +923,13 @@ export function normalizeEdits(value: unknown): EditParams | null {
     next.localAdjustments = normalizeLocalAdjustments(obj.localAdjustments)
   }
   if (obj.heal !== undefined) next.heal = normalizeHeal(obj.heal)
+  if (obj.background && typeof obj.background === 'object') {
+    const bg = obj.background as Record<string, unknown>
+    next.background = {
+      mode: bg.mode === 'transparent' || bg.mode === 'color' ? bg.mode : 'original',
+      color: typeof bg.color === 'string' && /^#[0-9a-f]{6}$/i.test(bg.color) ? bg.color : '#ffffff',
+    }
+  }
 
   const hslRaw = obj.hsl
   if (hslRaw && typeof hslRaw === 'object') {

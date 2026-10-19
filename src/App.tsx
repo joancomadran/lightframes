@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdSlot } from './components/AdSlot'
 import { AdjustmentsPanel } from './components/AdjustmentsPanel'
+import { BackgroundPanel } from './components/BackgroundPanel'
 import { CarouselStudio } from './components/CarouselStudio'
 import { CollageStudio } from './components/CollageStudio'
 import { ColorPanel } from './components/ColorPanel'
@@ -15,6 +16,7 @@ import { HealPanel } from './components/HealPanel'
 import { HistogramPanel } from './components/HistogramPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import type { BrushSettings } from './components/MaskOverlay'
+import { PanelIcon } from './components/PanelIcon'
 import { PresetsPanel } from './components/PresetsPanel'
 import { PreviewCanvas, type PreviewApi, type Size } from './components/PreviewCanvas'
 import { ShortcutsDialog } from './components/ShortcutsDialog'
@@ -64,6 +66,14 @@ export default function App() {
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
   const [showSpots, setShowSpots] = useState(true)
   const toggleSpots = useCallback(() => setShowSpots((v) => !v), [])
+  // The brush shows at its size on the photo while the size slider moves, then fades out.
+  const [sizePreview, setSizePreview] = useState(false)
+  const sizePreviewTimer = useRef(0)
+  const previewBrushSize = useCallback(() => {
+    setSizePreview(true)
+    window.clearTimeout(sizePreviewTimer.current)
+    sizePreviewTimer.current = window.setTimeout(() => setSizePreview(false), 700)
+  }, [])
   const previewApi = useRef<PreviewApi | null>(null)
   const phone = useMediaQuery(PHONE_QUERY)
   // Phones show the panels as a bottom sheet that can fold away to reveal the whole photo.
@@ -346,6 +356,7 @@ export default function App() {
                       selectedId: selectedSpot,
                       tool: healTool,
                       showOutlines: showSpots,
+                      sizePreview,
                       onSelect: setSelectedSpotId,
                       onAdd: (spot) => {
                         setHeal([...edits.heal, spot], { commit: true })
@@ -396,7 +407,8 @@ export default function App() {
                   title={`${label} (⇧${index + 1})`}
                   onClick={() => selectPanel(id)}
                 >
-                  {label}
+                  <PanelIcon id={id} />
+                  <span className="panel-tab__label">{label}</span>
                 </button>
               ))}
             </div>
@@ -472,6 +484,14 @@ export default function App() {
               )}
 
               {session.panelFocus === 'heal' && (
+                <BackgroundPanel
+                  background={edits.background}
+                  disabled={!canEdit}
+                  onChange={(background) => session.updateEdits({ background }, { commit: true })}
+                />
+              )}
+
+              {session.panelFocus === 'heal' && (
                 <HealPanel
                   spots={edits.heal}
                   disabled={!canEdit}
@@ -485,6 +505,7 @@ export default function App() {
                   onRemove={removeSpot}
                   onClear={() => setHeal([], { commit: true })}
                   onNewSource={newSpotSource}
+                  onSizePreview={previewBrushSize}
                   onBegin={begin}
                   onCommit={commit}
                 />
@@ -511,6 +532,12 @@ export default function App() {
               {session.panelFocus === 'presets' && (
                 <PresetsPanel
                   presets={session.presets}
+                  previewSrc={session.activePhoto?.objectUrl ?? null}
+                  previewGeometry={
+                    session.activePhoto
+                      ? { rotate: session.activePhoto.edits.rotate, crop: session.activePhoto.edits.crop }
+                      : null
+                  }
                   selectedPresetId={session.selectedPresetId}
                   intensity={session.presetIntensity}
                   disabled={!canEdit}

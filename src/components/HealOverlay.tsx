@@ -22,6 +22,8 @@ export type HealOverlayConfig = {
   tool: HealTool
   /** Off: no outlines, so the result can be judged; painting still works. */
   showOutlines: boolean
+  /** While true, draw the brush at its size in the middle of the view (the size slider is moving). */
+  sizePreview: boolean
   onSelect: (id: string | null) => void
   onAdd: (spot: HealSpot) => void
   onChange: (id: string, patch: Partial<HealSpot>) => void
@@ -69,17 +71,20 @@ function Outline({ id, d, radius, className }: { id: string; d: string; radius: 
 /** Spot removal on the image: paint over something to remove it, drag the source outline to choose what replaces it. */
 export function HealOverlay({
   frame,
+  viewport,
   geometry,
   config,
   pickSource,
 }: {
   frame: OverlayFrame
+  /** Visible area, in the same coordinates as `frame`. */
+  viewport: { w: number; h: number }
   geometry: HealGeometry
   config: HealOverlayConfig
   /** Best source for a freshly painted spot, from the preview's pixels. */
   pickSource: (spot: HealSpot) => { dx: number; dy: number } | null
 }) {
-  const { spots, selectedId, tool, showOutlines, onSelect, onAdd, onChange, onBegin, onCommit } = config
+  const { spots, selectedId, tool, showOutlines, sizePreview, onSelect, onAdd, onChange, onBegin, onCommit } = config
   const [cursor, setCursor] = useState<Point | null>(null)
   const [draft, setDraft] = useState<{ pointerId: number; points: number[] } | null>(null)
   const dragRef = useRef<{ id: string; pointerId: number; startX: number; startY: number; spot: HealSpot } | null>(null)
@@ -105,6 +110,7 @@ export function HealOverlay({
     )
   }
   const toolRadius = radiusFor(tool.size)
+  const selectedSpot = spots.find((s) => s.id === selectedId) ?? null
 
   const finishDraft = (points: number[]) => {
     const spot: HealSpot = {
@@ -248,7 +254,8 @@ export function HealOverlay({
         })}
         {draft && <path d={screenPath(draft.points)} strokeWidth={toolRadius * 2} className="heal-draft" />}
       </svg>
-      {cursor && !draft && (
+      {sizePreview && !draft && <SizePreview frame={frame} viewport={viewport} spot={selectedSpot ?? tool} radius={radiusFor((selectedSpot ?? tool).size)} />}
+      {cursor && !draft && !sizePreview && (
         <>
           <span
             className="brush-cursor"
@@ -266,5 +273,33 @@ export function HealOverlay({
         </>
       )}
     </div>
+  )
+}
+
+/** The brush at its real size in the middle of what is visible, while its size slider moves. */
+function SizePreview({
+  frame,
+  viewport,
+  spot,
+  radius,
+}: {
+  frame: OverlayFrame
+  viewport: { w: number; h: number }
+  spot: { feather: number }
+  radius: number
+}) {
+  const x = Math.min(frame.width, Math.max(0, viewport.w / 2 - frame.left))
+  const y = Math.min(frame.height, Math.max(0, viewport.h / 2 - frame.top))
+  return (
+    <>
+      <span
+        className="brush-cursor brush-cursor--preview"
+        style={{ left: x, top: y, width: radius * 2, height: radius * 2 }}
+      />
+      <span
+        className="brush-cursor brush-cursor--inner"
+        style={{ left: x, top: y, width: radius * 2 * (1 - spot.feather), height: radius * 2 * (1 - spot.feather) }}
+      />
+    </>
   )
 }

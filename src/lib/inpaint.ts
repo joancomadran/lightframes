@@ -1,93 +1,17 @@
 import type { HealSpot } from '../types/edits'
+import { bumpAiVersion, runModel } from './ai'
 import { getPatch, holeMask, patchKey, setPatch } from './heal'
 import { sourceDimensions, sourceRegion, type RenderSource } from './imageProcessing'
-import type { InpaintReply, InpaintRequest } from './inpaint.worker'
 
 /*
  * "Remove" spots: an inpainting model (MI-GAN) fills the painted area. The
- * model is downloaded once (~28 MB, cached) and runs in a worker. Each spot
+ * model is downloaded once (~28 MB, cached) and runs in ai.worker.ts. Each spot
  * is generated once from a crop around it, at most PATCH_EDGE on its long
  * side (the model works at 512 anyway), and kept as a patch that heal.ts
  * pastes at whatever resolution the photo renders.
  */
 
 const PATCH_EDGE = 1024
-
-export type InpaintStatus =
-  | { phase: 'idle' }
-  | { phase: 'downloading'; progress: number }
-  | { phase: 'working' }
-  | { phase: 'error'; message: string }
-
-let status: InpaintStatus = { phase: 'idle' }
-/** Bumped whenever a patch lands, so renders that skipped it can redo. */
-let version = 0
-const listeners = new Set<() => void>()
-
-function emit() {
-  for (const listener of listeners) listener()
-}
-
-function setStatus(next: InpaintStatus) {
-  status = next
-  emit()
-}
-
-export function subscribeInpaint(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-export const getInpaintStatus = () => status
-export const getInpaintVersion = () => version
-
-let worker: Worker | null = null
-let nextId = 1
-const pending = new Map<number, { resolve: (rgba: Uint8ClampedArray) => void; reject: (err: Error) => void }>()
-
-function getWorker(): Worker {
-  if (worker) return worker
-  worker = new Worker(new URL('./inpaint.worker.ts', import.meta.url), { type: 'module' })
-  worker.onmessage = (e: MessageEvent<InpaintReply>) => {
-    const reply = e.data
-    if (reply.kind === 'progress') {
-      setStatus({ phase: 'downloading', progress: reply.total ? reply.loaded / reply.total : 0 })
-    } else if (reply.kind === 'ready') {
-      if (status.phase === 'downloading') setStatus(inFlight.size > 0 ? { phase: 'working' } : { phase: 'idle' })
-    } else if (reply.kind === 'result') {
-      pending.get(reply.id)?.resolve(reply.rgba)
-      pending.delete(reply.id)
-    } else {
-      if (reply.id !== null) {
-        pending.get(reply.id)?.reject(new Error(reply.message))
-        pending.delete(reply.id)
-      }
-      setStatus({ phase: 'error', message: reply.message })
-    }
-  }
-  worker.onerror = (e) => {
-    e.preventDefault()
-    for (const job of pending.values()) job.reject(new Error('Inpainting worker crashed'))
-    pending.clear()
-    worker = null
-    setStatus({ phase: 'error', message: 'Inpainting worker crashed' })
-  }
-  return worker
-}
-
-/** Start downloading the model early (e.g. when the Remove tool is picked). */
-export function preloadInpaint(): void {
-  getWorker().postMessage('load')
-}
-
-function runModel(rgba: Uint8ClampedArray<ArrayBuffer>, mask: Uint8Array<ArrayBuffer>, width: number, height: number) {
-  return new Promise<Uint8ClampedArray>((resolve, reject) => {
-    const id = nextId++
-    pending.set(id, { resolve, reject })
-    const request: InpaintRequest = { id, rgba, mask, width, height }
-    getWorker().postMessage(request, [rgba.buffer, mask.buffer])
-  })
-}
 
 /** Crop around the spot with room for context: the model needs to see what surrounds the hole. */
 function contextRect(spot: HealSpot, width: number, height: number) {
@@ -118,10 +42,9 @@ async function generate(source: RenderSource, spots: HealSpot[], index: number):
   const region = sourceRegion(source, spots.slice(0, index), contextRect(spot, width, height), PATCH_EDGE)
   if (!region) throw new Error('Could not read the photo')
   const mask = holeMask(spot, region.rect, region.width, region.height, width, height)
-  const rgba = await runModel(region.data, mask, region.width, region.height)
+  const rgba = await runModel({ kind: 'inpaint', rgba: region.data, mask, width: region.width, height: region.height })
   setPatch(spot, { rect: region.rect, width: region.width, height: region.height, data: rgba })
-  version++
-  emit()
+  bumpAiVersion()
 }
 
 const inFlight = new Map<string, Promise<void>>()
@@ -139,13 +62,9 @@ export function ensurePatches(source: RenderSource, spots: HealSpot[]): Promise<
         .catch(() => {})
         .then(() => {
           if (getPatch(spot)) return
-          if (status.phase !== 'downloading') setStatus({ phase: 'working' })
           return generate(source, spots, index)
         })
-        .finally(() => {
-          inFlight.delete(key)
-          if (inFlight.size === 0 && status.phase === 'working') setStatus({ phase: 'idle' })
-        })
+        .finally(() => inFlight.delete(key))
       inFlight.set(key, job)
       queue = job
     }
