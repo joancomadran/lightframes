@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react'
+import { getAiStatus, preloadModel, subscribeAi } from '../lib/ai'
 import type {
   EditParams,
   LocalAdjustment,
@@ -15,6 +17,8 @@ type LocalAdjustPanelProps = {
   showOverlay: boolean
   onSelect: (id: string) => void
   onAdd: (type: LocalAdjustmentType) => void
+  /** A brush mask set up for whitening teeth. */
+  onAddTeeth: () => void
   onUpdate: (id: string, patch: LocalAdjustmentPatch) => void
   onRemove: (id: string) => void
   onBrushChange: (brush: BrushSettings) => void
@@ -26,7 +30,7 @@ type LocalAdjustPanelProps = {
 const SATURATION_TRACK = 'linear-gradient(90deg, #7d827e, #e25555, #e6c84a, #4caf6a, #4a7fd4)'
 
 const ADJUST_SLIDERS: {
-  key: 'exposure' | 'contrast' | 'saturation' | 'temperature'
+  key: 'exposure' | 'contrast' | 'saturation' | 'temperature' | 'whiten'
   label: string
   min: number
   max: number
@@ -44,15 +48,22 @@ const ADJUST_SLIDERS: {
     step: 1,
     track: 'linear-gradient(90deg, #4a7fd4, #b9b9b0, #e6b84a)',
   },
+  { key: 'whiten', label: 'Whiten', min: 0, max: 100, step: 1, track: 'linear-gradient(90deg, #d8c48f, #f4f4f0)' },
 ]
 
 const TYPES: { id: LocalAdjustmentType; label: string; key: string; hint: string }[] = [
   { id: 'radial', label: 'Radial', key: '⇧M', hint: 'Elliptical area: a face, a subject' },
   { id: 'linear', label: 'Linear', key: 'M', hint: 'Graduated filter: skies, foregrounds' },
   { id: 'brush', label: 'Brush', key: 'K', hint: 'Paint exactly where you want it' },
+  { id: 'subject', label: 'Subject', key: '⇧K', hint: 'Finds the main subject for you (AI, on your device)' },
 ]
 
-const TYPE_LABEL: Record<LocalAdjustmentType, string> = { radial: 'Radial', linear: 'Linear', brush: 'Brush' }
+const TYPE_LABEL: Record<LocalAdjustmentType, string> = {
+  radial: 'Radial',
+  linear: 'Linear',
+  brush: 'Brush',
+  subject: 'Subject',
+}
 
 function summary(adj: LocalAdjustment): string {
   const parts: string[] = []
@@ -61,6 +72,7 @@ function summary(adj: LocalAdjustment): string {
   if (adj.contrast !== 0) parts.push(`Con ${signed(adj.contrast)}`)
   if (adj.saturation !== 0) parts.push(`Sat ${signed(adj.saturation)}`)
   if (adj.temperature !== 0) parts.push(`Temp ${signed(adj.temperature)}`)
+  if (adj.whiten > 0) parts.push(`Whiten ${Math.round(adj.whiten)}`)
   if (adj.invert) parts.push('Inverted')
   return parts.length > 0 ? parts.join(' · ') : 'No changes yet'
 }
@@ -77,6 +89,7 @@ export function LocalAdjustPanel({
   showOverlay,
   onSelect,
   onAdd,
+  onAddTeeth,
   onUpdate,
   onRemove,
   onBrushChange,
@@ -87,7 +100,9 @@ export function LocalAdjustPanel({
   const items = edits.localAdjustments
   // updateLocal opens the history step; a reset closes it once state has landed.
   const commitSoon = () => window.setTimeout(() => onCommit?.(), 0)
-  const typeCounts: Record<LocalAdjustmentType, number> = { radial: 0, linear: 0, brush: 0 }
+  const typeCounts: Record<LocalAdjustmentType, number> = { radial: 0, linear: 0, brush: 0, subject: 0 }
+  const segment = useSyncExternalStore(subscribeAi, () => getAiStatus('segment'))
+  const hasSubject = items.some((adj) => adj.type === 'subject')
 
   return (
     <section className="panel" aria-label="Local adjustments">
@@ -114,14 +129,40 @@ export function LocalAdjustPanel({
             type="button"
             className="mask-add__btn"
             disabled={disabled}
-            onClick={() => onAdd(type.id)}
+            onClick={() => {
+              if (type.id === 'subject') preloadModel('segment')
+              onAdd(type.id)
+            }}
             title={`${type.hint} (${type.key})`}
           >
             <MaskIcon type={type.id} />
             <span>+ {type.label}</span>
           </button>
         ))}
+        <button
+          type="button"
+          className="mask-add__btn"
+          disabled={disabled}
+          onClick={onAddTeeth}
+          title="Brush set up to whiten teeth: only light, yellowish pixels change, so lips and skin stay as they are"
+        >
+          <span className="mask-card__icon mask-card__icon--teeth" aria-hidden="true" />
+          <span>+ Teeth</span>
+        </button>
       </div>
+
+      {hasSubject && segment.phase !== 'idle' && (
+        <p
+          className={segment.phase === 'error' ? 'field-hint heal-status heal-status--error' : 'field-hint heal-status'}
+          role="status"
+        >
+          {segment.phase === 'downloading'
+            ? `Downloading the subject model (45 MB, once)… ${Math.round(segment.progress * 100)}%`
+            : segment.phase === 'working'
+              ? 'Finding the subject…'
+              : `Could not find the subject: ${segment.message}`}
+        </p>
+      )}
 
       {items.length === 0 ? (
         <p className="field-hint">
@@ -131,7 +172,7 @@ export function LocalAdjustPanel({
         <ul className="mask-list">
           {items.map((adj) => {
             typeCounts[adj.type] += 1
-            const name = `${TYPE_LABEL[adj.type]} ${typeCounts[adj.type]}`
+            const name = adj.name ?? `${TYPE_LABEL[adj.type]} ${typeCounts[adj.type]}`
             const selected = adj.id === selectedId
             return (
               <li key={adj.id} className={selected ? 'mask-card mask-card--selected' : 'mask-card'}>

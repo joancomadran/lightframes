@@ -29,6 +29,7 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
       ['M', 'New linear mask'],
       ['⇧ M', 'New radial mask'],
       ['K', 'New brush mask'],
+      ['⇧ K', 'New subject mask (AI)'],
       ['O', 'Show / hide mask tint'],
       ['Alt + drag', 'Erase while brushing'],
     ],

@@ -1,9 +1,11 @@
-import { DEFAULT_EDITS, type BackgroundEdit, type EditParams, type ExportOptions } from '../types/edits'
+import { DEFAULT_EDITS, needsCutout, type BackgroundEdit, type EditParams, type ExportOptions } from '../types/edits'
 import { ensureCutout, getCutout } from './cutout'
 import { poolSize, runInPool } from './developPool'
 import { ensurePatches } from './inpaint'
+import { upscaleCanvas, upscaleFactor } from './upscale'
 import {
   MIME_BY_FORMAT,
+  boxBlurFast,
   buildBrushMasks,
   buildDetailMaps,
   buildExportFilename,
@@ -37,7 +39,15 @@ async function developParallel(
     fullWidth: width,
     fullHeight: height,
     lumMask: buildLumMask(base.data, width, height, edits, linear ?? undefined),
-    brushMasks: buildBrushMasks(edits.localAdjustments, width, height),
+    brushMasks: {
+      ...buildBrushMasks(edits.localAdjustments, width, height),
+      // Subject masks all share the one cutout of this photo.
+      ...Object.fromEntries(
+        base.subjectMask
+          ? edits.localAdjustments.filter((adj) => adj.type === 'subject').map((adj) => [adj.id, base.subjectMask!])
+          : [],
+      ),
+    },
   }
   const out = new Uint8ClampedArray(width * height * 4)
   await Promise.all(
@@ -104,8 +114,80 @@ function developSync(base: BaseImage, edits: EditParams): ImageData {
   return imageData
 }
 
-/** Cut the subject out: onto transparency, or onto a solid colour (then fully opaque). */
+/** Background blur strength at 100, as a fraction of the long edge (box radius, three passes). */
+const MAX_BLUR = 0.025
+/** The blurred background is computed at most this big, then scaled up: it has no fine detail to lose. */
+const BLUR_GRID_EDGE = 1024
+
+/**
+ * Portrait look: blur everything but the subject. The blur is weighted by
+ * "how much background" each pixel is (normalized convolution), so the
+ * subject doesn't smear a halo into its surroundings.
+ */
+function blurBackground(image: ImageData, cutout: Uint8Array, amount: number): void {
+  const { data, width, height } = image
+  const radius = (amount / 100) * MAX_BLUR * Math.max(width, height)
+  if (radius < 0.5) return
+  const scale = Math.min(1, BLUR_GRID_EDGE / Math.max(width, height))
+  const gw = Math.max(1, Math.round(width * scale))
+  const gh = Math.max(1, Math.round(height * scale))
+  const plane = gw * gh
+  const sums = [new Float32Array(plane), new Float32Array(plane), new Float32Array(plane), new Float32Array(plane)]
+  // Area-average down to the grid, each colour premultiplied by its background weight.
+  for (let y = 0; y < height; y++) {
+    const gy = Math.min(gh - 1, Math.floor(y * scale))
+    for (let x = 0; x < width; x++) {
+      const k = y * width + x
+      const g = gy * gw + Math.min(gw - 1, Math.floor(x * scale))
+      const w = 1 - cutout[k]! / 255
+      sums[0]![g] = sums[0]![g]! + data[k * 4]! * w
+      sums[1]![g] = sums[1]![g]! + data[k * 4 + 1]! * w
+      sums[2]![g] = sums[2]![g]! + data[k * 4 + 2]! * w
+      sums[3]![g] = sums[3]![g]! + w
+    }
+  }
+  const r = Math.max(1, Math.round(radius * scale))
+  const [br, bg, bb, bw] = sums.map((plane) => boxBlurFast(plane, gw, gh, r, 3)) as [
+    Float32Array,
+    Float32Array,
+    Float32Array,
+    Float32Array,
+  ]
+  for (let y = 0; y < height; y++) {
+    const fy = Math.min(gh - 1, Math.max(0, (y + 0.5) * scale - 0.5))
+    const y0 = Math.floor(fy)
+    const y1 = Math.min(gh - 1, y0 + 1)
+    const ty = fy - y0
+    for (let x = 0; x < width; x++) {
+      const k = y * width + x
+      const a = cutout[k]! / 255
+      if (a >= 1) continue
+      const fx = Math.min(gw - 1, Math.max(0, (x + 0.5) * scale - 0.5))
+      const x0 = Math.floor(fx)
+      const x1 = Math.min(gw - 1, x0 + 1)
+      const tx = fx - x0
+      const sample = (p: Float32Array) => {
+        const top = p[y0 * gw + x0]! + (p[y0 * gw + x1]! - p[y0 * gw + x0]!) * tx
+        const bottom = p[y1 * gw + x0]! + (p[y1 * gw + x1]! - p[y1 * gw + x0]!) * tx
+        return top + (bottom - top) * ty
+      }
+      const weight = sample(bw)
+      // Deep inside the subject there is no background to borrow: keep the pixel.
+      if (weight < 1e-4) continue
+      const i = k * 4
+      data[i] = data[i]! * a + (sample(br) / weight) * (1 - a)
+      data[i + 1] = data[i + 1]! * a + (sample(bg) / weight) * (1 - a)
+      data[i + 2] = data[i + 2]! * a + (sample(bb) / weight) * (1 - a)
+    }
+  }
+}
+
+/** Cut the subject out: onto transparency, a solid colour (then fully opaque), or a blurred background. */
 function applyBackground(image: ImageData, cutout: Uint8Array, background: BackgroundEdit): void {
+  if (background.mode === 'blur') {
+    blurBackground(image, cutout, background.blur)
+    return
+  }
   const { data } = image
   const hex = Number.parseInt(background.color.slice(1), 16)
   const fill = [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255]
@@ -193,20 +275,28 @@ export async function exportEditedImage(
   edits: EditParams,
   options: ExportOptions,
   baseName = 'export',
-): Promise<{ blob: Blob; filename: string }> {
+  /** Upscaling progress, 0–1, when the export upscales. */
+  onUpscale?: (fraction: number) => void,
+): Promise<{ blob: Blob; filename: string; upscaleSkipped: boolean }> {
   const frame = options.frame
   const maxEdge = frame ? Math.max(frame.width, frame.height) : options.maxEdge
   // "Remove" spots and background removal need their model output before the pixels can be prepared.
   await ensurePatches(source, edits.heal)
-  if (edits.background.mode !== 'original') await ensureCutout(source)
+  if (needsCutout(edits)) await ensureCutout(source)
   const base = prepareBaseWithCutout(source, edits, maxEdge, getCutout(source))
   if (!base) throw new Error('Could not prepare image')
   const developed = await developBase(base, edits)
 
-  const photo = document.createElement('canvas')
+  let photo = document.createElement('canvas')
   photo.width = developed.width
   photo.height = developed.height
   photo.getContext('2d')?.putImageData(developed, 0, 0)
+
+  const factor = upscaleFactor(photo.width, photo.height, options.upscale, maxEdge)
+  if (factor > 1) {
+    onUpscale?.(0)
+    photo = await upscaleCanvas(photo, factor, onUpscale)
+  }
 
   let canvas = photo
   let area = { x: 0, y: 0, w: photo.width, h: photo.height }
@@ -242,5 +332,10 @@ export async function exportEditedImage(
       quality,
     )
   })
-  return { blob, filename: buildExportFilename(baseName, { ...options, format }) }
+  return {
+    blob,
+    filename: buildExportFilename(baseName, { ...options, format }),
+    // Asked for, but the photo was already as big as the export allows.
+    upscaleSkipped: options.upscale > 1 && factor === 1,
+  }
 }

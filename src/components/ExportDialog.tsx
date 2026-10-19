@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { preloadModel } from '../lib/ai'
 import {
   DEFAULT_EXPORT_OPTIONS,
   type ExportFormat,
@@ -120,6 +121,34 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
               format={(v) => (v >= 8192 ? 'Full' : `${v}px`)}
               onChange={(maxEdge) => patch({ maxEdge })}
             />
+          )}
+        </div>
+
+        <div className="export-section">
+          <div className="field-row">
+            <span>AI upscale</span>
+            <span className="segmented segmented--compact" role="group" aria-label="AI upscale">
+              {([1, 2, 4] as const).map((factor) => (
+                <button
+                  key={factor}
+                  type="button"
+                  className={options.upscale === factor ? 'segmented__btn segmented__btn--active' : 'segmented__btn'}
+                  aria-pressed={options.upscale === factor}
+                  onClick={() => {
+                    if (factor > 1) preloadModel('upscale')
+                    patch({ upscale: factor })
+                  }}
+                >
+                  {factor === 1 ? 'Off' : `${factor}×`}
+                </button>
+              ))}
+            </span>
+          </div>
+          {options.upscale > 1 && (
+            <p className="field-hint">
+              Sharp enlargement, up to the size above (8192 px max). Best on small or cropped photos; big ones can
+              take a while. Downloads a 5 MB model once and runs on your device, on the GPU when it can.
+            </p>
           )}
         </div>
 

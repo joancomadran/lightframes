@@ -12,6 +12,7 @@ import { ExportDialog } from './components/ExportDialog'
 import { Filmstrip } from './components/Filmstrip'
 import { GithubStar } from './components/GithubStar'
 import type { HealTool } from './components/HealOverlay'
+import type { RefineTool } from './components/RefineOverlay'
 import { HealPanel } from './components/HealPanel'
 import { HistogramPanel } from './components/HistogramPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
@@ -65,6 +66,10 @@ export default function App() {
   const [healTool, setHealTool] = useState<HealTool>({ mode: 'heal', size: 0.015, feather: 0.3, opacity: 1 })
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
   const [showSpots, setShowSpots] = useState(true)
+  const [refineTool, setRefineTool] = useState<RefineTool | null>(null)
+  // The refine brush only makes sense while the background is being replaced.
+  const refining =
+    canEdit && session.panelFocus === 'heal' && edits.background.mode !== 'original' ? refineTool : null
   const toggleSpots = useCallback(() => setShowSpots((v) => !v), [])
   // The brush shows at its size on the photo while the size slider moves, then fades out.
   const [sizePreview, setSizePreview] = useState(false)
@@ -368,6 +373,18 @@ export default function App() {
                     }
                   : null
               }
+              refineOverlay={
+                refining
+                  ? {
+                      tool: refining,
+                      onStroke: (stroke) =>
+                        session.updateEdits(
+                          { background: { ...edits.background, refine: [...edits.background.refine, stroke] } },
+                          { commit: true },
+                        ),
+                    }
+                  : null
+              }
               maskTint={canEdit && session.panelFocus === 'local' && showMaskTint ? selectedMask : null}
               onPickWhiteBalance={
                 canEdit && pickingWhiteBalance
@@ -487,7 +504,11 @@ export default function App() {
                 <BackgroundPanel
                   background={edits.background}
                   disabled={!canEdit}
-                  onChange={(background) => session.updateEdits({ background }, { commit: true })}
+                  onChange={(background, opts) => session.updateEdits({ background }, opts)}
+                  onBegin={begin}
+                  onCommit={commit}
+                  refine={refining}
+                  onRefineChange={setRefineTool}
                 />
               )}
 
@@ -520,6 +541,11 @@ export default function App() {
                   showOverlay={showMaskTint}
                   onSelect={setSelectedMaskId}
                   onAdd={session.addLocal}
+                  onAddTeeth={() => {
+                    session.addLocal('brush', { name: 'Teeth', whiten: 60 })
+                    // Teeth are small: start with a small, soft brush.
+                    setBrush({ size: 0.012, feather: 0.5, flow: 1, erase: false })
+                  }}
                   onUpdate={session.updateLocal}
                   onRemove={session.removeLocal}
                   onBrushChange={setBrush}

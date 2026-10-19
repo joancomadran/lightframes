@@ -8,6 +8,7 @@ import {
   isNeutralToneCurve,
   normalizeRotate,
   type BrushAdjustment,
+  type CutoutStroke,
   type ColorGrading,
   type EditParams,
   type ExportFormat,
@@ -914,6 +915,8 @@ function maskWeight(
   if (adj.type === 'radial') weight = radialWeight(x, y, w, h, adj)
   else if (adj.type === 'linear') weight = linearWeight(x, y, w, h, adj)
   else if (brush) weight = sampleGrid(brush, x, y, w, h)
+  // A subject mask whose cutout isn't ready yet affects nothing, inverted or not.
+  else if (adj.type === 'subject') return 0
   return adj.invert ? 1 - weight : weight
 }
 
@@ -929,6 +932,7 @@ function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], c
       let contrast = 0
       let saturation = 0
       let temperature = 0
+      let whiten = 0
       for (const adj of items) {
         const w = maskWeight(adj, x, gy, fullWidth, fullHeight, ctx.brushMasks[adj.id])
         if (w <= 0) continue
@@ -937,12 +941,14 @@ function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], c
         contrast += w * adj.contrast
         saturation += w * adj.saturation
         temperature += w * adj.temperature
+        whiten += w * (adj.whiten ?? 0)
       }
       if (weight <= 0) continue
       exposure /= weight
       contrast /= weight
       saturation /= weight
       temperature /= weight
+      whiten /= weight
       const mask = Math.min(1, weight)
 
       const i = (y * width + x) * 4
@@ -965,11 +971,48 @@ function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], c
       g = luma + (g - luma) * (1 + s)
       b = luma + (b - luma) * (1 + s)
 
+      if (whiten > 0) [r, g, b] = whitenPixel(r, g, b, (whiten / 100) * mask)
+
       data[i] = clamp01(r) * 255
       data[i + 1] = clamp01(g) * 255
       data[i + 2] = clamp01(b) * 255
     }
   }
+}
+
+/**
+ * Teeth whitening on one sRGB-encoded pixel (0–1). Only light, yellowish,
+ * not-too-saturated pixels respond — teeth and eye whites — so a brush that
+ * spills onto lips (red, saturated) or skin (darker, orange) barely changes
+ * them. The yellow cast is neutralised, then the pixel is lifted a little
+ * and slightly desaturated.
+ */
+function whitenPixel(r: number, g: number, b: number, amount: number): [number, number, number] {
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const luma = LUMA_R * r + LUMA_G * g + LUMA_B * b
+  const sat = max > 0 ? (max - min) / max : 0
+  // Hue close to yellow (≈45°, skin sits nearer 20°); greys count fully, they have no hue to judge.
+  let hueWeight = 1
+  if (sat > 0.08) {
+    const { h } = rgbToHsl(r, g, b)
+    hueWeight = 1 - smoothstep(12, 24, Math.abs(h - 45))
+  }
+  // Teeth in the shade of the lips are darker than they look: let them in from fairly low.
+  const teeth = smoothstep(0.2, 0.4, luma) * (1 - smoothstep(0.32, 0.58, sat)) * hueWeight
+  const k = amount * teeth
+  if (k <= 0) return [r, g, b]
+  // Pull blue up to the red/green average: that is what "yellow" is missing.
+  const yellow = Math.max(0, (r + g) / 2 - b)
+  b += yellow * k
+  const lift = 0.18 * k * (1 - luma)
+  const l2 = LUMA_R * r + LUMA_G * g + LUMA_B * b
+  const desat = 0.45 * k
+  return [
+    r + (l2 - r) * desat + lift,
+    g + (l2 - g) * desat + lift,
+    b + (l2 - b) * desat + lift,
+  ]
 }
 
 /** Long edge of the grid brush strokes are rasterised into. */
@@ -1074,8 +1117,14 @@ export function computeMaskPreview(
   height: number,
   fullWidth: number,
   fullHeight: number,
+  subjectMask?: MaskGrid,
 ): Float32Array {
-  const brush = adj.type === 'brush' ? rasterizeBrush(adj, fullWidth, fullHeight) : undefined
+  const brush =
+    adj.type === 'brush'
+      ? rasterizeBrush(adj, fullWidth, fullHeight)
+      : adj.type === 'subject'
+        ? subjectMask
+        : undefined
   const out = new Float32Array(width * height)
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -1238,7 +1287,7 @@ export function buildDetailMaps(
 }
 
 /** O(n) box blur with clamped edges, separable; returns a new buffer. */
-function boxBlurFast(src: Float32Array, width: number, height: number, radius: number, passes: number): Float32Array {
+export function boxBlurFast(src: Float32Array, width: number, height: number, radius: number, passes: number): Float32Array {
   const a = src.slice()
   const b = new Float32Array(src.length)
   const taps = radius * 2 + 1
@@ -2045,27 +2094,101 @@ function framedMask(mask: Uint8ClampedArray, geometry: HealGeometry, width: numb
   return out
 }
 
+/**
+ * Hand fixes over the square source-space cutout: each stroke keeps (adds
+ * to the subject) or erases, with a soft edge, in the order painted.
+ */
+function refineCutout(
+  cutout: Uint8ClampedArray,
+  strokes: CutoutStroke[],
+  sourceWidth: number,
+  sourceHeight: number,
+): Uint8ClampedArray {
+  if (strokes.length === 0) return cutout
+  const n = Math.round(Math.sqrt(cutout.length))
+  const out = cutout.slice()
+  // Source pixels per mask pixel: the mask is the source stretched to a square.
+  const sx = sourceWidth / n
+  const sy = sourceHeight / n
+  for (const stroke of strokes) {
+    const radius = Math.max(1, stroke.size * Math.max(sourceWidth, sourceHeight))
+    const soft = Math.max(1, radius * 0.3)
+    const pts: number[] = []
+    for (let i = 0; i < stroke.points.length; i += 2) pts.push(stroke.points[i]! * sourceWidth, stroke.points[i + 1]! * sourceHeight)
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (let i = 0; i < pts.length; i += 2) {
+      minX = Math.min(minX, pts[i]!)
+      maxX = Math.max(maxX, pts[i]!)
+      minY = Math.min(minY, pts[i + 1]!)
+      maxY = Math.max(maxY, pts[i + 1]!)
+    }
+    const gx0 = Math.max(0, Math.floor((minX - radius) / sx))
+    const gx1 = Math.min(n, Math.ceil((maxX + radius) / sx))
+    const gy0 = Math.max(0, Math.floor((minY - radius) / sy))
+    const gy1 = Math.min(n, Math.ceil((maxY + radius) / sy))
+    const segments = Math.max(1, pts.length / 2 - 1)
+    for (let gy = gy0; gy < gy1; gy++) {
+      const py = (gy + 0.5) * sy
+      for (let gx = gx0; gx < gx1; gx++) {
+        const px = (gx + 0.5) * sx
+        let dist = Infinity
+        for (let s = 0; s < segments; s++) {
+          const ax = pts[s * 2]!
+          const ay = pts[s * 2 + 1]!
+          const bx = pts.length > 2 ? pts[s * 2 + 2]! : ax
+          const by = pts.length > 2 ? pts[s * 2 + 3]! : ay
+          const abx = bx - ax
+          const aby = by - ay
+          const len2 = abx * abx + aby * aby
+          const t = len2 > 0 ? clamp01(((px - ax) * abx + (py - ay) * aby) / len2) : 0
+          dist = Math.min(dist, Math.hypot(px - ax - abx * t, py - ay - aby * t))
+        }
+        const w = smoothstep(0, 1, (radius - dist) / soft)
+        if (w <= 0) continue
+        const k = gy * n + gx
+        out[k] = stroke.keep ? Math.max(out[k]!, w * 255) : out[k]! * (1 - w)
+      }
+    }
+  }
+  return out
+}
+
 /** Geometry-transformed pixels (orientation, straighten, crop, preview scale) the develop passes start from. */
 export type BaseImage = BaseSample & {
-  /** Subject alpha over these pixels when the background is being removed. */
+  /** Subject alpha over these pixels when the background is being replaced or blurred. */
   cutout?: Uint8Array
+  /** The same subject at mask-grid resolution, for "Subject" local masks. */
+  subjectMask?: MaskGrid
 }
 
 /**
- * prepareBase plus the background cutout: `cutout` is the square
+ * prepareBase plus the background cutout: `raw` is the square
  * source-space mask from cutout.ts, or null while it is still being made.
  */
 export function prepareBaseWithCutout(
   source: RenderSource,
   edits: EditParams,
   maxEdge: number,
-  cutout: Uint8ClampedArray | null,
+  raw: Uint8ClampedArray | null,
 ): BaseImage | null {
   const base = prepareBase(source, edits, maxEdge)
-  if (!base || !cutout || edits.background.mode === 'original') return base
+  if (!base || !raw) return base
   const { width, height } = sourceDimensions(source)
+  const cutout = refineCutout(raw, edits.background.refine, width, height)
   const geometry = { width, height, rotate: normalizeRotate(edits.rotate ?? 0), crop: edits.crop }
-  return { ...base, cutout: framedMask(cutout, geometry, base.width, base.height) }
+  const out: BaseImage = { ...base }
+  if (edits.background.mode !== 'original') out.cutout = framedMask(cutout, geometry, base.width, base.height)
+  if (edits.localAdjustments.some((adj) => adj.type === 'subject')) {
+    const grid = brushGridSize(base.width, base.height)
+    const alpha = framedMask(cutout, geometry, grid.width, grid.height)
+    const data = new Float32Array(alpha.length)
+    for (let k = 0; k < alpha.length; k++) data[k] = alpha[k]! / 255
+    out.subjectMask = { data, width: grid.width, height: grid.height }
+  }
+  return out
 }
 
 /** Orientation, straighten, crop and downscale — everything but the colour work. */

@@ -58,6 +58,10 @@ type LocalAdjustmentBase = {
   contrast: number
   saturation: number
   temperature: number
+  /** 0–100: whitens light, yellowish pixels only (teeth, eye whites); lips and skin barely change. */
+  whiten: number
+  /** Shown instead of the type name ("Teeth"). */
+  name?: string
 }
 
 export type RadialAdjustment = LocalAdjustmentBase & {
@@ -96,7 +100,12 @@ export type BrushAdjustment = LocalAdjustmentBase & {
   strokes: BrushStroke[]
 }
 
-export type LocalAdjustment = RadialAdjustment | LinearAdjustment | BrushAdjustment
+/** The photo's main subject, found by the background-removal model (see cutout.ts). */
+export type SubjectAdjustment = LocalAdjustmentBase & {
+  type: 'subject'
+}
+
+export type LocalAdjustment = RadialAdjustment | LinearAdjustment | BrushAdjustment | SubjectAdjustment
 export type LocalAdjustmentType = LocalAdjustment['type']
 
 /** Any subset of fields a local mask can carry — used for partial updates. */
@@ -131,13 +140,29 @@ export type HealSpot = {
   dy: number
 }
 
-export type BackgroundMode = 'original' | 'transparent' | 'color'
+export type BackgroundMode = 'original' | 'transparent' | 'color' | 'blur'
 
-/** Background removal: keep the photo as is, or cut the subject out onto transparency or a colour. */
+/** A hand fix to the subject cutout: paint to keep (add to the subject) or erase. */
+export type CutoutStroke = {
+  /** Flat [x0, y0, x1, y1, …] in source image space (0–1), like heal spots. */
+  points: number[]
+  /** Radius as a fraction of the source's long edge. */
+  size: number
+  keep: boolean
+}
+
+/**
+ * Background removal: keep the photo as is, cut the subject out onto
+ * transparency or a colour, or keep the background but blur it (portrait look).
+ */
 export type BackgroundEdit = {
   mode: BackgroundMode
   /** CSS hex colour used by `color` mode. */
   color: string
+  /** 0–100, used by `blur` mode. */
+  blur: number
+  /** Hand fixes over the automatic cutout, in order. */
+  refine: CutoutStroke[]
 }
 
 export type GradeZone = {
@@ -263,6 +288,8 @@ export type ExportOptions = {
   watermark: Watermark
   /** `{name}` is replaced with the source basename. */
   filenamePattern: string
+  /** AI upscaling (Real-ESRGAN): 1 = off. Capped by the export size and 8192 px. */
+  upscale: 1 | 2 | 4
 }
 
 export const DEFAULT_WATERMARK: Watermark = {
@@ -278,6 +305,7 @@ export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   quality: 0.92,
   maxEdge: 8192,
   frame: null,
+  upscale: 1,
   watermark: DEFAULT_WATERMARK,
   filenamePattern: '{name}-edited',
 }
@@ -374,7 +402,7 @@ export const DEFAULT_EDITS: EditParams = {
   toneCurve: createDefaultToneCurve(),
   localAdjustments: [],
   heal: [],
-  background: { mode: 'original', color: '#ffffff' },
+  background: { mode: 'original', color: '#ffffff', blur: 40, refine: [] },
   hsl: createDefaultHsl(),
 }
 
@@ -484,7 +512,8 @@ export function cloneEdits(edits: EditParams): EditParams {
     localAdjustments: cloneLocalAdjustments(edits.localAdjustments ?? []),
     // Spot paths are treated as immutable and shared, like brush strokes.
     heal: (edits.heal ?? []).map((spot) => ({ ...spot })),
-    background: { ...(edits.background ?? DEFAULT_EDITS.background) },
+    // Refine strokes are treated as immutable and shared, like brush strokes.
+    background: { ...DEFAULT_EDITS.background, ...edits.background },
     colorGrading: cloneColorGrading(edits.colorGrading ?? createDefaultColorGrading()),
   }
   if (edits.lut) next.lut = cloneLut(edits.lut)
@@ -626,6 +655,7 @@ const LOCAL_DEFAULTS = {
   contrast: 0,
   saturation: 0,
   temperature: 0,
+  whiten: 0,
 }
 
 export function createRadialAdjustment(
@@ -674,6 +704,7 @@ export function createBrushAdjustment(
 export function createLocalAdjustment(type: LocalAdjustmentType): LocalAdjustment {
   if (type === 'linear') return createLinearAdjustment()
   if (type === 'brush') return createBrushAdjustment()
+  if (type === 'subject') return { id: crypto.randomUUID(), type: 'subject', ...LOCAL_DEFAULTS }
   return createRadialAdjustment()
 }
 
@@ -844,6 +875,8 @@ function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
       contrast: num(obj.contrast, 0),
       saturation: num(obj.saturation, 0),
       temperature: num(obj.temperature, 0),
+      whiten: Math.min(100, Math.max(0, num(obj.whiten, 0))),
+      ...(typeof obj.name === 'string' && obj.name ? { name: obj.name.slice(0, 40) } : {}),
     }
     if (obj.type === 'radial') {
       out.push({
@@ -869,9 +902,27 @@ function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
         ? obj.strokes.map(normalizeStroke).filter((st): st is BrushStroke => st !== null)
         : []
       out.push({ ...base, type: 'brush', strokes })
+    } else if (obj.type === 'subject') {
+      out.push({ ...base, type: 'subject' })
     }
   }
   return out
+}
+
+function normalizeCutoutStroke(value: unknown): CutoutStroke[] {
+  if (!value || typeof value !== 'object') return []
+  const obj = value as Record<string, unknown>
+  if (!Array.isArray(obj.points)) return []
+  const points = obj.points.filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+  if (points.length < 2) return []
+  return [
+    {
+      points: points.length % 2 === 0 ? points : points.slice(0, -1),
+      size:
+        typeof obj.size === 'number' && Number.isFinite(obj.size) ? Math.min(0.25, Math.max(0.001, obj.size)) : 0.03,
+      keep: obj.keep === true,
+    },
+  ]
 }
 
 function normalizeHeal(value: unknown): HealSpot[] {
@@ -897,6 +948,11 @@ function normalizeHeal(value: unknown): HealSpot[] {
     })
   }
   return out
+}
+
+/** Whether rendering these edits needs the subject cutout (background modes, subject masks). */
+export function needsCutout(edits: EditParams): boolean {
+  return edits.background.mode !== 'original' || edits.localAdjustments.some((adj) => adj.type === 'subject')
 }
 
 /** Normalize possibly-partial preset/import data into a full EditParams. */
@@ -926,8 +982,10 @@ export function normalizeEdits(value: unknown): EditParams | null {
   if (obj.background && typeof obj.background === 'object') {
     const bg = obj.background as Record<string, unknown>
     next.background = {
-      mode: bg.mode === 'transparent' || bg.mode === 'color' ? bg.mode : 'original',
+      mode: bg.mode === 'transparent' || bg.mode === 'color' || bg.mode === 'blur' ? bg.mode : 'original',
       color: typeof bg.color === 'string' && /^#[0-9a-f]{6}$/i.test(bg.color) ? bg.color : '#ffffff',
+      blur: typeof bg.blur === 'number' && Number.isFinite(bg.blur) ? Math.min(100, Math.max(0, bg.blur)) : 40,
+      refine: Array.isArray(bg.refine) ? bg.refine.flatMap(normalizeCutoutStroke) : [],
     }
   }
 

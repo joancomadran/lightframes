@@ -757,16 +757,24 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       try {
         // The export may change the extension (a transparent cutout saves as PNG): report what was written.
         let lastFilename = ''
+        let skipped = 0
         for (const id of targets) {
           const photo = photosRef.current.find((p) => p.id === id)
           if (!photo) continue
           if (isRawFile(photo.file)) setStatus(`Developing ${photo.name}…`)
           const source = await loadExportSource(photo)
-          const { blob, filename } = await exportEditedImage(source, photo.edits, options, photo.name)
+          const { blob, filename, upscaleSkipped } = await exportEditedImage(source, photo.edits, options, photo.name, (f) =>
+            setStatus(`Upscaling ${photo.name}… ${Math.round(f * 100)}%`),
+          )
           downloadBlob(blob, filename)
           lastFilename = filename
+          if (upscaleSkipped) skipped++
         }
-        const message = targets.length === 1 ? `Exported ${lastFilename}` : `Exported ${targets.length} files`
+        const exported = targets.length === 1 ? `Exported ${lastFilename}` : `Exported ${targets.length} files`
+        const message =
+          skipped === 0
+            ? exported
+            : `${exported} — not upscaled: ${skipped === targets.length ? 'already' : `${skipped} were already`} at the size limit`
         setStatus(message)
         showToast(message)
       } catch {
@@ -778,13 +786,14 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
   )
 
   const addLocal = useCallback(
-    (type: LocalAdjustmentType) => {
+    (type: LocalAdjustmentType, preset?: LocalAdjustmentPatch & { name?: string }) => {
       const id = activeIdRef.current
       if (!id) return
       const photo = photosRef.current.find((p) => p.id === id)
       if (!photo) return
       pushHistory(id, photo.edits)
-      const mask = createLocalAdjustment(type)
+      const created = createLocalAdjustment(type)
+      const mask = preset ? { ...patchLocalAdjustment(created, preset), name: preset.name } : created
       setPhotos((prev) =>
         prev.map((p) =>
           p.id === id
@@ -799,7 +808,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
         ),
       )
       setPanelFocus('local')
-      setStatus(`Added ${type} mask`)
+      setStatus(`Added ${preset?.name?.toLowerCase() ?? type} mask`)
     },
     [pushHistory],
   )
@@ -999,7 +1008,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       }
       if (!mod && key === 'k') {
         e.preventDefault()
-        addLocal('brush')
+        addLocal(e.shiftKey ? 'subject' : 'brush')
         return
       }
       if (!mod && key === 'q') {

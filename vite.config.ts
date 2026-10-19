@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'Lightframes',
         short_name: 'Lightframes',
         description: 'Free local photo editor with custom presets and copy/paste edits.',
-        theme_color: '#0c100e',
+        theme_color: '#171e1a',
         background_color: '#0c100e',
         display: 'standalone',
         start_url: '/',

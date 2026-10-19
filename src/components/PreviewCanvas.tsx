@@ -32,11 +32,12 @@ import { ensureCutout, getCutout, setSourceKey } from '../lib/cutout'
 import { ensurePatches } from '../lib/inpaint'
 import { loadRawPreview } from '../lib/rawDecode'
 import { developBase } from '../lib/renderPipeline'
-import { stepRotate, type EditParams, type HealSpot, type LocalAdjustment } from '../types/edits'
+import { needsCutout, stepRotate, type EditParams, type HealSpot, type LocalAdjustment } from '../types/edits'
 import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { AppMark } from './AppMark'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
 import { HealOverlay, type HealOverlayConfig } from './HealOverlay'
+import { RefineOverlay, type RefineOverlayConfig } from './RefineOverlay'
 import { InstallButton } from './InstallButton'
 import { MaskOverlay, type MaskOverlayConfig } from './MaskOverlay'
 import { GithubStar } from './GithubStar'
@@ -75,6 +76,8 @@ type PreviewCanvasProps = {
   maskOverlay?: MaskOverlayConfig | null
   /** When set, paint and edit spot removal over the image. */
   healOverlay?: HealOverlayConfig | null
+  /** When set, paint keep / erase fixes onto the background cutout (takes over from healOverlay). */
+  refineOverlay?: RefineOverlayConfig | null
   /** Mask to tint red over the image (mask overlay, O). */
   maskTint?: LocalAdjustment | null
   /** While set, clicking the image picks a neutral point for white balance. */
@@ -176,6 +179,7 @@ export function PreviewCanvas({
   cropOverlay = null,
   maskOverlay = null,
   healOverlay = null,
+  refineOverlay = null,
   maskTint = null,
   onPickWhiteBalance = null,
   apiRef,
@@ -335,8 +339,8 @@ export function PreviewCanvas({
 
   const getBase = useCallback((source: RenderSource, renderEdits: EditParams, maxEdge: number) => {
     const c = renderEdits.crop
-    const cutout = renderEdits.background.mode === 'original' ? null : getCutout(source)
-    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}|${cutout ? 'cut' : ''}`
+    const cutout = needsCutout(renderEdits) ? getCutout(source) : null
+    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}|${cutout ? `cut${JSON.stringify(renderEdits.background.refine)}` : ''}`
     const cached = baseCacheRef.current
     if (cached && cached.source === source && cached.key === key) return cached.base
     const base = prepareBaseWithCutout(source, renderEdits, maxEdge, cutout)
@@ -617,12 +621,13 @@ export function PreviewCanvas({
     ensurePatches(source, edits.heal).catch(() => {})
   }, [edits.heal, sourceVersion])
 
-  const removingBackground = edits.background.mode !== 'original'
+  // Background modes and "Subject" masks need the photo's subject: find it once.
+  const wantsCutout = needsCutout(edits)
   useEffect(() => {
     const source = sourceRef.current
-    if (!source || !removingBackground) return
+    if (!source || !wantsCutout) return
     ensureCutout(source).catch(() => {})
-  }, [removingBackground, sourceVersion])
+  }, [wantsCutout, sourceVersion])
 
   // Red mask tint: a small grid of the selected mask's weights, scaled up by CSS.
   useEffect(() => {
@@ -636,7 +641,7 @@ export function PreviewCanvas({
     const scale = 360 / Math.max(contentSize.w, contentSize.h)
     const w = Math.max(1, Math.round(contentSize.w * scale))
     const h = Math.max(1, Math.round(contentSize.h * scale))
-    const weights = computeMaskPreview(maskTint, w, h, contentSize.w, contentSize.h)
+    const weights = computeMaskPreview(maskTint, w, h, contentSize.w, contentSize.h, renderedBase?.subjectMask)
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')
@@ -649,7 +654,7 @@ export function PreviewCanvas({
       img.data[i + 3] = weights[k]! * 150
     }
     ctx.putImageData(img, 0, 0)
-  }, [maskTint, contentSize.w, contentSize.h])
+  }, [maskTint, contentSize.w, contentSize.h, renderedBase])
 
   useEffect(() => {
     const el = viewportRef.current
@@ -712,7 +717,7 @@ export function PreviewCanvas({
       lastTapRef.current = null
     } else if (pointersRef.current.size === 1) {
       startDrag(e.pointerId, e.clientX, e.clientY)
-      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay && !healOverlay) {
+      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay && !healOverlay && !refineOverlay) {
         const hold = { timer: 0, x: e.clientX, y: e.clientY, fired: false }
         hold.timer = window.setTimeout(() => {
           hold.fired = true
@@ -965,7 +970,14 @@ export function PreviewCanvas({
         {maskOverlay && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
           <MaskOverlay frame={overlayFrame} config={maskOverlay} />
         )}
-        {healOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+        {refineOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+          <RefineOverlay
+            frame={overlayFrame}
+            geometry={{ width: sourceDims.w, height: sourceDims.h, rotate: renderEdits.rotate, crop: renderEdits.crop }}
+            config={refineOverlay}
+          />
+        )}
+        {healOverlay && !refineOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
           <HealOverlay
             frame={overlayFrame}
             viewport={viewportSize}

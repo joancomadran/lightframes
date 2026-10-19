@@ -14,6 +14,19 @@ Background removal (subject segmentation).
 
 Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
 
+## realesr-general-x4v3.onnx
+
+AI upscaling (super-resolution, ×4).
+
+- Model: Real-ESRGAN "general x4v3" from [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN),
+  Copyright (c) 2021, Xintao Wang. BSD 3-Clause License.
+- ONNX export by [Qualcomm AI Hub](https://huggingface.co/qualcomm/Real-ESRGAN-General-x4v3) (BSD-3-Clause),
+  release v0.64.0, float precision.
+- **Modified by Lightframes:** the external weights file merged into the .onnx (no change to the weights).
+- SHA-256 of this file: `c6f13f8866203bc2aae3977eae6bce546b861e9e14e39682c03b17c9d6698c48`
+
+Full license text: [LICENSE-realesrgan.txt](LICENSE-realesrgan.txt)
+
 ## MI-GAN (downloaded at runtime, not stored here)
 
 Object removal (inpainting), [MI-GAN](https://github.com/Picsart-AI-Research/MI-GAN) by Picsart AI Research,

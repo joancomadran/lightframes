@@ -2260,9 +2260,8 @@ a.github-star {
 .toast__message {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .toast__close {
@@ -2605,6 +2604,27 @@ a.github-star {
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
 }
 
+.bg-refine {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.refine-draft--keep {
+  stroke: rgba(200, 245, 96, 0.4);
+}
+
+.refine-draft--erase {
+  stroke: rgba(255, 110, 110, 0.4);
+}
+
+.bg-blur {
+  margin-top: 0.5rem;
+}
+
 .bg-swatches {
   display: flex;
   gap: 0.4rem;
@@ -2658,12 +2678,13 @@ a.github-star {
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.5rem 0.25rem;
+  padding: 0.5rem 0.15rem;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius);
   background: transparent;
   font: inherit;
   font-size: 0.72rem;
+  white-space: nowrap;
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -2682,6 +2703,24 @@ a.github-star {
   border-radius: 1px;
   border: none;
   background: linear-gradient(180deg, currentColor, transparent);
+}
+
+.mask-card__icon--teeth {
+  width: 0.8rem;
+  height: 0.6rem;
+  border-radius: 2px 2px 45% 45%;
+  border-width: 1.5px;
+  background: linear-gradient(90deg, transparent 47%, currentColor 47% 53%, transparent 53%);
+}
+
+.mask-card__icon--subject {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: none;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 50% 28%, currentColor 0 26%, transparent 29%),
+    radial-gradient(ellipse 60% 45% at 50% 100%, currentColor 0 98%, transparent 100%);
 }
 
 .mask-card__icon--brush {
@@ -4477,10 +4516,6 @@ kbd {
 
   .toast {
     max-width: none;
-  }
-
-  .toast__message {
-    white-space: normal;
   }
 }
 
