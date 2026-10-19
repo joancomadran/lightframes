@@ -1,5 +1,49 @@
 import { useEffect, useId, useRef, useState } from 'react'
 
+/**
+ * Small looping version of the app icon for in-progress work: a bright
+ * segment chases around the frame while the diagonal draws and erases.
+ */
+export function AppLoader() {
+  return (
+    <span className="app-loader" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none">
+        <rect width="64" height="64" rx="14" fill="#141a16" />
+        <path d="M15 15 49 49" stroke="#c8f560" strokeOpacity="0.2" strokeWidth="10" />
+        <path
+          className="app-loader__cross"
+          d="M46 18 18 46"
+          stroke="#c8f560"
+          strokeWidth="5"
+          pathLength={1}
+        />
+        <rect
+          x="13.6"
+          y="13.6"
+          width="36.8"
+          height="36.8"
+          rx="3"
+          stroke="#c8f560"
+          strokeOpacity="0.25"
+          strokeWidth="3.2"
+        />
+        <rect
+          className="app-loader__frame"
+          x="13.6"
+          y="13.6"
+          width="36.8"
+          height="36.8"
+          rx="3"
+          stroke="#c8f560"
+          strokeWidth="3.2"
+          strokeLinecap="round"
+          pathLength={1}
+        />
+      </svg>
+    </span>
+  )
+}
+
 /** Roughly the intro's length; hovering during it doesn't restart it. */
 const INTRO_MS = 1800
 

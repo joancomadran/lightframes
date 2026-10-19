@@ -2,7 +2,7 @@ import type { CropRect, HealSpot, RotateDegrees } from '../types/edits'
 import { isFullCrop } from './crop'
 
 /*
- * Spot removal, Lightroom style: the painted area is replaced with pixels
+ * Spot removal: the painted area is replaced with pixels
  * from somewhere else in the photo (the spot's source offset).
  *
  *   clone: copy the source pixels as they are, feathered at the edge

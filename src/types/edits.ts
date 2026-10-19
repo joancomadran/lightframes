@@ -176,7 +176,7 @@ export type GradeZone = {
 
 export type GradeZoneId = 'shadows' | 'midtones' | 'highlights' | 'global'
 
-/** Color grading (split toning) wheels, like Lightroom's Color Grading panel. */
+/** Color grading (split toning) wheels: shadows, midtones and highlights each get a hue and saturation. */
 export type ColorGrading = Record<GradeZoneId, GradeZone> & {
   /** 0–100: how much the shadow / highlight ranges overlap. */
   blending: number

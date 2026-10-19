@@ -7,7 +7,7 @@ import {
   type Preset,
 } from '../types/edits'
 
-/** Curve points given in Lightroom's 0–255 scale. */
+/** Curve points given in a 0–255 scale. */
 function curve255(...pairs: [number, number][]): EditParams['toneCurve'] {
   return { points: pairs.map(([x, y]) => ({ x: x / 255, y: y / 255 })) }
 }
@@ -21,7 +21,7 @@ function filter(id: string, name: string, patch: Partial<EditParams>): Preset {
   }
 }
 
-/** Read-only looks shipped with the app; values use Lightroom's slider scales. */
+/** Read-only looks shipped with the app; values use the editor's slider scales. */
 export const BUILTIN_PRESETS: Preset[] = [
   filter('vintage', 'Vintage', {
     exposure: 0.35,

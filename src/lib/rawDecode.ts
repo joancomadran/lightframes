@@ -175,7 +175,7 @@ export type LinearImage = {
 
 /**
  * Demosaic a RAW with LibRaw into linear 16-bit RGB — the same starting point
- * Lightroom develops from, with highlight headroom the embedded JPEG lacks.
+ * raw developers work from, with highlight headroom the embedded JPEG lacks.
  * `halfSize` skips demosaicing (2×2 binning): fast and plenty for previews.
  */
 export async function decodeRawLinear(

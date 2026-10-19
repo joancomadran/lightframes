@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
+import { AppLoader } from './AppMark'
 
 type ToolbarProps = {
   mode: ToolbarMode
@@ -87,6 +88,8 @@ export function Toolbar({
   const [menuOpen, setMenuOpen] = useState(false)
   // The launch hint duplicates the empty state, so the compact status chip skips it.
   const [initialStatus] = useState(status)
+  // Every in-progress message ("Restoring 3 images…", "Exporting…") carries an ellipsis.
+  const busy = status.includes('…')
   const menuRef = useRef<HTMLDivElement>(null)
 
   // The overflow menu closes on any outside press or Escape.
@@ -289,10 +292,16 @@ export function Toolbar({
 
       <p
         key={status}
-        className={status === initialStatus ? 'toolbar__status toolbar__status--initial' : 'toolbar__status'}
+        className={[
+          'toolbar__status',
+          status === initialStatus && 'toolbar__status--initial',
+          busy && 'toolbar__status--busy',
+        ].filter(Boolean).join(' ')}
         role="status"
+        aria-busy={busy}
       >
-        {status}
+        {busy && <AppLoader />}
+        <span className="toolbar__status-text">{status}</span>
       </p>
     </header>
   )

@@ -2,11 +2,17 @@
 
 **[Try it now → lightframes.vercel.app](https://lightframes.vercel.app)**
 
-Free, open-source, **local** photo editor focused on custom presets and copy/paste edits — a Lightroom-like workflow without the cloud. Your photos never leave your device: no uploads, no account.
+Free, **open-source**, local photo editor focused on custom presets and copy/paste edits. The code is MIT-licensed and your photos never leave your device: no uploads, no account, no cloud.
 
-![Lightframes](public/og-image.png)
+![Lightframes editor with a RAW photo open and the presets panel](docs/screenshots/editor.jpg)
 
 Runs entirely in the browser. Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. Installable as an app (PWA) and works offline once loaded.
+
+## Screenshots
+
+| Start screen | Carousel |
+| --- | --- |
+| ![Empty start screen](docs/screenshots/home.jpg) | ![Carousel mode splitting a panorama across 4 slides](docs/screenshots/carousel.jpg) |
 
 ## Features
 
@@ -16,8 +22,9 @@ Runs entirely in the browser. Edits stay non-destructive until you export. Sessi
 - Histogram with shadow/highlight clipping overlay
 - Undo / redo and before/after compare
 - Multi-select filmstrip, sync edits, copy/paste across selection
-- Save / update custom presets; dial intensity 0–100%; import JSON, Lightroom XMP, or `.cube` LUTs; export as JSON
+- Save / update custom presets; dial intensity 0–100%; import JSON, XMP, or `.cube` LUTs; export as JSON
 - Export JPEG / PNG / WebP with quality, max edge, and filename pattern
+- Collage and carousel mode: lay out photos across seamless swipe slides (3:4, 4:5, 1:1) with ready-made layouts, and export each slide at 1080 px wide
 - Works fully offline after the app is loaded
 
 ## Requirements
@@ -54,7 +61,7 @@ npm run preview
 
 Presets are named `EditParams` stacks stored in `localStorage` and exportable as JSON. Import also accepts:
 
-- **XMP** — Lightroom / Camera Raw develop settings mapped onto the basic + HSL sliders
+- **XMP** — develop settings from `.xmp` presets mapped onto the basic + HSL sliders
 - **CUBE** — 3D LUT applied after parametric edits (stored on the preset as `edits.lut`)
 
 ## Shortcuts
@@ -105,3 +112,12 @@ Optional **Tauri** desktop wrap is planned post-MVP; this repo ships as a local 
 MIT — see [LICENSE](./LICENSE).
 
 Sample photos in `public/samples/` are © the Lightframes author, all rights reserved. They are not covered by the MIT license and may not be reused outside this project.
+
+---
+
+[![Lightframes — the open-source photo editor that stays on your device](public/og-image.png)](https://lightframes.vercel.app)
+
+<p align="center">
+  Your photos, your presets, your device.<br>
+  <strong><a href="https://lightframes.vercel.app">Open Lightframes →</a></strong> · if it saves you time, a ⭐ on the repo helps others find it.
+</p>

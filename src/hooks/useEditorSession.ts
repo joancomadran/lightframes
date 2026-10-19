@@ -561,7 +561,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
 
   /**
    * What a paste would do: the copied edits, or the active photo's when nothing
-   * is copied (Lightroom's "sync"), onto the selection minus the source photo.
+   * is copied (a "sync"), onto the selection minus the source photo.
    */
   const pastePlan = useMemo(() => {
     const active = photos.find((p) => p.id === activeId)
@@ -874,7 +874,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     [pushHistory],
   )
 
-  /** Rating / flag go to the whole selection, like Lightroom. */
+  /** Rating / flag go to the whole selection. */
   const ratingTargets = () =>
     selectedIdsRef.current.length > 0
       ? selectedIdsRef.current

@@ -27,24 +27,24 @@ import { applyHeal, frameToSource, healBounds, healKey, type HealGeometry } from
 import type { LinearImage } from './rawDecode'
 
 /*
- * Develop pipeline, ordered like Lightroom's (Process Version 2012+):
+ * Develop pipeline, in the usual raw-developer order:
  *
  *   8-bit sRGB → linear light            | RAW: LibRaw scene-linear RGB
  *   white balance (channel gains) → exposure → highlight shoulder (8-bit only)
  *   highlights / shadows (gain driven by a blurred luminance mask)
- *   → sRGB-encoded values                 | RAW: base tone curve (≈ Adobe Color)
+ *   → sRGB-encoded values                 | RAW: base tone curve
  *   contrast (S-curve around mid grey) → whites / blacks
  *   vibrance / saturation → HSL → point curve (cubic spline)
  *   → 8-bit → local adjustments → 3D LUT
  *
- * Exposure and white balance only behave like Lightroom in linear light: on
+ * Exposure and white balance only behave photographically in linear light: on
  * gamma-encoded values +1 EV clips half the image and WB shifts tint the blacks.
  */
 
 const LUMA_R = 0.2126
 const LUMA_G = 0.7152
 const LUMA_B = 0.0722
-/** 18% grey, sRGB-encoded — the pivot Lightroom's contrast turns around. */
+/** 18% grey, sRGB-encoded — the pivot contrast turns around. */
 const MID_GREY = 0.4613
 
 /** ±100 temperature / tint, in stops of red↔blue and green↔magenta gain. */
@@ -79,8 +79,8 @@ const MASK_LOCAL_MIX = 0.7
 const TABLE_STEPS = 1024
 
 /**
- * Default rendering for RAW sources, standing in for Lightroom's Adobe Color
- * profile + default tone curve: log2(scene-linear, sensor clip = 1) → encoded
+ * Default rendering for RAW sources, standing in for a camera profile +
+ * default tone curve: log2(scene-linear, sensor clip = 1) → encoded
  * output. Fitted to Sony camera JPEGs, with a slightly gentler toe.
  */
 const RAW_BASE_POINTS: [number, number][] = [
@@ -212,8 +212,8 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 }
 
 /**
- * Per-channel gains for relative temperature / tint (−100…100), like Lightroom
- * on rendered files. Positive tint is magenta, negative is green. Normalised so
+ * Per-channel gains for relative temperature / tint (−100…100) on
+ * rendered files. Positive tint is magenta, negative is green. Normalised so
  * white balance does not change overall brightness.
  */
 function whiteBalanceGains(temperature: number, tint: number): [number, number, number] {
@@ -301,7 +301,7 @@ function boxBlur(data: Float32Array, width: number, height: number, radius: numb
 /**
  * Low-res, blurred map of encoded luminance. Driving Shadows / Highlights from
  * the neighbourhood rather than the pixel keeps local contrast, which is what
- * makes Lightroom's sliders recover detail instead of flattening it.
+ * makes the sliders recover detail instead of flattening it.
  */
 function buildLuminanceMask(
   width: number,
@@ -345,7 +345,7 @@ function skinProtection(r: number, g: number, b: number): number {
 /**
  * HSL / Color mixer. Every hue sits between two neighbouring bands whose
  * weights sum to 1, so adjacent bands blend smoothly. Near-neutral pixels are
- * left alone, as in Lightroom.
+ * left alone.
  */
 function applyHslEdits(r: number, g: number, b: number, hsl: HslEdits): [number, number, number] {
   const strength = smoothstep(0, 0.12, Math.max(r, g, b) - Math.min(r, g, b))

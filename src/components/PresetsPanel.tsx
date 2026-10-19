@@ -89,7 +89,7 @@ export function PresetsPanel({
             type="button"
             className="btn btn--ghost btn--sm"
             onClick={() => fileRef.current?.click()}
-            title="Import a JSON, Lightroom XMP or CUBE LUT preset"
+            title="Import a JSON, XMP or CUBE LUT preset"
           >
             Import
           </button>
@@ -200,8 +200,7 @@ export function PresetsPanel({
       {presets.length === 0 ? (
         <div className="empty-state">
           <p className="empty-state__text">
-            No custom presets yet. Save your current look above, or import a JSON, Lightroom XMP or CUBE
-            file.
+            No custom presets yet. Save your current look above, or import a JSON, XMP or CUBE file.
           </p>
         </div>
       ) : (

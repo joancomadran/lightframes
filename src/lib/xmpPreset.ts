@@ -118,7 +118,7 @@ function mapTemperature(value: number): number {
 }
 
 function mapTint(value: number): number {
-  // Lightroom tint is typically −150…150
+  // XMP tint is typically −150…150
   return Math.max(-100, Math.min(100, value))
 }
 
@@ -191,7 +191,7 @@ export function parseXmpToEdits(text: string): EditParams {
     touched = true
   }
 
-  // Lightroom stores relative WB for JPEG/TIFF as Incremental*; absolute
+  // XMP stores relative WB for JPEG/TIFF as Incremental*; absolute
   // Kelvin (raw presets) can only be approximated without the as-shot WB.
   const incrementalTemperature = firstNumber(props, 'IncrementalTemperature')
   const temperature = firstNumber(props, 'Temperature', 'Temperature2012')
@@ -269,7 +269,7 @@ export function parseXmpToEdits(text: string): EditParams {
     }
   }
 
-  // Color Grading (Lightroom 10+), falling back to the older Split Toning.
+  // Color Grading (newer presets), falling back to the older Split Toning.
   const zones: [GradeZoneId, string, string, string][] = [
     ['shadows', 'ColorGradeShadowHue', 'ColorGradeShadowSat', 'ColorGradeShadowLum'],
     ['midtones', 'ColorGradeMidtoneHue', 'ColorGradeMidtoneSat', 'ColorGradeMidtoneLum'],

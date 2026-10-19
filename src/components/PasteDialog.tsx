@@ -10,7 +10,7 @@ type PasteDialogProps = {
   onCancel: () => void
 }
 
-/** Pick which groups of settings to paste onto the target photos, like Lightroom's Sync Settings. */
+/** Pick which groups of settings to paste onto the target photos. */
 export function PasteDialog({ open, ...props }: PasteDialogProps) {
   // Mounted per opening, so the choices start from the last ones used.
   return open ? <PasteDialogCard {...props} /> : null

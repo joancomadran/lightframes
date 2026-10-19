@@ -840,10 +840,10 @@ export function PreviewCanvas({
           <AppMark />
           <span className="preview__empty-name">Lightframes</span>
         </div>
-        <h1 className="preview__empty-title">A free photo editor that stays on your device</h1>
+        <h1 className="preview__empty-title">The open-source photo editor that stays on your device</h1>
         <p className="preview__empty-copy">
-          Lightroom-style presets and copy/paste edits, right in the browser. Your photos are never
-          uploaded — no account needed.
+          Free and open source. Custom presets and copy/paste edits, right in the browser. Your
+          photos are never uploaded — no account needed.
         </p>
         <ul className="preview__empty-features">
           <li>JPEG, PNG &amp; camera RAW</li>
