@@ -2188,6 +2188,33 @@ a.github-star {
   margin-top: 0.35rem;
 }
 
+.paste__summary {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.paste__summary strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.paste__groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.paste__check {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.paste__quick {
+  display: flex;
+  gap: 0.35rem;
+}
+
 .confirm__body {
   display: flex;
   flex-direction: column;

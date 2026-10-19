@@ -13,7 +13,6 @@ type FilmstripProps = {
   onFilterChange: (filter: FilmstripFilter) => void
   onSelect: (id: string, opts?: { additive?: boolean; range?: boolean }) => void
   onOpen: (opts?: { folder?: boolean }) => void
-  onSync?: () => void
   onClear?: () => void
 }
 
@@ -53,7 +52,6 @@ export function Filmstrip({
   onFilterChange,
   onSelect,
   onOpen,
-  onSync,
   onClear,
 }: FilmstripProps) {
   const pressRef = useRef<{ id: string; timer: number; x: number; y: number; fired: boolean } | null>(null)
@@ -87,17 +85,6 @@ export function Filmstrip({
       <div className="filmstrip__header">
         <span className="filmstrip__title">Filmstrip</span>
         <div className="filmstrip__actions">
-          {onSync && (
-            <button
-              type="button"
-              className="btn btn--ghost btn--sm"
-              title="Sync active edits to selection (Ctrl/Cmd+S)"
-              disabled={selectedIds.length < 2}
-              onClick={onSync}
-            >
-              Sync
-            </button>
-          )}
           <button
             type="button"
             className="btn btn--ghost btn--sm"
@@ -240,7 +227,14 @@ export function Filmstrip({
                 }}
               >
                 <span className="filmstrip__thumb-wrap">
-                  <img src={photo.thumbnailUrl} alt="" className="filmstrip__thumb" draggable={false} />
+                  <img
+                    src={photo.thumbnailUrl}
+                    alt=""
+                    className="filmstrip__thumb"
+                    draggable={false}
+                    loading="lazy"
+                    decoding="async"
+                  />
                   {photo.flag && (
                     <span
                       className={`filmstrip__flag filmstrip__flag--${photo.flag}`}

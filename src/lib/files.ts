@@ -167,3 +167,32 @@ export function downloadBlob(blob: Blob, filename: string): void {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+/** Long side of filmstrip thumbnails: sharp at 2× on the strip, a fraction of the photo's memory. */
+const THUMB_EDGE = 360
+
+/**
+ * A small JPEG thumbnail of an image blob. Showing the full photo in the
+ * filmstrip would make the browser keep every one decoded at full size —
+ * gigabytes with a few dozen camera files. Null when the browser can't decode it.
+ */
+export async function makeThumbnail(blob: Blob): Promise<Blob | null> {
+  try {
+    const probe = await createImageBitmap(blob, { resizeWidth: 64, resizeQuality: 'low' })
+    // Fit the long side: a portrait photo gets its height, not its width, set to THUMB_EDGE.
+    const portrait = probe.height > probe.width
+    probe.close()
+    const bitmap = await createImageBitmap(
+      blob,
+      portrait ? { resizeHeight: THUMB_EDGE, resizeQuality: 'medium' } : { resizeWidth: THUMB_EDGE, resizeQuality: 'medium' },
+    )
+    const canvas = document.createElement('canvas')
+    canvas.width = bitmap.width
+    canvas.height = bitmap.height
+    canvas.getContext('2d')?.drawImage(bitmap, 0, 0)
+    bitmap.close()
+    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82))
+  } catch {
+    return null
+  }
+}

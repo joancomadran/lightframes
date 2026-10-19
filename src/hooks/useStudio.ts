@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CollageRenderPhoto } from '../lib/collage'
 import { downloadBlob } from '../lib/files'
+import { zipFiles } from '../lib/zip'
+
+/** Slides download as themselves when there's one, as one ZIP when there are several. */
+async function downloadFiles(files: File[]): Promise<void> {
+  if (files.length === 1) {
+    downloadBlob(files[0]!, files[0]!.name)
+    return
+  }
+  const zip = await zipFiles(files.map((file) => ({ name: file.name, data: file })))
+  downloadBlob(zip, `lightframes-slides-${new Date().toISOString().slice(0, 10)}.zip`)
+}
 import { prepareBase, type RenderSource } from '../lib/imageProcessing'
 import { isRawFile, loadRawPreview } from '../lib/rawDecode'
 import { developBase } from '../lib/renderPipeline'
@@ -143,8 +154,8 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
         if (coarsePointer && canShareFiles(files)) {
           setReady(files)
         } else {
-          for (const file of files) downloadBlob(file, file.name)
-          onNotify(files.length > 1 ? `Exported ${files.length} slides` : 'Exported 1 image')
+          await downloadFiles(files)
+          onNotify(files.length > 1 ? `Exported ${files.length} slides as a ZIP` : 'Exported 1 image')
         }
       } catch {
         onNotify('Export failed', 'error')
@@ -166,9 +177,9 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
     }
   }
 
-  const save = () => {
+  const save = async () => {
     if (!ready) return
-    for (const file of ready) downloadBlob(file, file.name)
+    await downloadFiles(ready)
     setReady(null)
   }
 

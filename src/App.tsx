@@ -18,6 +18,7 @@ import { HistogramPanel } from './components/HistogramPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import type { BrushSettings } from './components/MaskOverlay'
 import { PanelIcon } from './components/PanelIcon'
+import { PasteDialog } from './components/PasteDialog'
 import { PresetsPanel } from './components/PresetsPanel'
 import { PreviewCanvas, type PreviewApi, type Size } from './components/PreviewCanvas'
 import { ShortcutsDialog } from './components/ShortcutsDialog'
@@ -246,7 +247,7 @@ export default function App() {
         onModeChange={changeMode}
         canExport={mode === 'collage' ? studioHasPhotos : canEdit}
         canEdit={canEdit}
-        hasClipboard={Boolean(session.clipboard)}
+        canPaste={Boolean(session.pastePlan?.targets.length)}
         canUndo={session.canUndo}
         canRedo={session.canRedo}
         status={session.status}
@@ -255,8 +256,7 @@ export default function App() {
         onUndo={session.undo}
         onRedo={session.redo}
         onCopy={session.copyEdits}
-        onPaste={session.pasteEdits}
-        onSync={session.syncSelected}
+        onPaste={session.openPaste}
         onExport={() =>
           mode === 'collage' ? studioApi.current?.exportSlides() : session.setExportOpen(true)
         }
@@ -302,7 +302,6 @@ export default function App() {
             onFilterChange={session.setFilmstripFilter}
             onSelect={session.selectPhoto}
             onOpen={session.handleOpen}
-            onSync={session.syncSelected}
             onClear={() => setClearOpen(true)}
           />
 
@@ -595,6 +594,15 @@ export default function App() {
         selectionCount={Math.max(1, session.selectedIds.length)}
         onClose={() => session.setExportOpen(false)}
         onExport={session.runExport}
+      />
+
+      <PasteDialog
+        open={session.pasteOpen}
+        sourceName={session.pastePlan?.source.name ?? ''}
+        targetCount={session.pastePlan?.targets.length ?? 0}
+        initial={session.pasteGroupIds}
+        onPaste={session.pasteEdits}
+        onCancel={session.closePaste}
       />
 
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />

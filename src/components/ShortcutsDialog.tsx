@@ -14,8 +14,8 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
     items: [
       [`${MOD} Z`, 'Undo'],
       [`⇧ ${MOD} Z`, 'Redo'],
-      [`${MOD} C / ${MOD} V`, 'Copy / paste edits'],
-      [`${MOD} S`, 'Sync edits to selection'],
+      [`${MOD} C`, 'Copy edits'],
+      [`${MOD} V`, 'Paste edits to selection (choose settings)'],
       [`${MOD} E`, 'Export'],
       ['W', 'White balance picker'],
       ['R', 'Crop'],

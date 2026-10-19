@@ -1,26 +1,29 @@
-import {
-  DEFAULT_EDITS,
-  cloneEdits,
-  normalizeEdits,
-  type EditParams,
-  type PhotoSession,
-} from '../types/edits'
+import { cloneEdits, type EditParams, type PhotoSession } from '../types/edits'
+
+/*
+ * The open photos survive a reload through IndexedDB. Photo files are big
+ * (a camera RAW is tens of MB) and never change, so each is written once into
+ * its own store; the session record that is rewritten after every edit holds
+ * only names, edits and ratings.
+ */
 
 const DB_NAME = 'lightframes-session'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE = 'session'
+const FILES = 'files'
 const KEY = 'current'
 
 export type PersistedPhoto = {
   id: string
   name: string
   path: string
-  file: Blob
   fileName: string
   fileType: string
   edits: EditParams
   rating?: number
   flag?: PhotoSession['flag']
+  /** Version 1 kept the file inline; read for old sessions, never written. */
+  file?: Blob
 }
 
 export type PersistedSession = {
@@ -30,52 +33,110 @@ export type PersistedSession = {
   updatedAt: string
 }
 
+/** A restored photo with its file, whichever store it came from. */
+export type RestoredPhoto = PersistedPhoto & { file: Blob }
+
+/** Photo ids whose file is already in FILES, so saves skip rewriting it. */
+const storedFiles = new Set<string>()
+
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
     req.onupgradeneeded = () => {
       const db = req.result
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE)
-      }
+      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE)
+      if (!db.objectStoreNames.contains(FILES)) db.createObjectStore(FILES)
     }
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error ?? new Error('IndexedDB open failed'))
   })
 }
 
-export async function saveSessionSnapshot(session: PersistedSession): Promise<void> {
+function done(tx: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
+    tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'))
+  })
+}
+
+function request<T>(req: IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result)
+    req.onerror = () => reject(req.error ?? new Error('IndexedDB request failed'))
+  })
+}
+
+let saving: Promise<void> = Promise.resolve()
+
+/**
+ * Save the session; files are written only for photos not stored yet, and
+ * dropped with their photo. Saves run one after another, so a slow first
+ * save (all the files) can't make the next one write them again.
+ */
+export function saveSessionSnapshot(session: PersistedSession, files: Map<string, Blob>): Promise<void> {
+  saving = saving.catch(() => {}).then(() => writeSession(session, files))
+  return saving
+}
+
+async function writeSession(session: PersistedSession, files: Map<string, Blob>): Promise<void> {
   const db = await openDb()
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite')
+  try {
+    const tx = db.transaction([STORE, FILES], 'readwrite')
+    const fileStore = tx.objectStore(FILES)
+    const ids = new Set(session.photos.map((p) => p.id))
+    for (const [id, file] of files) {
+      if (!storedFiles.has(id)) fileStore.put(file, id)
+    }
+    for (const id of storedFiles) {
+      if (!ids.has(id)) fileStore.delete(id)
+    }
     tx.objectStore(STORE).put(session, KEY)
-    tx.oncomplete = () => resolve()
-    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB write failed'))
-  })
-  db.close()
+    await done(tx)
+    storedFiles.clear()
+    for (const id of ids) storedFiles.add(id)
+  } finally {
+    db.close()
+  }
 }
 
-export async function loadSessionSnapshot(): Promise<PersistedSession | null> {
+export async function loadSessionSnapshot(): Promise<(PersistedSession & { photos: RestoredPhoto[] }) | null> {
   const db = await openDb()
-  const value = await new Promise<PersistedSession | null>((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readonly')
-    const req = tx.objectStore(STORE).get(KEY)
-    req.onsuccess = () => resolve((req.result as PersistedSession | undefined) ?? null)
-    req.onerror = () => reject(req.error ?? new Error('IndexedDB read failed'))
-  })
-  db.close()
-  return value
+  try {
+    const tx = db.transaction([STORE, FILES], 'readonly')
+    const session = (await request(tx.objectStore(STORE).get(KEY))) as PersistedSession | undefined
+    if (!session) return null
+    const photos: RestoredPhoto[] = []
+    for (const item of session.photos) {
+      const file = item.file ?? ((await request(tx.objectStore(FILES).get(item.id))) as Blob | undefined)
+      if (!file) continue
+      photos.push({ ...item, file })
+      // Old sessions kept files inline: they still have to be written once to FILES.
+      if (!item.file) storedFiles.add(item.id)
+    }
+    return { ...session, photos }
+  } finally {
+    db.close()
+  }
 }
 
-export async function clearSessionSnapshot(): Promise<void> {
+/** Forget the session and every stored file (queued behind any save in progress). */
+export function clearSessionSnapshot(): Promise<void> {
+  saving = saving.catch(() => {}).then(clearSession)
+  return saving
+}
+
+async function clearSession(): Promise<void> {
   const db = await openDb()
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite')
+  try {
+    const tx = db.transaction([STORE, FILES], 'readwrite')
     tx.objectStore(STORE).delete(KEY)
-    tx.oncomplete = () => resolve()
-    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB clear failed'))
-  })
-  db.close()
+    tx.objectStore(FILES).clear()
+    await done(tx)
+    storedFiles.clear()
+  } finally {
+    db.close()
+  }
 }
 
 export function photosToPersisted(photos: PhotoSession[]): PersistedPhoto[] {
@@ -83,44 +144,10 @@ export function photosToPersisted(photos: PhotoSession[]): PersistedPhoto[] {
     id: photo.id,
     name: photo.name,
     path: photo.path,
-    file: photo.file,
     fileName: photo.file.name,
     fileType: photo.file.type,
     edits: cloneEdits(photo.edits),
     rating: photo.rating,
     flag: photo.flag,
   }))
-}
-
-export async function persistedToPhotos(
-  persisted: PersistedPhoto[],
-): Promise<PhotoSession[]> {
-  const photos: PhotoSession[] = []
-  for (const item of persisted) {
-    const file =
-      item.file instanceof File
-        ? item.file
-        : new File([item.file], item.fileName || item.name, {
-            type: item.fileType || item.file.type || 'application/octet-stream',
-          })
-    const objectUrl = URL.createObjectURL(
-      // Prefer already-decoded working JPEG when original was RAW and we stored the
-      // decoded preview blob under the photo session — here we store original file.
-      // Session restore re-opens the original; RAW will be re-decoded by caller.
-      file,
-    )
-    const edits = normalizeEdits(item.edits) ?? cloneEdits(DEFAULT_EDITS)
-    photos.push({
-      id: item.id,
-      name: item.name,
-      path: item.path,
-      objectUrl,
-      file,
-      edits,
-      thumbnailUrl: objectUrl,
-      rating: item.rating ?? 0,
-      flag: item.flag ?? null,
-    })
-  }
-  return photos
 }

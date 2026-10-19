@@ -6,7 +6,7 @@ type ToolbarProps = {
   onModeChange: (mode: ToolbarMode) => void
   canExport: boolean
   canEdit: boolean
-  hasClipboard: boolean
+  canPaste: boolean
   canUndo: boolean
   canRedo: boolean
   status: string
@@ -16,7 +16,6 @@ type ToolbarProps = {
   onRedo: () => void
   onCopy: () => void
   onPaste: () => void
-  onSync: () => void
   onExport: () => void
   onShowShortcuts: () => void
   onClearWorkspace: () => void
@@ -69,7 +68,7 @@ export function Toolbar({
   onModeChange,
   canExport,
   canEdit,
-  hasClipboard,
+  canPaste,
   canUndo,
   canRedo,
   status,
@@ -79,7 +78,6 @@ export function Toolbar({
   onRedo,
   onCopy,
   onPaste,
-  onSync,
   onExport,
   onShowShortcuts,
   onClearWorkspace,
@@ -198,28 +196,13 @@ export function Toolbar({
                 type="button"
                 className="btn btn--icon"
                 onClick={onPaste}
-                disabled={!canEdit || !hasClipboard}
-                title="Paste edits (⌘V)"
+                disabled={!canEdit || !canPaste}
+                title="Paste edits to the selection, choosing which settings (⌘V)"
                 aria-label="Paste edits"
               >
                 <svg {...iconProps}>
                   <rect x="8" y="2" width="8" height="4" rx="1" />
                   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                className="btn btn--icon"
-                onClick={onSync}
-                disabled={!canEdit || selectionCount < 2}
-                title="Sync active edits to selected photos (⌘S)"
-                aria-label="Sync edits to selection"
-              >
-                <svg {...iconProps}>
-                  <path d="M3 12a9 9 0 0 1 15.36-6.36L21 8" />
-                  <path d="M21 3v5h-5" />
-                  <path d="M21 12a9 9 0 0 1-15.36 6.36L3 16" />
-                  <path d="M8 16H3v5" />
                 </svg>
               </button>
             </span>
@@ -254,19 +237,10 @@ export function Toolbar({
                     type="button"
                     role="menuitem"
                     className="menu__item"
-                    disabled={!canEdit || !hasClipboard}
+                    disabled={!canEdit || !canPaste}
                     onClick={menuAction(onPaste)}
                   >
-                    Paste edits
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="menu__item"
-                    disabled={!canEdit || selectionCount < 2}
-                    onClick={menuAction(onSync)}
-                  >
-                    Sync to selection
+                    Paste edits…
                     {selectionCount > 1 && <span className="menu__hint">{selectionCount}</span>}
                   </button>
                   {installState.kind === 'prompt' && (

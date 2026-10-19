@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { downloadBlob, fetchSampleImages, openImages } from '../lib/files'
+import { downloadBlob, fetchSampleImages, makeThumbnail, openImages } from '../lib/files'
+import { zipFiles } from '../lib/zip'
 import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
 import { setSourceKey } from '../lib/cutout'
 import { type RenderSource } from '../lib/imageProcessing'
+import { loadPasteGroups, pasteGroups, savePasteGroups, type PasteGroupId } from '../lib/pasteEdits'
 import { exportEditedImage } from '../lib/renderPipeline'
 import {
   createPreset,
@@ -68,13 +70,9 @@ type HistoryEntry = {
 }
 
 async function makePhoto(file: File, edits?: EditParams): Promise<PhotoSession> {
-  let objectUrl: string
-  if (isRawFile(file)) {
-    const jpeg = await decodeRawToJpegBlob(file)
-    objectUrl = URL.createObjectURL(jpeg)
-  } else {
-    objectUrl = URL.createObjectURL(file)
-  }
+  const image = isRawFile(file) ? await decodeRawToJpegBlob(file) : file
+  const objectUrl = URL.createObjectURL(image)
+  const thumbnail = await makeThumbnail(image)
 
   return {
     id: crypto.randomUUID(),
@@ -83,7 +81,7 @@ async function makePhoto(file: File, edits?: EditParams): Promise<PhotoSession> 
     objectUrl,
     file,
     edits: cloneEdits(edits ?? DEFAULT_EDITS),
-    thumbnailUrl: objectUrl,
+    thumbnailUrl: thumbnail ? URL.createObjectURL(thumbnail) : objectUrl,
     rating: 0,
     flag: null,
   }
@@ -121,7 +119,10 @@ export async function loadExportSource(photo: PhotoSession): Promise<RenderSourc
 }
 
 function revokeAll(photos: PhotoSession[]) {
-  for (const photo of photos) URL.revokeObjectURL(photo.objectUrl)
+  for (const photo of photos) {
+    URL.revokeObjectURL(photo.objectUrl)
+    if (photo.thumbnailUrl !== photo.objectUrl) URL.revokeObjectURL(photo.thumbnailUrl)
+  }
 }
 
 export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {}) {
@@ -139,7 +140,9 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
   const [presetIntensity, setPresetIntensityState] = useState(100)
   /** Per-photo edits from before the current preset was applied, restored on remove. */
   const presetBaseRef = useRef(new Map<string, EditParams>())
-  const [clipboard, setClipboard] = useState<EditParams | null>(null)
+  const [clipboard, setClipboard] = useState<{ photoId: string; name: string; edits: EditParams } | null>(null)
+  const [pasteOpen, setPasteOpen] = useState(false)
+  const [pasteGroupIds, setPasteGroupIds] = useState(loadPasteGroups)
   const [status, setStatus] = useState('Open JPEG, PNG, or RAW files to begin')
   const [compareMode, setCompareMode] = useState(false)
   const [splitMode, setSplitMode] = useState(false)
@@ -303,12 +306,15 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
         void clearSessionSnapshot()
         return
       }
-      void saveSessionSnapshot({
-        photos: photosToPersisted(photos),
-        activeId,
-        selectedIds,
-        updatedAt: new Date().toISOString(),
-      })
+      void saveSessionSnapshot(
+        {
+          photos: photosToPersisted(photos),
+          activeId,
+          selectedIds,
+          updatedAt: new Date().toISOString(),
+        },
+        new Map(photos.map((p) => [p.id, p.file])),
+      )
     }, 600)
   }, [photos, activeId, selectedIds, sessionReady])
 
@@ -549,57 +555,58 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
   const copyEdits = useCallback(() => {
     const photo = photosRef.current.find((p) => p.id === activeIdRef.current)
     if (!photo) return
-    setClipboard(cloneEdits(photo.edits))
+    setClipboard({ photoId: photo.id, name: photo.name, edits: cloneEdits(photo.edits) })
     setStatus(`Copied edits from ${photo.name}`)
   }, [])
 
-  const pasteEdits = useCallback(() => {
-    if (!clipboard) return
-    const targets =
-      selectedIdsRef.current.length > 0
-        ? selectedIdsRef.current
-        : activeIdRef.current
-          ? [activeIdRef.current]
-          : []
-    if (targets.length === 0) return
-    for (const id of targets) {
-      const photo = photosRef.current.find((p) => p.id === id)
-      if (photo) pushHistory(id, photo.edits)
-    }
-    setPhotos((prev) =>
-      prev.map((photo) =>
-        // Spot removal belongs to the photo it was painted on.
-        targets.includes(photo.id) ? { ...photo, edits: { ...cloneEdits(clipboard), heal: photo.edits.heal } } : photo,
-      ),
-    )
-    setStatus(`Pasted edits to ${targets.length} photo${targets.length === 1 ? '' : 's'}`)
-  }, [clipboard, pushHistory])
+  /**
+   * What a paste would do: the copied edits, or the active photo's when nothing
+   * is copied (Lightroom's "sync"), onto the selection minus the source photo.
+   */
+  const pastePlan = useMemo(() => {
+    const active = photos.find((p) => p.id === activeId)
+    const source = clipboard ?? (active ? { photoId: active.id, name: active.name, edits: active.edits } : null)
+    if (!source) return null
+    const pool = selectedIds.length > 0 ? selectedIds : activeId ? [activeId] : []
+    const targets = pool.filter((id) => id !== source.photoId && photos.some((p) => p.id === id))
+    return { source, targets }
+  }, [clipboard, photos, activeId, selectedIds])
+  const pastePlanRef = useRef(pastePlan)
+  useEffect(() => {
+    pastePlanRef.current = pastePlan
+  })
 
-  const syncSelected = useCallback(() => {
-    const source = photosRef.current.find((p) => p.id === activeIdRef.current)
-    if (!source) return
-    const targets = selectedIdsRef.current.filter((id) => id !== source.id)
-    if (targets.length === 0) {
-      setStatus('Select other photos to sync')
+  const openPaste = useCallback(() => {
+    const plan = pastePlanRef.current
+    if (!plan) return
+    if (plan.targets.length === 0) {
+      setStatus(clipboard ? 'Select other photos to paste to' : 'Copy edits or select several photos first')
       return
     }
-    for (const id of targets) {
-      const photo = photosRef.current.find((p) => p.id === id)
-      if (photo) pushHistory(id, photo.edits)
-    }
-    const edits = cloneEdits(source.edits)
-    setPhotos((prev) =>
-      prev.map((photo) => {
-        if (!targets.includes(photo.id)) return photo
-        const next = cloneEdits(edits)
-        next.rotate = photo.edits.rotate
-        next.crop = cloneEdits(photo.edits).crop
-        next.heal = cloneEdits(photo.edits).heal
-        return { ...photo, edits: next }
-      }),
-    )
-    setStatus(`Synced edits to ${targets.length} photo${targets.length === 1 ? '' : 's'}`)
-  }, [pushHistory])
+    setPasteOpen(true)
+  }, [clipboard])
+
+  const pasteEdits = useCallback(
+    (groups: PasteGroupId[]) => {
+      setPasteOpen(false)
+      setPasteGroupIds(groups)
+      savePasteGroups(groups)
+      const plan = pastePlanRef.current
+      if (!plan || plan.targets.length === 0) return
+      const { source, targets } = plan
+      for (const id of targets) {
+        const photo = photosRef.current.find((p) => p.id === id)
+        if (photo) pushHistory(id, photo.edits)
+      }
+      setPhotos((prev) =>
+        prev.map((photo) =>
+          targets.includes(photo.id) ? { ...photo, edits: pasteGroups(photo.edits, source.edits, groups) } : photo,
+        ),
+      )
+      setStatus(`Pasted edits to ${targets.length} photo${targets.length === 1 ? '' : 's'}`)
+    },
+    [pushHistory],
+  )
 
   const savePreset = useCallback((name: string) => {
     const photo = photosRef.current.find((p) => p.id === activeIdRef.current)
@@ -756,21 +763,30 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       setStatus(targets.length > 1 ? `Exporting ${targets.length}…` : 'Exporting…')
       try {
         // The export may change the extension (a transparent cutout saves as PNG): report what was written.
-        let lastFilename = ''
+        const written: { name: string; data: Blob }[] = []
         let skipped = 0
-        for (const id of targets) {
+        for (const [index, id] of targets.entries()) {
           const photo = photosRef.current.find((p) => p.id === id)
           if (!photo) continue
-          if (isRawFile(photo.file)) setStatus(`Developing ${photo.name}…`)
+          const step = targets.length > 1 ? ` (${index + 1}/${targets.length})` : ''
+          setStatus(isRawFile(photo.file) ? `Developing ${photo.name}…${step}` : `Exporting ${photo.name}…${step}`)
           const source = await loadExportSource(photo)
           const { blob, filename, upscaleSkipped } = await exportEditedImage(source, photo.edits, options, photo.name, (f) =>
-            setStatus(`Upscaling ${photo.name}… ${Math.round(f * 100)}%`),
+            setStatus(`Upscaling ${photo.name}… ${Math.round(f * 100)}%${step}`),
           )
-          downloadBlob(blob, filename)
-          lastFilename = filename
+          written.push({ name: filename, data: blob })
           if (upscaleSkipped) skipped++
         }
-        const exported = targets.length === 1 ? `Exported ${lastFilename}` : `Exported ${targets.length} files`
+        // One photo downloads as itself; several come as one ZIP instead of a burst of downloads.
+        let saved = written[0]?.name ?? ''
+        if (written.length > 1) {
+          setStatus(`Zipping ${written.length} files…`)
+          saved = `lightframes-${new Date().toISOString().slice(0, 10)}-${written.length}-photos.zip`
+          downloadBlob(await zipFiles(written), saved)
+        } else if (written[0]) {
+          downloadBlob(written[0].data, written[0].name)
+        }
+        const exported = written.length === 1 ? `Exported ${saved}` : `Exported ${written.length} photos as ${saved}`
         const message =
           skipped === 0
             ? exported
@@ -934,7 +950,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       }
       if (mod && key === 'v') {
         e.preventDefault()
-        pasteEdits()
+        openPaste()
         return
       }
       if (mod && key === 'a') {
@@ -945,11 +961,6 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
       if (mod && key === 'e') {
         e.preventDefault()
         setExportOpen(true)
-        return
-      }
-      if (mod && key === 's') {
-        e.preventDefault()
-        syncSelected()
         return
       }
 
@@ -1028,7 +1039,7 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [undo, redo, copyEdits, pasteEdits, selectAll, syncSelected, stepFilmstrip, setRating, setFlag, addLocal])
+  }, [undo, redo, copyEdits, openPaste, selectAll, stepFilmstrip, setRating, setFlag, addLocal])
 
   return {
     photos,
@@ -1065,8 +1076,12 @@ export function useEditorSession({ keyboard = true }: { keyboard?: boolean } = {
     undo,
     redo,
     copyEdits,
+    pastePlan,
+    pasteOpen,
+    pasteGroupIds,
+    openPaste,
+    closePaste: () => setPasteOpen(false),
     pasteEdits,
-    syncSelected,
     savePreset,
     updateSelectedPreset,
     applyPreset,
