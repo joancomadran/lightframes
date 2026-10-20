@@ -10,6 +10,7 @@ import { EffectsPanel } from './components/EffectsPanel'
 import { ConfirmDialog } from './components/ConfirmDialog'
 import { ExportDialog } from './components/ExportDialog'
 import { Filmstrip } from './components/Filmstrip'
+import { DonateButton } from './components/DonateButton'
 import { GithubStar } from './components/GithubStar'
 import type { HealTool } from './components/HealOverlay'
 import type { RefineTool } from './components/RefineOverlay'
@@ -582,6 +583,7 @@ export default function App() {
             <AdSlot id="sidebar" height={250} />
             <div className="sidebar__github">
               <GithubStar />
+              <DonateButton compact />
             </div>
           </aside>
           )}
