@@ -1,0 +1,61 @@
+---
+import { SITE } from '../config'
+import { entryPath, getTools, pagePath } from '../content'
+import { EDITOR_PATH, href, ui, type Lang } from '../i18n'
+import Logo from './Logo.astro'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const tools = await getTools(lang)
+const [about, changelog, privacy, cookies, terms] = await Promise.all(
+  ['about', 'changelog', 'privacy', 'cookies', 'terms'].map((key) => pagePath(key, lang)),
+)
+const year = new Date().getFullYear()
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__grid">
+    <div class="site-footer__brand">
+      <a class="brand" href={href('home', lang)}>
+        <Logo />
+        <span>Lightframes</span>
+      </a>
+      <p>{t.footer.tagline}</p>
+      <a class="button button--primary button--small" href={EDITOR_PATH}>{t.openEditor}</a>
+    </div>
+    <nav aria-label={t.footer.tools}>
+      <h2>{t.footer.tools}</h2>
+      <ul>
+        {tools.map((tool) => <li><a href={entryPath(tool)}>{tool.data.label}</a></li>)}
+      </ul>
+    </nav>
+    <nav aria-label={t.footer.resources}>
+      <h2>{t.footer.resources}</h2>
+      <ul>
+        <li><a href={href('blog', lang)}>{t.nav.blog}</a></li>
+        <li><a href={href('faq', lang)}>{t.nav.faq}</a></li>
+        <li><a href={href('gear', lang)}>{t.nav.gear}</a></li>
+        <li><a href={changelog}>{t.footer.changelog}</a></li>
+      </ul>
+    </nav>
+    <nav aria-label={t.footer.project}>
+      <h2>{t.footer.project}</h2>
+      <ul>
+        <li><a href={about}>{t.nav.about}</a></li>
+        <li><a href={SITE.github} rel="noopener">{t.footer.github}</a></li>
+        <li><a href={SITE.donate} rel="noopener">{t.footer.donate}</a></li>
+        <li><a href={privacy}>{t.footer.privacy}</a></li>
+        <li><a href={cookies}>{t.footer.cookies}</a></li>
+        <li><a href={terms}>{t.footer.terms}</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="wrap site-footer__legal">
+    <p>{t.footer.affiliate}</p>
+    <p>© {year} Lightframes. MIT-licensed code.</p>
+  </div>
+</footer>

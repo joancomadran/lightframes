@@ -1,0 +1,21 @@
+---
+import { EDITOR_PATH, href, ui } from '../site/i18n'
+import Base from '../site/layouts/Base.astro'
+
+const t = ui.en
+const es = ui.es
+---
+
+<Base lang="en" title={t.notFound.title} description={t.notFound.body} path="/404" noindex>
+  <div class="wrap page page--narrow not-found">
+    <h1>{t.notFound.h1}</h1>
+    <p class="lead">{t.notFound.body}</p>
+    <div class="hero__actions">
+      <a class="button button--primary" href={EDITOR_PATH}>{t.openEditor}</a>
+      <a class="button button--ghost" href={href('home', 'en')}>{t.notFound.home}</a>
+    </div>
+    <p lang="es" class="meta">
+      {es.notFound.h1}. <a href={href('home', 'es')}>{es.notFound.home}</a>
+    </p>
+  </div>
+</Base>

@@ -1,0 +1,21 @@
+---
+/** Questions as native disclosure widgets: answers stay in the HTML for crawlers. */
+interface Props {
+  items: readonly { q: string; a: string }[]
+  /** Open the first answer, so the section never looks empty. */
+  openFirst?: boolean
+}
+
+const { items, openFirst = false } = Astro.props
+---
+
+<div class="faq">
+  {
+    items.map((item, i) => (
+      <details open={openFirst && i === 0}>
+        <summary>{item.q}</summary>
+        <p>{item.a}</p>
+      </details>
+    ))
+  }
+</div>

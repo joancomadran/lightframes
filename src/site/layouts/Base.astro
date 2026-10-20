@@ -1,0 +1,112 @@
+---
+import Analytics from '@vercel/analytics/astro'
+import Footer from '../components/Footer.astro'
+import Header from '../components/Header.astro'
+import { SITE, absoluteUrl } from '../config'
+import { DEFAULT_LANG, LOCALES, ui, type Lang } from '../i18n'
+import { organization, website } from '../schema'
+import '../styles/site.css'
+
+interface Props {
+  lang: Lang
+  /** Page title without the brand; ignored when `fullTitle` is set. */
+  title: string
+  fullTitle?: string
+  description: string
+  /** Canonical path of this page, e.g. /tools/raw-photo-editor */
+  path: string
+  /** This page in each language, for hreflang. */
+  alternates?: Partial<Record<Lang, string>>
+  ogImage?: string
+  ogType?: 'website' | 'article'
+  noindex?: boolean
+  /** JSON-LD nodes; Organization and WebSite are always added. */
+  schema?: Record<string, unknown>[]
+}
+
+const {
+  lang,
+  title,
+  fullTitle,
+  description,
+  path,
+  alternates = {},
+  ogImage = SITE.ogImage,
+  ogType = 'website',
+  noindex = false,
+  schema = [],
+} = Astro.props
+
+const pageTitle = fullTitle ?? `${title} · ${SITE.name}`
+const canonical = absoluteUrl(path)
+const hreflangs = Object.entries(alternates) as [Lang, string][]
+const otherLangs = hreflangs.filter(([l]) => l !== lang)
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [organization(), website(lang), ...schema],
+}
+const t = ui[lang]
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    {hreflangs.map(([l, p]) => <link rel="alternate" hreflang={l} href={absoluteUrl(p)} />)}
+    {
+      alternates[DEFAULT_LANG] && hreflangs.length > 1 && (
+        <link rel="alternate" hreflang="x-default" href={absoluteUrl(alternates[DEFAULT_LANG])} />
+      )
+    }
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — ${t.blog}`} href={`${lang === 'es' ? '/es' : ''}/blog/rss.xml`} />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteUrl(ogImage)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={LOCALES[lang]} />
+    {otherLangs.map(([l]) => <meta property="og:locale:alternate" content={LOCALES[l]} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteUrl(ogImage)} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content={SITE.themeColor} />
+    <meta name="color-scheme" content="dark" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <Header lang={lang} alternates={alternates} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+    <Analytics />
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+      }
+    </script>
+  </body>
+</html>

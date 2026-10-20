@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "q": "Is Lightframes really free?",
+      "a": "Yes. Lightframes is a free photo editor with no paid tier, no trial, no credits and no watermark on exports. Every feature, including RAW editing, batch export and the AI tools, is available to everyone."
+    },
+    {
+      "q": "How is Lightframes free? What's the catch?",
+      "a": "Lightframes runs on your own device, so it has almost no server costs to cover. A few small ad spaces and affiliate links to photo gear help fund it, along with optional donations, and the code is open source under the MIT licence so anyone can check what it does."
+    },
+    {
+      "q": "Are my photos uploaded to a server?",
+      "a": "No. Lightframes opens, edits and exports your photos entirely inside your browser using WebAssembly and Web Workers, and the files never leave your device. The only things it downloads are the app itself and, if you use the AI tools, their model files."
+    },
+    {
+      "q": "Is Lightframes private? What data does it keep?",
+      "a": "Lightframes keeps your open photos, edits and presets only in your own browser's storage (IndexedDB and local storage) so it can restore your session. Nothing is sent to a server; Clear workspace removes the open photos, and clearing the site data in your browser wipes everything."
+    },
+    {
+      "q": "Do I need to create an account to use Lightframes?",
+      "a": "No. There is no sign-up, login or email required: open lightframes.si/editor and start editing. Because there is no account, your presets and session live in the browser you use."
+    },
+    {
+      "q": "Which RAW formats and cameras does Lightframes support?",
+      "a": "Lightframes opens JPEG, PNG and the common camera RAW formats: ARW (Sony), CR2 and CR3 (Canon), NEF and NRW (Nikon), DNG, RAF (Fujifilm), ORF (Olympus/OM System), RW2 (Panasonic), PEF (Pentax) and SRW (Samsung). RAW files are decoded in the browser with LibRaw compiled to WebAssembly, so support follows the cameras LibRaw handles."
+    },
+    {
+      "q": "What file formats can I export to?",
+      "a": "You can export JPEG, PNG or WebP, with a quality setting for JPEG and WebP, a maximum long edge up to 8192 px, Instagram-sized frames and an optional text watermark. Exporting several photos at once downloads them together as one ZIP file."
+    },
+    {
+      "q": "Does Lightframes work offline? Can I install it as an app?",
+      "a": "Yes. Lightframes is a progressive web app: after one visit online it works offline, and you can install it from the Install app button or your browser's menu (on iPhone and iPad, Share → Add to Home Screen; in Safari on Mac, File → Add to Dock). AI models are downloaded the first time you use each tool and then also work offline."
+    },
+    {
+      "q": "Which browsers and devices does Lightframes work on?",
+      "a": "Lightframes works in current versions of Chrome, Edge, Brave, Firefox and Safari on computers, and in mobile browsers on Android phones, iPhones and tablets, with a touch-friendly layout. A Chromium-based browser such as Chrome or Edge is recommended on desktop for opening whole folders and the best performance."
+    },
+    {
+      "q": "Can I edit photos on my phone with Lightframes?",
+      "a": "Yes. Lightframes adapts to phone screens with a swipeable bottom panel, and the collage and carousel tools support touch gestures and your phone's share sheet. Large RAW files and AI tools are slower on phones than on a computer, depending on the device."
+    },
+    {
+      "q": "Can I import presets, XMP files or .cube LUTs?",
+      "a": "Yes. The Presets panel imports Lightframes JSON presets, XMP develop presets (mapped onto light, colour, HSL, tone curve, colour grading, vignette, grain and sharpening) and .cube 3D LUTs. You can save your own presets, set their intensity from 0 to 100% and export them as JSON."
+    },
+    {
+      "q": "Can I edit many photos at once (batch editing)?",
+      "a": "Yes. Select several photos in the filmstrip, then sync the active photo's edits to all of them (Ctrl/Cmd+S) or copy and paste edits while choosing which settings to include. Exporting a selection processes every photo with the same export settings and downloads them as one ZIP."
+    },
+    {
+      "q": "Do the AI features send my photos to the cloud?",
+      "a": "No. Object removal, background removal, subject masks and AI upscaling all run on your device in the browser; your photos are never uploaded. Each model downloads once the first time you use it (about 28 MB for removal, 45 MB for background and subject, 5 MB for upscaling), is verified, and is then cached for later and offline use."
+    },
+    {
+      "q": "Is Lightframes open source? Where is the code?",
+      "a": "Yes. Lightframes is open source under the MIT licence, and the full code is on GitHub at https://github.com/joancomadran/lightframes. You can read it, run it locally, self-host it or contribute."
+    },
+    {
+      "q": "Will I lose my edits if I close the tab or refresh the page?",
+      "a": "No. Lightframes saves your open photos, their edits, ratings and selection in your browser's IndexedDB and restores them when you come back. Edits are non-destructive, so your original files are never changed; only collage and carousel layouts are not restored, so export those before closing."
+    },
+    {
+      "q": "How can I support Lightframes?",
+      "a": "You can star the project on GitHub, share it with other photographers, buy the developer a coffee through the link in the app, or use the recommended gear links when you buy photo equipment. Bug reports and contributions on GitHub help too."
+    }
+  ]
+}

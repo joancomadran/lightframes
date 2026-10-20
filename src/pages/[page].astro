@@ -1,0 +1,12 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { getPages, type Page } from '../site/content'
+import PageView from '../site/views/PageView.astro'
+
+export const getStaticPaths = (async () =>
+  (await getPages('en')).map((page) => ({ params: { page: page.data.slug }, props: { page } }))) satisfies GetStaticPaths
+
+const { page } = Astro.props as { page: Page }
+---
+
+<PageView page={page} />

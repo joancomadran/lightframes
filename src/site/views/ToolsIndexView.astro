@@ -1,0 +1,55 @@
+---
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import EditorCta from '../components/EditorCta.astro'
+import ToolList from '../components/ToolList.astro'
+import { absoluteUrl } from '../config'
+import { entryPath, getTools } from '../content'
+import { href, sectionAlternates, ui, type Lang } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, webPage } from '../schema'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const copy = t.toolsIndex
+const path = href('tools', lang)
+const tools = await getTools(lang)
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: t.tools, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={copy.title}
+  description={copy.description}
+  path={path}
+  alternates={sectionAlternates('tools')}
+  schema={[
+    webPage({ url: absoluteUrl(path), name: copy.h1, description: copy.description, lang, type: 'CollectionPage' }),
+    breadcrumbs(crumbs),
+    {
+      '@type': 'ItemList',
+      itemListElement: tools.map((tool, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: tool.data.h1,
+        url: absoluteUrl(entryPath(tool)),
+      })),
+    },
+  ]}
+>
+  <div class="wrap page">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{copy.h1}</h1>
+      <p class="lead">{copy.lead}</p>
+      <EditorCta lang={lang} />
+    </header>
+    <ToolList tools={tools} level="h2" />
+  </div>
+</Base>

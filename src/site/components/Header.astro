@@ -1,0 +1,47 @@
+---
+import { pagePath } from '../content'
+import { EDITOR_PATH, href, sectionAlternates, ui, type Lang } from '../i18n'
+import Logo from './Logo.astro'
+
+interface Props {
+  lang: Lang
+  alternates: Partial<Record<Lang, string>>
+}
+
+const { lang, alternates } = Astro.props
+const t = ui[lang]
+const other: Lang = lang === 'en' ? 'es' : 'en'
+// Pages without a translation send the switch to the other language's home
+const switchTo = alternates[other] ?? sectionAlternates('home')[other]
+const current = Astro.url.pathname.replace(/\.html$/, '')
+const nav = [
+  { label: t.nav.tools, path: href('tools', lang) },
+  { label: t.nav.blog, path: href('blog', lang) },
+  { label: t.nav.faq, path: href('faq', lang) },
+  { label: t.nav.about, path: await pagePath('about', lang) },
+]
+---
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href={href('home', lang)} aria-label="Lightframes">
+      <Logo />
+      <span>Lightframes</span>
+    </a>
+    <nav class="site-nav" aria-label={lang === 'es' ? 'Principal' : 'Main'}>
+      {
+        nav.map((item) => (
+          <a href={item.path} aria-current={current.startsWith(item.path) ? 'page' : undefined}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="site-header__actions">
+      <a class="lang-switch" href={switchTo} hreflang={other} lang={other} title={t.langSwitch}>
+        {other.toUpperCase()}
+      </a>
+      <a class="button button--primary button--small" href={EDITOR_PATH}>{t.openEditorShort}</a>
+    </div>
+  </div>
+</header>

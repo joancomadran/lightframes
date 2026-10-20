@@ -1,0 +1,12 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { getTools, type Tool } from '../../site/content'
+import ToolView from '../../site/views/ToolView.astro'
+
+export const getStaticPaths = (async () =>
+  (await getTools('en')).map((tool) => ({ params: { slug: tool.data.slug }, props: { tool } }))) satisfies GetStaticPaths
+
+const { tool } = Astro.props as { tool: Tool }
+---
+
+<ToolView tool={tool} />

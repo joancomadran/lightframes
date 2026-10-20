@@ -1,0 +1,59 @@
+---
+import { render } from 'astro:content'
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import { absoluteUrl } from '../config'
+import { entryAlternates, entryPath, type Page } from '../content'
+import { formatDate, href, langOf, ui } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { author, breadcrumbs, webPage } from '../schema'
+
+interface Props {
+  page: Page
+}
+
+const { page } = Astro.props
+const { data } = page
+const lang = langOf(page.id)
+const t = ui[lang]
+const path = entryPath(page)
+const { Content } = await render(page)
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: data.h1, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  path={path}
+  alternates={await entryAlternates(page)}
+  ogImage={data.ogImage}
+  noindex={data.noindex}
+  schema={[
+    webPage({
+      url: absoluteUrl(path),
+      name: data.h1,
+      description: data.description,
+      lang,
+      type: data.schemaType,
+      updated: data.updated,
+    }),
+    ...(data.schemaType === 'AboutPage' ? [author()] : []),
+    breadcrumbs(crumbs),
+  ]}
+>
+  <article class="wrap page page--narrow">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{data.h1}</h1>
+      <p class="meta">
+        {t.tool.updated} <time datetime={data.updated.toISOString()}>{formatDate(data.updated, lang)}</time>
+      </p>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>

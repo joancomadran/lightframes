@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "q": "¿Lightframes es gratis de verdad?",
+      "a": "Sí. Lightframes es un editor de fotos gratuito sin versión de pago, sin periodo de prueba, sin créditos y sin marca de agua al exportar. Todas las funciones, incluidas la edición RAW, la exportación por lotes y las herramientas de IA, están disponibles para todo el mundo."
+    },
+    {
+      "q": "¿Cómo puede ser gratis? ¿Dónde está la trampa?",
+      "a": "Lightframes funciona en tu propio dispositivo, así que apenas tiene costes de servidor. Se financia con algunos espacios de anuncios discretos, enlaces de afiliado a material fotográfico y donaciones voluntarias, y su código es abierto con licencia MIT para que cualquiera pueda comprobar qué hace."
+    },
+    {
+      "q": "¿Se suben mis fotos a algún servidor?",
+      "a": "No. Lightframes abre, edita y exporta tus fotos íntegramente dentro del navegador mediante WebAssembly y Web Workers, y los archivos nunca salen de tu dispositivo. Lo único que descarga es la propia app y, si usas las herramientas de IA, los archivos de sus modelos."
+    },
+    {
+      "q": "¿Es privado? ¿Qué datos guarda Lightframes?",
+      "a": "Lightframes solo guarda tus fotos abiertas, tus ajustes y tus presets en el almacenamiento de tu propio navegador (IndexedDB y almacenamiento local) para poder recuperar la sesión. No se envía nada a ningún servidor; Clear workspace quita las fotos abiertas y, si borras los datos del sitio en el navegador, se elimina todo."
+    },
+    {
+      "q": "¿Necesito crear una cuenta para usar Lightframes?",
+      "a": "No. No hay registro, inicio de sesión ni correo: entras en lightframes.si/editor y empiezas a editar. Como no hay cuenta, tus presets y tu sesión se quedan en el navegador que uses."
+    },
+    {
+      "q": "¿Qué formatos RAW y qué cámaras admite?",
+      "a": "Lightframes abre JPEG, PNG y los formatos RAW más habituales: ARW (Sony), CR2 y CR3 (Canon), NEF y NRW (Nikon), DNG, RAF (Fujifilm), ORF (Olympus/OM System), RW2 (Panasonic), PEF (Pentax) y SRW (Samsung). Los RAW se decodifican en el navegador con LibRaw compilado a WebAssembly, así que la compatibilidad depende de las cámaras que admite LibRaw."
+    },
+    {
+      "q": "¿En qué formatos puedo exportar las fotos?",
+      "a": "Puedes exportar en JPEG, PNG o WebP, con ajuste de calidad en JPEG y WebP, un lado largo máximo de hasta 8192 px, marcos con tamaños de Instagram y una marca de agua de texto opcional. Si exportas varias fotos a la vez, se descargan juntas en un único ZIP."
+    },
+    {
+      "q": "¿Funciona sin conexión? ¿Se puede instalar como app?",
+      "a": "Sí. Lightframes es una aplicación web progresiva (PWA): después de abrirla una vez con conexión funciona sin internet, y puedes instalarla con el botón Install app o desde el menú del navegador (en iPhone y iPad, Compartir → Añadir a pantalla de inicio; en Safari para Mac, Archivo → Añadir al Dock). Los modelos de IA se descargan la primera vez que usas cada herramienta y a partir de ahí también funcionan sin conexión."
+    },
+    {
+      "q": "¿En qué navegadores y dispositivos funciona?",
+      "a": "Lightframes funciona en las versiones actuales de Chrome, Edge, Brave, Firefox y Safari en ordenador, y en los navegadores de móviles Android, iPhone y tabletas, con una interfaz adaptada al tacto. En ordenador se recomienda un navegador basado en Chromium, como Chrome o Edge, para poder abrir carpetas enteras y obtener el mejor rendimiento."
+    },
+    {
+      "q": "¿Puedo editar fotos desde el móvil con Lightframes?",
+      "a": "Sí. Lightframes se adapta a la pantalla del móvil con un panel inferior que se desliza, y las herramientas de collage y carrusel admiten gestos táctiles y el menú de compartir del teléfono. Los RAW grandes y las herramientas de IA van más lentos en el móvil que en un ordenador, según el dispositivo."
+    },
+    {
+      "q": "¿Puedo importar presets, archivos XMP o LUT .cube?",
+      "a": "Sí. El panel Presets importa presets JSON de Lightframes, presets de revelado XMP (convertidos a ajustes de luz, color, HSL, curva de tonos, gradación de color, viñeta, grano y enfoque) y LUT 3D en formato .cube. También puedes guardar tus propios presets, ajustar su intensidad del 0 al 100 % y exportarlos en JSON."
+    },
+    {
+      "q": "¿Puedo editar muchas fotos a la vez (edición por lotes)?",
+      "a": "Sí. Selecciona varias fotos en la tira de miniaturas y sincroniza los ajustes de la foto activa con todas (Ctrl/Cmd+S) o copia y pega los ajustes eligiendo qué grupos incluir. Al exportar una selección, todas las fotos se procesan con la misma configuración y se descargan en un ZIP."
+    },
+    {
+      "q": "¿Las funciones de IA envían mis fotos a la nube?",
+      "a": "No. El borrado de objetos, la eliminación de fondo, las máscaras de sujeto y la ampliación con IA se ejecutan en tu dispositivo, dentro del navegador; tus fotos nunca se suben. Cada modelo se descarga una vez la primera vez que lo usas (unos 28 MB el de borrado, 45 MB el de fondo y sujeto y 5 MB el de ampliación), se verifica y se guarda para usos posteriores y sin conexión."
+    },
+    {
+      "q": "¿Lightframes es de código abierto? ¿Dónde está el código?",
+      "a": "Sí. Lightframes es de código abierto con licencia MIT y todo el código está en GitHub: https://github.com/joancomadran/lightframes. Puedes leerlo, ejecutarlo en local, alojarlo en tu propio servidor o contribuir."
+    },
+    {
+      "q": "¿Pierdo los ajustes si cierro la pestaña o recargo la página?",
+      "a": "No. Lightframes guarda tus fotos abiertas, sus ajustes, valoraciones y selección en el IndexedDB del navegador y lo recupera todo cuando vuelves. La edición no es destructiva, así que tus archivos originales nunca se modifican; lo único que no se recupera son las composiciones de collage y carrusel, así que expórtalas antes de cerrar."
+    },
+    {
+      "q": "¿Cómo puedo apoyar el proyecto?",
+      "a": "Puedes darle una estrella en GitHub, recomendarlo a otros fotógrafos, invitar a un café al desarrollador desde el enlace de la app o usar los enlaces de material recomendado cuando compres equipo fotográfico. Avisar de errores y contribuir en GitHub también ayuda."
+    }
+  ]
+}

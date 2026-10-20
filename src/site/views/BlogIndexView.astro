@@ -1,0 +1,60 @@
+---
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import { absoluteUrl } from '../config'
+import { entryPath, getPosts } from '../content'
+import { formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, webPage } from '../schema'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const copy = t.blogIndex
+const path = href('blog', lang)
+const posts = await getPosts(lang)
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: t.blog, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={copy.title}
+  description={copy.description}
+  path={path}
+  alternates={sectionAlternates('blog')}
+  schema={[
+    webPage({ url: absoluteUrl(path), name: copy.h1, description: copy.description, lang, type: 'CollectionPage' }),
+    breadcrumbs(crumbs),
+  ]}
+>
+  <div class="wrap page page--narrow">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{copy.h1}</h1>
+      <p class="lead">{copy.lead}</p>
+      <p class="meta"><a href={`${path}/rss.xml`}>{copy.rss}</a></p>
+    </header>
+    {
+      posts.length === 0 ? (
+        <p>{copy.empty}</p>
+      ) : (
+        <ul class="post-list">
+          {posts.map((post) => (
+            <li>
+              <a href={entryPath(post)}>
+                <h2>{post.data.h1 ?? post.data.title}</h2>
+                <p>{post.data.description}</p>
+              </a>
+              <time datetime={post.data.published.toISOString()}>{formatDate(post.data.published, lang)}</time>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</Base>

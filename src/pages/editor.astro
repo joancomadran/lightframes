@@ -1,0 +1,63 @@
+---
+import EditorRoot from '../EditorRoot'
+import { SITE, absoluteUrl } from '../site/config'
+import { webApplication } from '../site/schema'
+
+// The app shell: no site header or footer, the editor fills the viewport.
+const title = 'Lightframes Editor — free photo editor in your browser'
+const description =
+  'Open the Lightframes editor: RAW and JPEG editing, presets, copy/paste edits, batch export and on-device AI. Runs locally, nothing is uploaded.'
+const jsonLd = { '@context': 'https://schema.org', ...webApplication('en', []) }
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="theme-color" content={SITE.themeColor} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Lightframes" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={absoluteUrl('/editor')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:url" content={absoluteUrl('/editor')} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteUrl(SITE.ogImage)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={absoluteUrl(SITE.ogImage)} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <div id="root">
+      <EditorRoot client:only="react" />
+    </div>
+    <noscript>
+      <p>Lightframes is a photo editor that runs in your browser. Please enable JavaScript to use it.</p>
+    </noscript>
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+      }
+    </script>
+  </body>
+</html>

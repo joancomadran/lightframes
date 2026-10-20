@@ -1,0 +1,223 @@
+---
+import FaqList from '../components/FaqList.astro'
+import ToolList from '../components/ToolList.astro'
+import { SITE, absoluteUrl } from '../config'
+import { entryPath, getFaq, getPosts, getTools } from '../content'
+import { EDITOR_PATH, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
+import { LOOKS, landing } from '../landing'
+import Base from '../layouts/Base.astro'
+import { faqPage, webApplication, webPage } from '../schema'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const c = landing[lang]
+const path = href('home', lang)
+const url = absoluteUrl(path)
+const tools = await getTools(lang)
+const faq = (await getFaq(lang)).slice(0, 6)
+const posts = (await getPosts(lang)).slice(0, 3)
+const [first] = LOOKS
+---
+
+<Base
+  lang={lang}
+  title={c.title}
+  fullTitle={c.title}
+  description={c.description}
+  path={path}
+  alternates={sectionAlternates('home')}
+  schema={[
+    webPage({ url, name: c.h1, description: c.description, lang }),
+    webApplication(lang, tools.map((tool) => tool.data.label)),
+    ...(faq.length ? [faqPage(url, faq)] : []),
+  ]}
+>
+  <script is:inline slot="head">
+    // The installed app used to start at "/": send it to the editor instead of the landing page
+    if (matchMedia('(display-mode: standalone)').matches) location.replace('/editor')
+  </script>
+
+  <section class="hero wrap">
+    <div class="hero__text">
+      <h1>{c.h1}</h1>
+      <p class="lead">{c.lead}</p>
+      <div class="hero__actions">
+        <a class="button button--primary button--large" href={EDITOR_PATH}>{t.openEditor}</a>
+        <a class="button button--ghost button--large" href="#how">{c.secondary}</a>
+      </div>
+      <ul class="facts">
+        {c.facts.map((fact) => <li>{fact}</li>)}
+      </ul>
+    </div>
+
+    <figure class="compare" data-compare style="--split: 50%">
+      <div class="compare__frame">
+        <img
+          src="/site/looks/original.jpg"
+          width="1600"
+          height="1067"
+          alt=""
+          fetchpriority="high"
+          decoding="async"
+        />
+        <img
+          class="compare__after"
+          src={`/site/looks/${first.id}.jpg`}
+          width="1600"
+          height="1067"
+          alt=""
+          decoding="async"
+          data-compare-after
+        />
+        <span class="compare__tag compare__tag--before">{c.compare.before}</span>
+        <span class="compare__tag compare__tag--after" data-compare-name>{first.name}</span>
+        <span class="compare__handle" aria-hidden="true"></span>
+        <input
+          class="compare__range"
+          type="range"
+          min="0"
+          max="100"
+          value="50"
+          aria-label={c.compare.slider}
+          data-compare-range
+        />
+      </div>
+      <figcaption>
+        <div class="looks" role="group" aria-label={c.compare.looks}>
+          {
+            LOOKS.map((look) => (
+              <button type="button" data-look={look.id} data-name={look.name} aria-pressed={look.id === first.id ? 'true' : 'false'}>
+                <img src={`/site/looks/thumbs/${look.id}.jpg`} alt="" width="64" height="43" loading="lazy" decoding="async" />
+                {look.name}
+              </button>
+            ))
+          }
+        </div>
+        <p>{c.compare.caption}</p>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="band" aria-labelledby="privacy-title">
+    <div class="wrap split">
+      <div>
+        <h2 id="privacy-title">{c.privacy.h2}</h2>
+        {c.privacy.body.map((p) => <p>{p}</p>)}
+      </div>
+      <ul class="points">
+        {
+          c.privacy.points.map((point) => (
+            <li>
+              <h3>{point.h3}</h3>
+              <p>{point.p}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="tools-title">
+    <header class="section__head">
+      <h2 id="tools-title">{c.tools.h2}</h2>
+      <p>{c.tools.lead}</p>
+    </header>
+    <ToolList tools={tools} />
+    <p class="section__more"><a href={href('tools', lang)}>{c.tools.all}</a></p>
+  </section>
+
+  <section class="wrap section" id="how" aria-labelledby="how-title">
+    <header class="section__head">
+      <h2 id="how-title">{c.how.h2}</h2>
+    </header>
+    <div class="how">
+      <ol class="how__steps">
+        {
+          c.how.steps.map((step) => (
+            <li>
+              <h3>{step.h3}</h3>
+              <p>{step.p}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <img
+        class="how__shot"
+        src="/site/shots/editor.jpg"
+        width="1600"
+        height="887"
+        alt={c.how.shotAlt}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </section>
+
+  {
+    faq.length > 0 && (
+      <section class="wrap section section--narrow" aria-labelledby="faq-title">
+        <header class="section__head">
+          <h2 id="faq-title">{c.faq.h2}</h2>
+        </header>
+        <FaqList items={faq} />
+        <p class="section__more">
+          <a href={href('faq', lang)}>{c.faq.all}</a>
+        </p>
+      </section>
+    )
+  }
+
+  {
+    posts.length > 0 && (
+      <section class="wrap section" aria-labelledby="blog-title">
+        <header class="section__head">
+          <h2 id="blog-title">{c.blog.h2}</h2>
+        </header>
+        <ul class="post-list post-list--grid">
+          {posts.map((post) => (
+            <li>
+              <a href={entryPath(post)}>
+                <h3>{post.data.h1 ?? post.data.title}</h3>
+                <p>{post.data.description}</p>
+              </a>
+              <time datetime={post.data.published.toISOString()}>{formatDate(post.data.published, lang)}</time>
+            </li>
+          ))}
+        </ul>
+        <p class="section__more">
+          <a href={href('blog', lang)}>{c.blog.all}</a>
+        </p>
+      </section>
+    )
+  }
+
+  <section class="wrap end" aria-labelledby="end-title">
+    <h2 id="end-title">{c.end.h2}</h2>
+    <p>{c.end.p}</p>
+    <div class="hero__actions">
+      <a class="button button--primary button--large" href={EDITOR_PATH}>{t.openEditor}</a>
+      <a class="button button--ghost button--large" href={SITE.github} rel="noopener">{c.end.github}</a>
+    </div>
+  </section>
+</Base>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-compare]')) {
+    const range = root.querySelector<HTMLInputElement>('[data-compare-range]')!
+    const after = root.querySelector<HTMLImageElement>('[data-compare-after]')!
+    const name = root.querySelector<HTMLElement>('[data-compare-name]')!
+    const buttons = root.querySelectorAll<HTMLButtonElement>('[data-look]')
+    range.addEventListener('input', () => root.style.setProperty('--split', `${range.value}%`))
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        after.src = `/site/looks/${button.dataset.look}.jpg`
+        name.textContent = button.dataset.name ?? ''
+        for (const other of buttons) other.setAttribute('aria-pressed', String(other === button))
+      })
+    }
+  }
+</script>

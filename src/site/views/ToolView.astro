@@ -1,0 +1,95 @@
+---
+import { render } from 'astro:content'
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import EditorCta from '../components/EditorCta.astro'
+import FaqList from '../components/FaqList.astro'
+import ToolList from '../components/ToolList.astro'
+import { absoluteUrl } from '../config'
+import { entryAlternates, entryPath, getTools, type Tool } from '../content'
+import { formatDate, href, langOf, ui } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, faqPage, howTo, webApplication, webPage } from '../schema'
+
+interface Props {
+  tool: Tool
+}
+
+const { tool } = Astro.props
+const { data } = tool
+const lang = langOf(tool.id)
+const t = ui[lang]
+const path = entryPath(tool)
+const url = absoluteUrl(path)
+const { Content } = await render(tool)
+const tools = await getTools(lang)
+const related = tools.filter((other) => other.id !== tool.id).slice(0, 4)
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: t.tools, path: href('tools', lang) },
+  { name: data.label, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  path={path}
+  alternates={await entryAlternates(tool)}
+  ogImage={data.ogImage}
+  noindex={data.noindex}
+  schema={[
+    webPage({ url, name: data.h1, description: data.description, lang, updated: data.updated }),
+    breadcrumbs(crumbs),
+    webApplication(lang, tools.map((other) => other.data.label)),
+    ...(data.steps.length ? [howTo(url, data.h1, data.steps)] : []),
+    ...(data.faq.length ? [faqPage(url, data.faq)] : []),
+  ]}
+>
+  <article class="wrap page">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{data.h1}</h1>
+      <p class="lead">{data.lead}</p>
+      <EditorCta lang={lang} />
+    </header>
+
+    {
+      data.steps.length > 0 && (
+        <section class="steps" aria-labelledby="steps-title">
+          <h2 id="steps-title">{t.tool.steps}</h2>
+          <ol>
+            {data.steps.map((step, i) => (
+              <li id={`step-${i + 1}`}>
+                <h3>{step.name}</h3>
+                <p>{step.text}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      data.faq.length > 0 && (
+        <section class="section-block" aria-labelledby="faq-title">
+          <h2 id="faq-title">{t.tool.faq}</h2>
+          <FaqList items={data.faq} />
+        </section>
+      )
+    }
+
+    <p class="meta">
+      {t.tool.updated} <time datetime={data.updated.toISOString()}>{formatDate(data.updated, lang)}</time>
+    </p>
+
+    <section class="section-block" aria-labelledby="related-title">
+      <h2 id="related-title">{t.tool.related}</h2>
+      <ToolList tools={related} />
+    </section>
+  </article>
+</Base>

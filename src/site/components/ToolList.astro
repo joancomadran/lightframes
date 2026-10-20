@@ -1,0 +1,24 @@
+---
+import { entryPath, type Tool } from '../content'
+
+interface Props {
+  tools: Tool[]
+  /** Heading level of each tool name, so the list nests under the surrounding heading. */
+  level?: 'h2' | 'h3'
+}
+
+const { tools, level: Heading = 'h3' } = Astro.props
+---
+
+<ul class="tool-list">
+  {
+    tools.map((tool) => (
+      <li>
+        <a href={entryPath(tool)}>
+          <Heading class="tool-list__name">{tool.data.label}</Heading>
+          <p>{tool.data.summary}</p>
+        </a>
+      </li>
+    ))
+  }
+</ul>

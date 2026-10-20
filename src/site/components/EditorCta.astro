@@ -1,0 +1,15 @@
+---
+import { EDITOR_PATH, ui, type Lang } from '../i18n'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+---
+
+<div class="editor-cta">
+  <a class="button button--primary" href={EDITOR_PATH}>{t.openEditor}</a>
+  <p>{t.tool.free}</p>
+</div>

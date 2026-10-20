@@ -1,0 +1,27 @@
+---
+import { ui, type Lang } from '../i18n'
+
+interface Props {
+  lang: Lang
+  /** Ancestors then the current page (last item is not linked). */
+  items: { name: string; path: string }[]
+}
+
+const { lang, items } = Astro.props
+---
+
+<nav class="breadcrumbs" aria-label={ui[lang].breadcrumb}>
+  <ol>
+    {
+      items.map((item, i) =>
+        i === items.length - 1 ? (
+          <li aria-current="page">{item.name}</li>
+        ) : (
+          <li>
+            <a href={item.path}>{item.name}</a>
+          </li>
+        ),
+      )
+    }
+  </ol>
+</nav>
