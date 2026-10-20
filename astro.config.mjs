@@ -5,7 +5,7 @@ import { pwa } from './integrations/pwa.mjs'
 
 // https://docs.astro.build/en/reference/configuration-reference/
 export default defineConfig({
-  site: 'https://lightframes.si',
+  site: 'https://www.lightframes.si',
   // `file` + no trailing slash gives /tools/raw-photo-editor (served from .html) on Vercel and Cloudflare Pages alike
   trailingSlash: 'never',
   build: { format: 'file' },

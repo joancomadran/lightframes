@@ -8,22 +8,18 @@ updated: 2026-10-20
 schemaType: WebPage
 ---
 
-<!-- TODO legal review: primer borrador, pendiente de revisión jurídica. Completar todos los [MARCADORES] antes de publicar. -->
-
 ## Resumen
 
 - **Tus fotos no salen de tu dispositivo.** Lightframes abre, decodifica y edita las imágenes dentro de tu navegador (WebAssembly y Web Workers). No se suben a nuestros servidores ni a los de terceros, y no tenemos acceso ni a tus fotos ni a tus ediciones.
 - **No hay cuentas de usuario, registro, formulario de contacto ni boletín.**
-- Como en cualquier web, al visitar Lightframes ciertos datos técnicos (principalmente tu dirección IP) llegan al proveedor de alojamiento, a Google Fonts y, solo si usas la herramienta de borrado de objetos, a Hugging Face. A continuación te explicamos cada caso.
+- Como en cualquier web, al visitar Lightframes ciertos datos técnicos (principalmente tu dirección IP) llegan al proveedor de alojamiento y, solo si usas la herramienta de borrado de objetos, a Hugging Face. A continuación te explicamos cada caso.
 
 ## Responsable del tratamiento
 
-El responsable del tratamiento de los datos de este sitio web (https://lightframes.si) es:
+El responsable del tratamiento de los datos de este sitio web (https://www.lightframes.si) es:
 
-- **Titular:** [NOMBRE O RAZÓN SOCIAL]
-- **NIF:** [NIF]
-- **Domicilio:** [DOMICILIO], España
-- **Correo electrónico:** [EMAIL DE CONTACTO]
+- **Titular:** Joan Comadran, persona física residente en España
+- **Contacto:** mensaje directo en X a [@dev_coma](https://x.com/dev_coma)
 
 No se ha designado delegado de protección de datos, al no ser obligatorio en este caso. <!-- TODO legal review: confirmar que no es obligatorio designar DPD. -->
 
@@ -55,7 +51,7 @@ Las funciones de IA (eliminación de fondo, ampliación y borrado de objetos) ta
 - **Finalidad:** servir la web, mantener su seguridad y diagnosticar errores.
 - **Base jurídica:** nuestro interés legítimo en mantener un sitio web seguro y operativo (art. 6.1.f RGPD).
 - **Destinatario:** el proveedor de alojamiento, Vercel Inc. (EE. UU.), como encargado del tratamiento.
-- **Conservación:** el plazo durante el que Vercel conserva los registros en nuestro plan, [PLAZO DE CONSERVACIÓN DE LOGS]. <!-- TODO legal review: confirmar el plazo de conservación de logs de Vercel para el plan contratado. -->
+- **Conservación:** el plazo durante el que Vercel conserva los registros en nuestro plan, según los plazos de conservación de la propia Vercel. <!-- TODO legal review: confirmar el plazo de conservación de logs de Vercel para el plan contratado. -->
 
 ### 2. Estadísticas de visitas (Vercel Web Analytics)
 
@@ -67,17 +63,13 @@ Las funciones de IA (eliminación de fondo, ampliación y borrado de objetos) ta
 
 <!-- TODO legal review: verificar la documentación vigente de Vercel Web Analytics (identificador, conservación, si almacena algo en el dispositivo) y confirmar que no requiere consentimiento conforme al art. 22.2 LSSI-CE. -->
 
-### 3. Fuentes tipográficas (Google Fonts)
+### 3. Fuentes tipográficas
 
-- **Datos:** para mostrar las tipografías de la web, tu navegador las solicita a fonts.googleapis.com y fonts.gstatic.com. Google recibe tu dirección IP y los datos técnicos de esa petición.
-- **Base jurídica:** nuestro interés legítimo en mostrar la web de forma homogénea (art. 6.1.f RGPD).
-- **Destinatario:** Google LLC / Google Ireland Ltd., conforme a su propia política de privacidad (https://policies.google.com/privacy).
-
-<!-- TODO: alojar las fuentes en el propio dominio (lightframes.si) eliminaría por completo esta transferencia a Google. Recomendado antes del lanzamiento. -->
+Las tipografías de la web se sirven desde el propio dominio lightframes.si. Para mostrarlas no se hace ninguna petición a Google Fonts ni a ningún otro tercero.
 
 ### 4. Si nos escribes
 
-No hay formulario de contacto. Si nos escribes a [EMAIL DE CONTACTO], usaremos tu dirección de correo y el contenido del mensaje únicamente para responderte. La base jurídica es tu propia solicitud y nuestro interés legítimo en atenderla (art. 6.1.f RGPD). Conservaremos la conversación mientras sea necesario para gestionarla y, después, durante [PLAZO DE CONSERVACIÓN DE CORREOS], salvo que la ley exija un plazo mayor.
+No hay formulario de contacto. Si nos envías un mensaje directo en X ([@dev_coma](https://x.com/dev_coma)), usaremos tu nombre de usuario y el contenido del mensaje únicamente para responderte. Ese mensaje también lo trata X Corp. conforme a sus propias condiciones y política de privacidad. La base jurídica es tu propia solicitud y nuestro interés legítimo en atenderla (art. 6.1.f RGPD). Conservaremos la conversación mientras sea necesario para gestionarla y no más, salvo que la ley exija un plazo mayor.
 
 Si abres una incidencia (*issue*) o una conversación en GitHub (https://github.com/joancomadran/lightframes), ese contenido es **público** y lo trata GitHub, Inc. conforme a sus propias condiciones y política de privacidad.
 
@@ -96,9 +88,9 @@ Si en el futuro activamos un servicio de publicidad (por ejemplo, Google AdSense
 
 ## Transferencias internacionales
 
-Algunos de los proveedores citados tienen su sede en Estados Unidos (Vercel, Google, Hugging Face). Cuando se transfieren datos personales fuera del Espacio Económico Europeo, la transferencia se ampara en la decisión de adecuación de la Comisión Europea relativa al Marco de Privacidad de Datos UE-EE. UU., en el caso de los proveedores adheridos a él, o en las cláusulas contractuales tipo aprobadas por la Comisión.
+Algunos de los proveedores citados tienen su sede en Estados Unidos (Vercel, Hugging Face y, si nos escribes por ahí, X). Cuando se transfieren datos personales fuera del Espacio Económico Europeo, la transferencia se ampara en la decisión de adecuación de la Comisión Europea relativa al Marco de Privacidad de Datos UE-EE. UU., en el caso de los proveedores adheridos a él, o en las cláusulas contractuales tipo aprobadas por la Comisión.
 
-<!-- TODO legal review: confirmar la adhesión al DPF o las CCT de cada proveedor (Vercel, Google, Hugging Face). -->
+<!-- TODO legal review: confirmar la adhesión al DPF o las CCT de cada proveedor (Vercel, Hugging Face, X). -->
 
 ## Destinatarios
 
@@ -106,7 +98,7 @@ No vendemos, alquilamos ni cedemos tus datos a terceros para sus propios fines. 
 
 ## Tus derechos
 
-Puedes ejercer tus derechos de **acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad** escribiendo a [EMAIL DE CONTACTO]. Indícanos qué derecho quieres ejercer; si fuera necesario, te pediremos información para verificar tu identidad. Te responderemos en el plazo de un mes.
+Puedes ejercer tus derechos de **acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad** enviándonos un mensaje directo en X a [@dev_coma](https://x.com/dev_coma). Indícanos qué derecho quieres ejercer; si fuera necesario, te pediremos información para verificar tu identidad. Te responderemos en el plazo de un mes.
 
 Ten en cuenta que apenas tratamos datos que puedan vincularse contigo: tus fotos, ediciones y *presets* solo están en tu propio dispositivo y puedes borrarlos tú mismo en cualquier momento.
 

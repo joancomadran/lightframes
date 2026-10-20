@@ -15,7 +15,7 @@ export function pwa() {
           globDirectory,
           swDest: `${globDirectory}sw.js`,
           // Precache the LibRaw WASM so RAW decoding works offline too
-          globPatterns: ['**/*.{js,css,html,svg,png,wasm,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,svg,png,wasm,webmanifest,woff2}'],
           globIgnores: ['og-image.png', 'samples/**', 'site/**', 'video/**', '_astro/ort-*.wasm'],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           skipWaiting: true,
@@ -33,15 +33,6 @@ export function pwa() {
               urlPattern: ({ url }) => url.pathname.startsWith('/samples/'),
               handler: 'CacheFirst',
               options: { cacheName: 'samples', expiration: { maxEntries: 10 } },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'google-fonts',
-                expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-                cacheableResponse: { statuses: [0, 200] },
-              },
             },
           ],
         })

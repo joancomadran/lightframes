@@ -1,4 +1,6 @@
 ---
+import type { ImageMetadata } from 'astro'
+import { getImage } from 'astro:assets'
 import FaqList from '../components/FaqList.astro'
 import ToolList from '../components/ToolList.astro'
 import { SITE, absoluteUrl } from '../config'
@@ -21,6 +23,25 @@ const tools = await getTools(lang)
 const faq = (await getFaq(lang)).slice(0, 6)
 const posts = (await getPosts(lang)).slice(0, 3)
 const [first] = LOOKS
+
+// Hero before/after photos: AVIF/WebP/JPEG at a few widths so phones don't download the 1600 px original
+const lookFiles = import.meta.glob<{ default: ImageMetadata }>('../../assets/looks/*.jpg', { eager: true })
+const WIDTHS = [480, 800, 1200, 1600]
+const SIZES = '(min-width: 1000px) min(56vw, 680px), calc(100vw - 40px)'
+async function lookImage(id: string) {
+  const file = lookFiles[`../../assets/looks/${id}.jpg`]
+  if (!file) throw new Error(`Missing hero image src/assets/looks/${id}.jpg`)
+  const [avif, webp, jpeg] = await Promise.all(
+    // AVIF at 60 looks like JPEG/WebP at 80 and is still the smallest
+    (['avif', 'webp', 'jpeg'] as const).map((format) =>
+      getImage({ src: file.default, widths: WIDTHS, format, quality: format === 'avif' ? 60 : 80 }),
+    ),
+  )
+  return { avif: avif.srcSet.attribute, webp: webp.srcSet.attribute, jpeg: jpeg.src, jpegSet: jpeg.srcSet.attribute }
+}
+const original = await lookImage('original')
+const looks = await Promise.all(LOOKS.map(async (look) => ({ ...look, img: await lookImage(look.id) })))
+const firstImg = looks[0].img
 ---
 
 <Base
@@ -56,23 +77,35 @@ const [first] = LOOKS
 
     <figure class="compare" data-compare style="--split: 50%">
       <div class="compare__frame">
-        <img
-          src="/site/looks/original.jpg"
-          width="1600"
-          height="1067"
-          alt=""
-          fetchpriority="high"
-          decoding="async"
-        />
-        <img
-          class="compare__after"
-          src={`/site/looks/${first.id}.jpg`}
-          width="1600"
-          height="1067"
-          alt=""
-          decoding="async"
-          data-compare-after
-        />
+        <picture>
+          <source type="image/avif" srcset={original.avif} sizes={SIZES} />
+          <source type="image/webp" srcset={original.webp} sizes={SIZES} />
+          <img
+            src={original.jpeg}
+            srcset={original.jpegSet}
+            sizes={SIZES}
+            width="1600"
+            height="1067"
+            alt=""
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
+        <picture>
+          <source type="image/avif" srcset={firstImg.avif} sizes={SIZES} data-compare-avif />
+          <source type="image/webp" srcset={firstImg.webp} sizes={SIZES} data-compare-webp />
+          <img
+            class="compare__after"
+            src={firstImg.jpeg}
+            srcset={firstImg.jpegSet}
+            sizes={SIZES}
+            width="1600"
+            height="1067"
+            alt=""
+            decoding="async"
+            data-compare-after
+          />
+        </picture>
         <span class="compare__tag compare__tag--before">{c.compare.before}</span>
         <span class="compare__tag compare__tag--after" data-compare-name>{first.name}</span>
         <span class="compare__handle" aria-hidden="true"></span>
@@ -89,8 +122,17 @@ const [first] = LOOKS
       <figcaption>
         <div class="looks" role="group" aria-label={c.compare.looks}>
           {
-            LOOKS.map((look) => (
-              <button type="button" data-look={look.id} data-name={look.name} aria-pressed={look.id === first.id ? 'true' : 'false'}>
+            looks.map((look) => (
+              <button
+                type="button"
+                data-look={look.id}
+                data-name={look.name}
+                data-avif={look.img.avif}
+                data-webp={look.img.webp}
+                data-jpeg={look.img.jpeg}
+                data-jpeg-set={look.img.jpegSet}
+                aria-pressed={look.id === first.id ? 'true' : 'false'}
+              >
                 <img src={`/site/looks/thumbs/${look.id}.jpg`} alt="" width="64" height="43" loading="lazy" decoding="async" />
                 {look.name}
               </button>
@@ -209,12 +251,18 @@ const [first] = LOOKS
   for (const root of document.querySelectorAll<HTMLElement>('[data-compare]')) {
     const range = root.querySelector<HTMLInputElement>('[data-compare-range]')!
     const after = root.querySelector<HTMLImageElement>('[data-compare-after]')!
+    const avif = root.querySelector<HTMLSourceElement>('[data-compare-avif]')!
+    const webp = root.querySelector<HTMLSourceElement>('[data-compare-webp]')!
     const name = root.querySelector<HTMLElement>('[data-compare-name]')!
     const buttons = root.querySelectorAll<HTMLButtonElement>('[data-look]')
     range.addEventListener('input', () => root.style.setProperty('--split', `${range.value}%`))
     for (const button of buttons) {
       button.addEventListener('click', () => {
-        after.src = `/site/looks/${button.dataset.look}.jpg`
+        const { avif: avifSet, webp: webpSet, jpeg, jpegSet } = button.dataset
+        if (avifSet) avif.srcset = avifSet
+        if (webpSet) webp.srcset = webpSet
+        if (jpegSet) after.srcset = jpegSet
+        if (jpeg) after.src = jpeg
         name.textContent = button.dataset.name ?? ''
         for (const other of buttons) other.setAttribute('aria-pressed', String(other === button))
       })

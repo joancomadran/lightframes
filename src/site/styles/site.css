@@ -11,8 +11,8 @@
   --text-muted: #9aa79b;
   --accent: #c8f560;
   --accent-ink: #141a12;
-  --font-display: 'Bricolage Grotesque', Georgia, serif;
-  --font-ui: 'Figtree', 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', Georgia, serif;
+  --font-ui: 'Figtree Variable', 'Figtree', 'Segoe UI', sans-serif;
   --gutter: 16px;
   --max: 1200px;
   --radius: 8px;

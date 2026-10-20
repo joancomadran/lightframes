@@ -1,5 +1,5 @@
 import { SITE, absoluteUrl } from './config'
-import { href, type Lang } from './i18n'
+import type { Lang } from './i18n'
 
 /** JSON-LD node builders. Pages pass an array of these to the Base layout, which emits one @graph. */
 
@@ -8,7 +8,8 @@ type Node = Record<string, unknown>
 const ORG_ID = `${SITE.url}/#organization`
 const SITE_ID = `${SITE.url}/#website`
 const APP_ID = `${SITE.url}/#app`
-const AUTHOR_ID = `${SITE.url}/#author`
+// Same @id as the Person node on joancomadran.dev, so both sites describe one entity
+const AUTHOR_ID = `${SITE.author.url}/#person`
 
 export function organization(): Node {
   return {
@@ -27,8 +28,8 @@ export function author(): Node {
     '@type': 'Person',
     '@id': AUTHOR_ID,
     name: SITE.author.name,
-    url: absoluteUrl(href('pages', 'en', 'about')),
-    sameAs: [SITE.author.github],
+    url: SITE.author.url,
+    sameAs: [SITE.author.url, SITE.author.github, SITE.author.x],
   }
 }
 
@@ -62,6 +63,8 @@ export function webApplication(lang: Lang, featureList: string[]): Node {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
     license: SITE.license,
     codeRepository: SITE.github,
+    author: { '@id': AUTHOR_ID },
+    creator: { '@id': AUTHOR_ID },
     screenshot: absoluteUrl('/site/shots/editor.jpg'),
     featureList,
     publisher: { '@id': ORG_ID },

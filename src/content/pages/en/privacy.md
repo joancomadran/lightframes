@@ -8,22 +8,18 @@ updated: 2026-10-20
 schemaType: WebPage
 ---
 
-<!-- TODO legal review: first draft, not yet reviewed by a lawyer. Fill in every [PLACEHOLDER] before publishing. -->
-
 ## In short
 
 - **Your photos never leave your device.** Lightframes opens, decodes and edits images inside your browser (WebAssembly and Web Workers). Nothing is uploaded to us or to anyone else, and we cannot see your photos or your edits.
 - There is **no account, no login, no contact form and no newsletter**.
-- Like any website, visiting Lightframes involves some technical data (mainly your IP address) reaching the hosting provider, Google Fonts and, only if you use the object-removal tool, Hugging Face. This policy explains each case.
+- Like any website, visiting Lightframes involves some technical data (mainly your IP address) reaching the hosting provider and, only if you use the object-removal tool, Hugging Face. This policy explains each case.
 
 ## Who is responsible for your data
 
-The data controller for this website (https://lightframes.si) is:
+The data controller for this website (https://www.lightframes.si) is:
 
-- **Name:** [FULL NAME OR COMPANY NAME]
-- **Tax ID (NIF):** [NIF]
-- **Address:** [POSTAL ADDRESS], Spain
-- **Email:** [CONTACT EMAIL]
+- **Name:** Joan Comadran, an individual based in Spain
+- **Contact:** direct message on X to [@dev_coma](https://x.com/dev_coma)
 
 We have not appointed a Data Protection Officer, as we are not required to do so. <!-- TODO legal review: confirm no DPO is required. -->
 
@@ -55,7 +51,7 @@ The AI features (background removal, upscaling and object removal) also run enti
 - **Why:** to deliver the website, keep it secure and diagnose errors.
 - **Legal basis:** our legitimate interest in operating a secure, working website (art. 6(1)(f) GDPR).
 - **Who:** our hosting provider, Vercel Inc. (USA), acting as data processor.
-- **How long:** as long as Vercel keeps its logs for our plan, [LOG RETENTION PERIOD]. <!-- TODO legal review: confirm Vercel's log retention for the current plan. -->
+- **How long:** as long as Vercel keeps its logs for our plan, under Vercel's own retention periods. <!-- TODO legal review: confirm Vercel's log retention for the current plan. -->
 
 ### 2. Visitor statistics (Vercel Web Analytics)
 
@@ -67,17 +63,13 @@ The AI features (background removal, upscaling and object removal) also run enti
 
 <!-- TODO legal review: verify the current Vercel Web Analytics privacy documentation (identifier, retention, whether anything is stored on the device) and confirm that no consent is needed under art. 22.2 LSSI-CE. -->
 
-### 3. Web fonts (Google Fonts)
+### 3. Web fonts
 
-- **What:** to display the site's typefaces, your browser requests them from fonts.googleapis.com and fonts.gstatic.com. Google receives your IP address and the technical data of that request.
-- **Legal basis:** our legitimate interest in displaying the site consistently (art. 6(1)(f) GDPR).
-- **Who:** Google LLC / Google Ireland Ltd., under its own privacy policy (https://policies.google.com/privacy).
-
-<!-- TODO: self-hosting the fonts (serving them from lightframes.si) would remove this transfer to Google entirely. Recommended before launch. -->
+The site's typefaces are served from lightframes.si itself. Displaying them sends no request to Google Fonts or any other third party.
 
 ### 4. When you contact us
 
-There is no contact form. If you write to [CONTACT EMAIL], we will use your email address and the content of your message only to reply to you. The legal basis is your request itself and our legitimate interest in answering it (art. 6(1)(f) GDPR). We keep the conversation for as long as needed to deal with it and then for [RETENTION PERIOD FOR EMAILS], unless a longer period is required by law.
+There is no contact form. If you send us a direct message on X ([@dev_coma](https://x.com/dev_coma)), we will use your X username and the content of your message only to reply to you. That message is also processed by X Corp. under its own terms and privacy policy. The legal basis is your request itself and our legitimate interest in answering it (art. 6(1)(f) GDPR). We keep the conversation for as long as needed to deal with it and no longer, unless a longer period is required by law.
 
 If you open an issue or a discussion on GitHub (https://github.com/joancomadran/lightframes), that content is **public** and is processed by GitHub, Inc. under its own terms and privacy policy.
 
@@ -96,9 +88,9 @@ If we enable an advertising service in the future (for example, Google AdSense),
 
 ## International transfers
 
-Some of the providers above are based in the United States (Vercel, Google, Hugging Face). Where personal data is transferred outside the European Economic Area, the transfer relies on the European Commission's adequacy decision for the EU-US Data Privacy Framework, for providers certified under it, or on the Standard Contractual Clauses approved by the Commission.
+Some of the providers above are based in the United States (Vercel, Hugging Face and, if you message us there, X). Where personal data is transferred outside the European Economic Area, the transfer relies on the European Commission's adequacy decision for the EU-US Data Privacy Framework, for providers certified under it, or on the Standard Contractual Clauses approved by the Commission.
 
-<!-- TODO legal review: confirm the DPF certification or SCCs for each provider (Vercel, Google, Hugging Face). -->
+<!-- TODO legal review: confirm the DPF certification or SCCs for each provider (Vercel, Hugging Face, X). -->
 
 ## Recipients
 
@@ -106,7 +98,7 @@ We do not sell, rent or share your data with anyone for their own purposes. Apar
 
 ## Your rights
 
-You can exercise your rights of **access, rectification, erasure, objection, restriction of processing and data portability** by writing to [CONTACT EMAIL]. Please tell us which right you want to exercise; we may ask for information to verify your identity if needed. We will reply within one month.
+You can exercise your rights of **access, rectification, erasure, objection, restriction of processing and data portability** by sending a direct message on X to [@dev_coma](https://x.com/dev_coma). Please tell us which right you want to exercise; we may ask for information to verify your identity if needed. We will reply within one month.
 
 Bear in mind that we hold very little data that can be linked to you: your photos, edits and presets are only on your own device, and you can delete them yourself at any time.
 

@@ -12,7 +12,7 @@ const FACTS = [
   `- Editor: ${url(EDITOR_PATH)}`,
   '- Price: free. Funded by affiliate links, a few small ad spaces and optional donations.',
   `- Source code: ${SITE.github} (MIT license)`,
-  `- Maker: ${SITE.author.name}, independent developer`,
+  `- Maker: ${SITE.author.name}, AI engineer and full stack developer in Barcelona (${SITE.author.url})`,
   '- Languages: site in English and Spanish (/es/); the editor interface is in English.',
   '- Privacy: photos stay on the device; edits, presets and the session are stored in the browser.',
 ]

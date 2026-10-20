@@ -1,13 +1,15 @@
 ---
+import '@fontsource-variable/bricolage-grotesque/opsz.css'
+import '@fontsource-variable/figtree'
 import EditorRoot from '../EditorRoot'
 import { SITE, absoluteUrl } from '../site/config'
-import { webApplication } from '../site/schema'
+import { author, webApplication } from '../site/schema'
 
 // The app shell: no site header or footer, the editor fills the viewport.
 const title = 'Lightframes Editor — free photo editor in your browser'
 const description =
   'Open the Lightframes editor: RAW and JPEG editing, presets, copy/paste edits, batch export and on-device AI. Runs locally, nothing is uploaded.'
-const jsonLd = { '@context': 'https://schema.org', ...webApplication('en', []) }
+const jsonLd = { '@context': 'https://schema.org', '@graph': [webApplication('en', []), author()] }
 ---
 
 <!doctype html>
@@ -39,12 +41,6 @@ const jsonLd = { '@context': 'https://schema.org', ...webApplication('en', []) }
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={absoluteUrl(SITE.ogImage)} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>

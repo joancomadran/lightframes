@@ -8,17 +8,12 @@ updated: 2026-10-20
 schemaType: WebPage
 ---
 
-<!-- TODO legal review: primer borrador, pendiente de revisión jurídica. Completar todos los [MARCADORES] antes de publicar. Esta versión es la que debe cumplir el art. 10 LSSI-CE; mantenerla sincronizada con la inglesa. -->
-
 ## Datos identificativos del titular
 
-En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de servicios de la sociedad de la información y de comercio electrónico (LSSI-CE), se facilitan los datos del titular del sitio web https://lightframes.si («Lightframes» o «el sitio»):
+En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de servicios de la sociedad de la información y de comercio electrónico (LSSI-CE), se facilitan los datos del titular del sitio web https://www.lightframes.si («Lightframes» o «el sitio»):
 
-- **Titular:** [NOMBRE O RAZÓN SOCIAL]
-- **NIF:** [NIF]
-- **Domicilio:** [DOMICILIO], España
-- **Correo electrónico de contacto:** [EMAIL DE CONTACTO]
-- **Datos registrales:** [DATOS DE INSCRIPCIÓN EN EL REGISTRO MERCANTIL U OTRO REGISTRO PÚBLICO, SI PROCEDE]
+- **Titular:** Joan Comadran, persona física residente en España
+- **Contacto:** mensaje directo en X a [@dev_coma](https://x.com/dev_coma)
 
 <!-- TODO legal review: confirmar si procede indicar algún otro dato del art. 10 LSSI-CE (autorización administrativa, colegio profesional, códigos de conducta). En principio no aplica. -->
 
@@ -50,8 +45,8 @@ La eliminación de fondo, la ampliación y el borrado de objetos utilizan modelo
 ## Propiedad intelectual e industrial
 
 - **Código fuente.** El software de Lightframes es de código abierto y se publica bajo la **licencia MIT**. Puedes usarlo, copiarlo, modificarlo y distribuirlo en los términos de dicha licencia, disponible en el repositorio: https://github.com/joancomadran/lightframes.
-- **Contenidos del sitio.** Salvo que se indique lo contrario, los textos, ilustraciones, capturas de pantalla, diseño y fotografías de muestra del sitio (incluidas las fotos de demostración de `/samples`) son © [NOMBRE O RAZÓN SOCIAL], todos los derechos reservados. **No** están cubiertos por la licencia MIT y no pueden reproducirse, distribuirse ni reutilizarse fuera de este proyecto sin autorización.
-- **Nombre y logotipo.** «Lightframes» y su logotipo identifican este proyecto. [SITUACIÓN DE LA MARCA: registrada / no registrada]. La licencia MIT no concede ningún derecho a utilizarlos de forma que sugiera que tu proyecto es el nuestro o que cuenta con nuestro respaldo.
+- **Contenidos del sitio.** Salvo que se indique lo contrario, los textos, ilustraciones, capturas de pantalla, diseño y fotografías de muestra del sitio (incluidas las fotos de demostración de `/samples`) son © Joan Comadran, todos los derechos reservados. **No** están cubiertos por la licencia MIT y no pueden reproducirse, distribuirse ni reutilizarse fuera de este proyecto sin autorización.
+- **Nombre y logotipo.** «Lightframes» y su logotipo identifican este proyecto. La licencia MIT no concede ningún derecho a utilizarlos de forma que sugiera que tu proyecto es el nuestro o que cuenta con nuestro respaldo.
 - **Elementos de terceros** (modelos de IA, bibliotecas, tipografías) pertenecen a sus respectivos titulares y se utilizan conforme a sus licencias.
 
 ## Exclusión de garantías
@@ -86,8 +81,8 @@ Podemos actualizar este aviso legal y estas condiciones para adaptarlos a cambio
 
 ## Legislación aplicable y jurisdicción
 
-Este aviso legal y estas condiciones se rigen por la legislación española. Para la resolución de cualquier controversia, las partes se someten a los juzgados y tribunales de [CIUDAD / PARTIDO JUDICIAL], salvo que el usuario tenga la condición de consumidor, en cuyo caso serán competentes los juzgados y tribunales de su domicilio, conforme a la normativa aplicable.
+Este aviso legal y estas condiciones se rigen por la legislación española. Para la resolución de cualquier controversia, las partes se someten a los juzgados y tribunales españoles competentes, salvo que el usuario tenga la condición de consumidor, en cuyo caso serán competentes los juzgados y tribunales de su domicilio, conforme a la normativa aplicable.
 
 ## Contacto
 
-Para cualquier consulta sobre este aviso legal, escríbenos a [EMAIL DE CONTACTO]. Para informar de un error o proponer una mejora, abre una incidencia en https://github.com/joancomadran/lightframes/issues.
+Para cualquier consulta sobre este aviso legal, envíanos un mensaje directo en X a [@dev_coma](https://x.com/dev_coma). Para informar de un error o proponer una mejora, abre una incidencia en https://github.com/joancomadran/lightframes/issues.

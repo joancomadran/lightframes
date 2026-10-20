@@ -13,8 +13,8 @@
   --danger-soft: #f0a8a0;
   --film-gap: 0.5rem;
   --radius: 6px;
-  --font-display: 'Bricolage Grotesque', Georgia, serif;
-  --font-ui: 'Figtree', 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', Georgia, serif;
+  --font-ui: 'Figtree Variable', 'Figtree', 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
 

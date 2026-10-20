@@ -8,8 +8,6 @@ updated: 2026-10-20
 schemaType: WebPage
 ---
 
-<!-- TODO legal review: first draft, not yet reviewed by a lawyer. Fill in every [PLACEHOLDER] before publishing. -->
-
 ## In short
 
 **Lightframes does not set any cookies of its own**, and it uses no analytics or advertising cookies. It does store some information in your browser (localStorage, IndexedDB, Cache Storage and a service worker) so that the editor can keep your work, remember your preferences and run offline. All of it stays on your device, we never receive it, and you can delete it whenever you want.
@@ -36,7 +34,6 @@ All the items below are **first-party** (they belong to lightframes.si), are cre
 | `workbox-precache-…` | Cache Storage | Copy of the application files so the editor loads quickly and works offline. | Replaced on each app update; until you clear the site's data | First-party |
 | `inpaint-runtime` | Cache Storage | Keeps the AI runtime (WebAssembly) once you have used an AI tool. | Up to 2 versions kept; until you clear the site's data | First-party |
 | `samples` | Cache Storage | Keeps the demo photos once you have opened them, for offline use. | Up to 10 files; until you clear the site's data | First-party |
-| `google-fonts` | Cache Storage | Local copy of the site's typefaces, to avoid downloading them again. | Up to 1 year | First-party |
 | Service worker (lightframes.si) | Service worker | Serves the cached application and enables offline use. | Until you clear the site's data or unregister it | First-party |
 
 <!-- TODO: the cache names come from the current PWA configuration (vite.config.ts) and the code in src/lib and src/components. Re-check this table after the migration to Astro / workbox-build, and whenever storage keys change. -->
@@ -44,7 +41,7 @@ All the items below are **first-party** (they belong to lightframes.si), are cre
 ## Third-party services
 
 - **Analytics.** We use Vercel Web Analytics to obtain aggregated visit statistics. According to Vercel, it does not use cookies. <!-- TODO legal review: confirm that Vercel Web Analytics stores nothing on the device. -->
-- **Fonts.** The site's fonts are requested from Google Fonts (fonts.googleapis.com, fonts.gstatic.com). These requests do not set cookies on your device, but they do transmit your IP address to Google; see the Privacy policy. <!-- TODO: self-host the fonts to remove this request. -->
+- **Fonts.** The site's fonts are served from lightframes.si itself; no request is made to Google Fonts or any other font service.
 - **AI model download.** The object-removal model is downloaded from huggingface.co. The download is made without sending or accepting cookies.
 - **Links to other sites.** If you click a link to Amazon.es (affiliate links), Buy Me a Coffee or GitHub, those sites may set their own cookies **on their own domain**, under their own cookie policies. Lightframes does not set or read those cookies. In particular, when you click an Amazon affiliate link, Amazon may use cookies to attribute any qualifying purchase to our Associates account.
 
@@ -68,4 +65,4 @@ You can also block site storage altogether. If you do, the editor will still ope
 
 ## Changes to this policy
 
-We will update this policy whenever what is stored on your device changes. The date at the top shows the latest version. For anything else about your data, see the Privacy policy or write to [CONTACT EMAIL].
+We will update this policy whenever what is stored on your device changes. The date at the top shows the latest version. For anything else about your data, see the Privacy policy or send a direct message on X to [@dev_coma](https://x.com/dev_coma).

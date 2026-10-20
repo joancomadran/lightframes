@@ -1,6 +1,6 @@
 # Lightframes
 
-**[Try it now → lightframes.si](https://lightframes.si)** · [Open the editor](https://lightframes.si/editor)
+**[Try it now → lightframes.si](https://www.lightframes.si)** · [Open the editor](https://www.lightframes.si/editor)
 
 Free, **open-source**, local photo editor focused on custom presets and copy/paste edits. The code is MIT-licensed and your photos never leave your device: no uploads, no account, no cloud.
 
@@ -154,13 +154,13 @@ An optional **Tauri** desktop wrap is planned post-MVP; this repo ships as a web
 
 MIT — see [LICENSE](./LICENSE).
 
-Sample photos in `public/samples/` (and the preset renders made from them in `public/site/looks/`) are © the Lightframes author, all rights reserved. They are not covered by the MIT license and may not be reused outside this project. The AI models keep their own licenses (see `public/models/`).
+Sample photos in `public/samples/` (and the preset renders made from them in `src/assets/looks/` and `public/site/looks/thumbs/`) are © the Lightframes author, all rights reserved. They are not covered by the MIT license and may not be reused outside this project. The AI models keep their own licenses (see `public/models/`).
 
 ---
 
-[![Lightframes — the open-source photo editor that stays on your device](public/og-image.png)](https://lightframes.si)
+[![Lightframes — the open-source photo editor that stays on your device](public/og-image.png)](https://www.lightframes.si)
 
 <p align="center">
   Your photos, your presets, your device.<br>
-  <strong><a href="https://lightframes.si">Open Lightframes →</a></strong> · if it saves you time, a ⭐ on the repo helps others find it.
+  <strong><a href="https://www.lightframes.si">Open Lightframes →</a></strong> · if it saves you time, a ⭐ on the repo helps others find it.
 </p>

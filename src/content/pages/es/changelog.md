@@ -28,7 +28,7 @@ Lo que ha cambiado en Lightframes, de lo más reciente a lo más antiguo. El his
 - **Guardado de sesión más rápido.** Los RAW pesados se guardan una sola vez en el almacenamiento del navegador, así que guardar tras cada ajuste sigue siendo ágil.
 - **Fotos de ejemplo nuevas,** reveladas a partir de RAW del propio autor.
 - **Interfaz más clara.** Iconos en las pestañas de los paneles, un indicador de progreso en la barra para las tareas largas, un aviso para añadir fotos cuando la tira está vacía y una explicación del aviso de recorte.
-- **Nueva dirección.** Lightframes está ahora en [lightframes.si](https://lightframes.si).
+- **Nueva dirección.** Lightframes está ahora en [lightframes.si](https://www.lightframes.si).
 
 ## 18 de octubre de 2026
 

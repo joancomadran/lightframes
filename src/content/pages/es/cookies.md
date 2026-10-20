@@ -8,8 +8,6 @@ updated: 2026-10-20
 schemaType: WebPage
 ---
 
-<!-- TODO legal review: primer borrador, pendiente de revisión jurídica. Completar todos los [MARCADORES] antes de publicar. -->
-
 ## Resumen
 
 **Lightframes no instala cookies propias** ni utiliza cookies analíticas o publicitarias. Sí guarda cierta información en tu navegador (localStorage, IndexedDB, Cache Storage y un *service worker*) para que el editor conserve tu trabajo, recuerde tus preferencias y funcione sin conexión. Todo ello permanece en tu dispositivo, nosotros no lo recibimos y puedes borrarlo cuando quieras.
@@ -36,7 +34,6 @@ Todos los elementos siguientes son **propios** (pertenecen a lightframes.si), lo
 | `workbox-precache-…` | Cache Storage | Copia de los archivos de la aplicación para que el editor cargue rápido y funcione sin conexión. | Se renueva con cada actualización; hasta que borres los datos del sitio | Propia |
 | `inpaint-runtime` | Cache Storage | Conserva el motor de IA (WebAssembly) una vez que has usado una herramienta de IA. | Máximo 2 versiones; hasta que borres los datos del sitio | Propia |
 | `samples` | Cache Storage | Conserva las fotos de demostración una vez abiertas, para usarlas sin conexión. | Máximo 10 archivos; hasta que borres los datos del sitio | Propia |
-| `google-fonts` | Cache Storage | Copia local de las tipografías de la web, para no volver a descargarlas. | Hasta 1 año | Propia |
 | *Service worker* (lightframes.si) | *Service worker* | Sirve la aplicación almacenada en caché y permite usarla sin conexión. | Hasta que borres los datos del sitio o lo desregistres | Propia |
 
 <!-- TODO: los nombres de caché proceden de la configuración PWA actual (vite.config.ts) y del código de src/lib y src/components. Revisar la tabla tras la migración a Astro / workbox-build y cada vez que cambien las claves de almacenamiento. -->
@@ -44,7 +41,7 @@ Todos los elementos siguientes son **propios** (pertenecen a lightframes.si), lo
 ## Servicios de terceros
 
 - **Analítica.** Utilizamos Vercel Web Analytics para obtener estadísticas agregadas de visitas. Según Vercel, no utiliza cookies. <!-- TODO legal review: confirmar que Vercel Web Analytics no almacena nada en el dispositivo. -->
-- **Fuentes tipográficas.** Las tipografías de la web se solicitan a Google Fonts (fonts.googleapis.com y fonts.gstatic.com). Estas peticiones no instalan cookies en tu dispositivo, pero sí transmiten tu dirección IP a Google; consulta la Política de privacidad. <!-- TODO: alojar las fuentes en el propio dominio para eliminar esta petición. -->
+- **Fuentes tipográficas.** Las tipografías de la web se sirven desde el propio dominio lightframes.si; no se hace ninguna petición a Google Fonts ni a otro servicio de fuentes.
 - **Descarga del modelo de IA.** El modelo de borrado de objetos se descarga desde huggingface.co. La descarga se realiza sin enviar ni aceptar cookies.
 - **Enlaces a otros sitios.** Si haces clic en un enlace a Amazon.es (enlaces de afiliado), Buy Me a Coffee o GitHub, esos sitios pueden instalar sus propias cookies **en su propio dominio**, conforme a sus respectivas políticas de cookies. Lightframes no instala ni lee esas cookies. En particular, al hacer clic en un enlace de afiliado, Amazon puede utilizar cookies para atribuir a nuestra cuenta de afiliado las compras que cumplan los requisitos aplicables.
 
@@ -68,4 +65,4 @@ También puedes bloquear por completo el almacenamiento del sitio. En ese caso, 
 
 ## Cambios en esta política
 
-Actualizaremos esta política cada vez que cambie lo que se guarda en tu dispositivo. La fecha indicada muestra la versión vigente. Para cualquier otra cuestión sobre tus datos, consulta la Política de privacidad o escríbenos a [EMAIL DE CONTACTO].
+Actualizaremos esta política cada vez que cambie lo que se guarda en tu dispositivo. La fecha indicada muestra la versión vigente. Para cualquier otra cuestión sobre tus datos, consulta la Política de privacidad o envíanos un mensaje directo en X a [@dev_coma](https://x.com/dev_coma).

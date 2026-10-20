@@ -28,7 +28,7 @@ What's changed in Lightframes, newest first. The full history is in the [commit 
 - **Faster session saving.** Large RAW files are stored only once in your browser's storage, so saving after each edit stays quick.
 - **New sample photos,** developed from the author's own RAW files.
 - **Clearer interface.** Icons on the panel tabs, a progress indicator in the toolbar for long tasks, an "Add photos" placeholder in the empty filmstrip and a tooltip explaining the clipping toggle.
-- **New address.** Lightframes now lives at [lightframes.si](https://lightframes.si).
+- **New address.** Lightframes now lives at [lightframes.si](https://www.lightframes.si).
 
 ## 18 October 2026
 

@@ -6,7 +6,7 @@ import { SITE, absoluteUrl } from '../config'
 import { entryAlternates, entryPath, pagePath, type Post } from '../content'
 import { formatDate, href, langOf, ui } from '../i18n'
 import Base from '../layouts/Base.astro'
-import { author, blogPosting, breadcrumbs } from '../schema'
+import { blogPosting, breadcrumbs } from '../schema'
 
 interface Props {
   post: Post
@@ -48,7 +48,6 @@ const aboutPath = await pagePath('about', lang)
       image: data.ogImage ?? SITE.ogImage,
       keywords: data.keywords,
     }),
-    author(),
     breadcrumbs(crumbs),
   ]}
 >

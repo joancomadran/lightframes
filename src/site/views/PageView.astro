@@ -5,7 +5,7 @@ import { absoluteUrl } from '../config'
 import { entryAlternates, entryPath, type Page } from '../content'
 import { formatDate, href, langOf, ui } from '../i18n'
 import Base from '../layouts/Base.astro'
-import { author, breadcrumbs, webPage } from '../schema'
+import { breadcrumbs, webPage } from '../schema'
 
 interface Props {
   page: Page
@@ -40,7 +40,6 @@ const crumbs = [
       type: data.schemaType,
       updated: data.updated,
     }),
-    ...(data.schemaType === 'AboutPage' ? [author()] : []),
     breadcrumbs(crumbs),
   ]}
 >

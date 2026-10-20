@@ -40,6 +40,7 @@ Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par 
 
 ## Lo que ya está hecho
 
+- Dominio canónico: `https://www.lightframes.si` (`SITE.url` en `src/site/config.ts` y `site` en `astro.config.mjs`). El apex redirige a www, así que canonical, `hreflang`, sitemap, `og:url`, JSON-LD y `llms.txt` usan siempre www.
 - HTML estático con canonical, `hreflang` (en, es, x-default), Open Graph y Twitter, y `og:locale` en cada página.
 - JSON-LD en un `@graph`: `Organization`, `WebSite`, `WebApplication` (gratis, MIT), `WebPage`/`AboutPage`/`CollectionPage`, `BreadcrumbList`, `FAQPage`, `HowTo`, `BlogPosting` + `Person` (autor) e `ItemList`.
 - Un sitemap que excluye la 404 y un `robots.txt` que permite explícitamente GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended y CCBot.
@@ -53,9 +54,9 @@ Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par 
 2. **Imágenes OG por página.** Ahora todas usan `/og-image.png`.
 3. **`hreflang` en el sitemap.** Por ahora solo está en el `<head>`. Como las URLs están localizadas, el plugin del sitemap no puede emparejarlas solo; habría que hacerlo con `serialize` a partir de `key`.
 4. **Search Console y Bing Webmaster.** Verificar el dominio y enviar `sitemap-index.xml`.
-5. **Google Fonts.** Ahora se cargan desde Google, lo que transfiere la IP del visitante (RGPD). Alojarlas en el propio dominio también mejora el LCP.
+5. ~~**Google Fonts.**~~ Hecho: las fuentes se sirven desde el propio dominio con `@fontsource-variable` (`font-display: swap`).
 6. **Banner de consentimiento (CMP)** antes de activar AdSense o cualquier red de anuncios. Ahora mismo no hay cookies propias que no sean técnicas.
-7. **Textos legales.** Rellenar los placeholders `[NOMBRE O RAZÓN SOCIAL]`, `[NIF]`, `[DOMICILIO]`, `[EMAIL DE CONTACTO]`, etc., y revisar los comentarios `<!-- TODO -->` antes de publicar.
+7. ~~**Textos legales.**~~ Hecho: titular Joan Comadran (persona física, España), contacto por X (https://x.com/dev_coma). Quedan comentarios `<!-- TODO legal review … -->` en el Markdown, que salen en el HTML publicado: revisarlos o quitarlos.
 8. **Datos de Instagram en los posts del carrusel** (ratio 3:4 y límite de diapositivas): marcados con TODO para comprobarlos.
-9. **Marca.** Nunca mencionar ni compararse con Lightroom ni con otros productos concretos.
+9. **Marca.** Lightroom solo se puede nombrar en frases de compatibilidad ("importa presets .xmp de Lightroom / Camera Raw", "funciona con tus presets de Lightroom") y como "alternativa gratis a Lightroom" en textos descriptivos. Nunca comparativas punto por punto, críticas ni nada que sugiera afiliación con Adobe; donde se nombre en detalle, añadir que Lightroom y Camera Raw son marcas de Adobe. No mencionar otros productos concretos.
 10. **Afiliados de Amazon.** El texto de divulgación obligatorio en español está en `src/lib/affiliate.ts` y se muestra en `/gear` y en el pie en español.

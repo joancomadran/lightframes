@@ -8,17 +8,12 @@ updated: 2026-10-20
 schemaType: WebPage
 ---
 
-<!-- TODO legal review: first draft, not yet reviewed by a lawyer. Fill in every [PLACEHOLDER] before publishing. The Spanish version is the one that must meet art. 10 LSSI-CE; keep both in sync. -->
-
 ## Site owner
 
-In accordance with article 10 of Spanish Law 34/2002 on information society services and electronic commerce (LSSI-CE), the owner of the website https://lightframes.si ("Lightframes" or "the site") is:
+In accordance with article 10 of Spanish Law 34/2002 on information society services and electronic commerce (LSSI-CE), the owner of the website https://www.lightframes.si ("Lightframes" or "the site") is:
 
-- **Name:** [FULL NAME OR COMPANY NAME]
-- **Tax ID (NIF):** [NIF]
-- **Address:** [POSTAL ADDRESS], Spain
-- **Email:** [CONTACT EMAIL]
-- **Registry details:** [COMMERCIAL REGISTRY DETAILS, IF APPLICABLE]
+- **Owner:** Joan Comadran, an individual based in Spain
+- **Contact:** direct message on X to [@dev_coma](https://x.com/dev_coma)
 
 ## What Lightframes is
 
@@ -48,8 +43,8 @@ Background removal, upscaling and object removal use machine-learning models tha
 ## Intellectual property
 
 - **Source code.** The Lightframes software is open source and released under the **MIT licence**. You may use, copy, modify and distribute it under the terms of that licence, available in the repository: https://github.com/joancomadran/lightframes.
-- **Site content.** Unless stated otherwise, the texts, illustrations, screenshots, design and sample photos on this site (including the demo photos in `/samples`) are © [FULL NAME OR COMPANY NAME], all rights reserved. They are **not** covered by the MIT licence and may not be reproduced, distributed or reused outside this project without permission.
-- **Name and logo.** "Lightframes" and its logo identify this project. [TRADEMARK STATUS: registered / not registered]. The MIT licence does not grant any right to use them in a way that suggests your project is ours or endorsed by us.
+- **Site content.** Unless stated otherwise, the texts, illustrations, screenshots, design and sample photos on this site (including the demo photos in `/samples`) are © Joan Comadran, all rights reserved. They are **not** covered by the MIT licence and may not be reproduced, distributed or reused outside this project without permission.
+- **Name and logo.** "Lightframes" and its logo identify this project. The MIT licence does not grant any right to use them in a way that suggests your project is ours or endorsed by us.
 - **Third-party elements** (AI models, libraries, typefaces) belong to their respective owners and are used under their licences.
 
 ## Provided "as is"
@@ -84,8 +79,8 @@ We may update this legal notice and these terms to reflect changes to the site o
 
 ## Applicable law and jurisdiction
 
-These terms are governed by Spanish law. Any dispute will be submitted to the courts of [CITY / JURISDICTION], Spain, unless you are a consumer, in which case you may bring proceedings in the courts of your place of residence, as provided by law.
+These terms are governed by Spanish law. Any dispute will be submitted to the competent courts of Spain, unless you are a consumer, in which case you may bring proceedings in the courts of your place of residence, as provided by law.
 
 ## Contact
 
-For any questions about these terms, write to [CONTACT EMAIL]. To report a bug or suggest an improvement, open an issue at https://github.com/joancomadran/lightframes/issues.
+For any questions about these terms, send a direct message on X to [@dev_coma](https://x.com/dev_coma). To report a bug or suggest an improvement, open an issue at https://github.com/joancomadran/lightframes/issues.

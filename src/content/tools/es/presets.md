@@ -1,10 +1,10 @@
 ---
 key: presets
 slug: presets-fotos
-title: "Presets para fotos gratis: importa XMP"
-description: "Aplica presets gratis a tus fotos online, crea los tuyos y ajusta su intensidad del 0 al 100 %. Importa archivos XMP, JSON o .cube sin subir nada a internet."
+title: "Presets para fotos gratis: importa XMP de Lightroom"
+description: "Aplica presets gratis online, también tus .xmp de Lightroom y Camera Raw. Crea los tuyos, ajusta la intensidad e importa LUT .cube sin subir nada a internet."
 h1: "Presets para fotos gratis: créalos, impórtalos y aplícalos online"
-lead: "Lightframes te deja guardar cualquier edición como preset, aplicarlo a una foto o a toda una selección y regular su intensidad del 0 al 100 %. Puedes importar presets XMP, JSON y LUT .cube y hacer copia en JSON, gratis en el navegador y sin subir nada."
+lead: "Lightframes te deja guardar cualquier edición como preset, aplicarlo a una foto o a toda una selección y regular su intensidad del 0 al 100 %. Puedes importar presets .xmp de Lightroom y Camera Raw, presets JSON y LUT .cube y hacer copia en JSON, gratis en el navegador y sin subir nada."
 label: "Presets"
 summary: "Guarda tus estilos, importa presets XMP, JSON o .cube y aplícalos con la intensidad que quieras a una o varias fotos."
 order: 3
@@ -13,6 +13,9 @@ keywords:
   - "aplicar preset a foto online"
   - "importar presets xmp"
   - "usar presets xmp sin programas"
+  - "usar presets de lightroom online"
+  - "presets lightroom gratis online"
+  - "alternativa lightroom gratis"
   - "crear preset de fotos"
   - "filtros para fotos gratis"
   - "presets online"
@@ -28,8 +31,8 @@ steps:
   - name: "Haz copia de tus presets"
     text: "Pulsa el icono de descarga de un preset para guardarlo en JSON, o Backup para descargar todos tus presets en un único archivo JSON."
 faq:
-  - q: "¿Puedo usar presets XMP?"
-    a: "Sí. Pulsa Import en la pestaña Presets y elige el archivo .xmp. Lightframes lee sus ajustes de revelado y los traslada a sus propios controles: luz, balance de blancos, presencia, curvas, HSL, gradación de color o virado partido, enfoque, ruido, viñeta y grano."
+  - q: "¿Puedo usar mis presets de Lightroom en Lightframes?"
+    a: "Sí, si son archivos .xmp, el formato en el que Lightroom Classic, Lightroom y Adobe Camera Raw guardan los presets de revelado. Pulsa Import en la pestaña Presets y elige el archivo .xmp. Lightframes lee sus ajustes de revelado y los traslada a sus propios controles: luz, balance de blancos, presencia, curvas, HSL, gradación de color o virado partido, enfoque, ruido, viñeta y grano."
   - q: "¿Un preset XMP importado se verá exactamente igual?"
     a: "Muy parecido, pero no siempre idéntico. Lo que no tiene equivalente aquí, como perfiles de cámara, correcciones de objetivo o máscaras, se ignora, y la temperatura en grados Kelvin solo se puede aproximar."
   - q: "¿Qué hace el control de intensidad?"
@@ -45,7 +48,7 @@ updated: 2026-10-20
 
 ## Qué son los presets de Lightframes y para quién son
 
-Un preset en Lightframes es un conjunto de ajustes guardado que aplicas a cualquier foto con un clic. Viene bien si quieres un estilo coherente en una sesión o en tu perfil de Instagram, si has comprado o descargado presets XMP y quieres usarlos sin instalar ningún programa, o si solo buscas un filtro rápido para una foto del móvil. El editor es gratuito, de código abierto y funciona en el navegador.
+Un preset en Lightframes es un conjunto de ajustes guardado que aplicas a cualquier foto con un clic. Viene bien si quieres un estilo coherente en una sesión o en tu perfil de Instagram, si has comprado o descargado presets de Lightroom (.xmp) y quieres usarlos sin instalar Lightroom ni ningún otro programa, o si solo buscas un filtro rápido para una foto del móvil. El editor es gratuito, de código abierto y funciona en el navegador, así que es una alternativa gratis a Lightroom para aplicar los estilos que ya tienes.
 
 La interfaz del editor está en inglés; en esta página verás los botones con su nombre en pantalla.
 
@@ -84,7 +87,9 @@ De un archivo XMP, Lightframes lee estos ajustes si están presentes:
 - Enfoque y reducción de ruido de luminancia y color
 - Viñeta posrecorte y grano
 
-El preset toma el nombre guardado dentro del XMP y, si no lo hay, el nombre del archivo.
+Son los mismos ajustes de revelado que guardan los presets exportados desde Lightroom o Adobe Camera Raw, así que la mayor parte del estilo se conserva. El preset toma el nombre guardado dentro del XMP y, si no lo hay, el nombre del archivo.
+
+Lightroom y Camera Raw son marcas de Adobe. Lightframes es un proyecto independiente de código abierto, sin relación ni respaldo de Adobe.
 
 ## Consejos
 
@@ -95,6 +100,7 @@ El preset toma el nombre guardado dentro del XMP y, si no lo hay, el nombre del 
 
 ## Limitaciones
 
+- Los presets antiguos de Lightroom en formato `.lrtemplate` no se pueden importar; solo se leen los `.xmp`.
 - Importar XMP es una traducción, no una copia: los perfiles de cámara, las correcciones de objetivo, la calibración y las máscaras no se importan, así que algunos estilos cambiarán.
 - Se importa un archivo cada vez. Para pasar muchos presets de golpe, usa una copia JSON.
 - Los presets viven en un navegador concreto. Si borras los datos del sitio o usas una ventana privada puedes perderlos si no tienes copia.

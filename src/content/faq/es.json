@@ -42,7 +42,7 @@
     },
     {
       "q": "¿Puedo importar presets, archivos XMP o LUT .cube?",
-      "a": "Sí. El panel Presets importa presets JSON de Lightframes, presets de revelado XMP (convertidos a ajustes de luz, color, HSL, curva de tonos, gradación de color, viñeta, grano y enfoque) y LUT 3D en formato .cube. También puedes guardar tus propios presets, ajustar su intensidad del 0 al 100 % y exportarlos en JSON."
+      "a": "Sí. El panel Presets importa presets JSON de Lightframes, presets de revelado XMP, como los que usas en Lightroom o Camera Raw (convertidos a ajustes de luz, color, HSL, curva de tonos, gradación de color, viñeta, grano y enfoque) y LUT 3D en formato .cube. También puedes guardar tus propios presets, ajustar su intensidad del 0 al 100 % y exportarlos en JSON."
     },
     {
       "q": "¿Puedo editar muchas fotos a la vez (edición por lotes)?",

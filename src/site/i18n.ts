@@ -60,6 +60,7 @@ export const ui = {
       privacy: 'Privacy',
       cookies: 'Cookies',
       terms: 'Legal notice & terms',
+      madeBy: 'Made by',
       affiliate:
         'Some gear links are Amazon affiliate links: as an Amazon Associate, Lightframes earns from qualifying purchases.',
     },
@@ -128,6 +129,7 @@ export const ui = {
       privacy: 'Privacidad',
       cookies: 'Cookies',
       terms: 'Aviso legal',
+      madeBy: 'Hecho por',
       affiliate:
         'Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables.',
     },
