@@ -1,6 +1,6 @@
 # Lightframes
 
-**[Try it now → lightframes.vercel.app](https://lightframes.si)**
+**[Try it now → lightframes.si](https://lightframes.si)**
 
 Free, **open-source**, local photo editor focused on custom presets and copy/paste edits. The code is MIT-licensed and your photos never leave your device: no uploads, no account, no cloud.
 

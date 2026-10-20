@@ -36,6 +36,7 @@ import { needsCutout, stepRotate, type EditParams, type HealSpot, type LocalAdju
 import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { AppMark } from './AppMark'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
+import { DemoVideoDialog } from './DemoVideoDialog'
 import { HealOverlay, type HealOverlayConfig } from './HealOverlay'
 import { RefineOverlay, type RefineOverlayConfig } from './RefineOverlay'
 import { InstallButton } from './InstallButton'
@@ -219,6 +220,7 @@ export function PreviewCanvas({
   // Touch and hold shows the unedited photo until the finger lifts.
   const holdRef = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null)
   const [holding, setHolding] = useState(false)
+  const [demoOpen, setDemoOpen] = useState(false)
   /** Bases currently drawn on the main and the "before" canvas: the before layer only shows once they match. */
   const [renderedBase, setRenderedBase] = useState<BaseImage | null>(null)
   const [beforeBase, setBeforeBase] = useState<BaseImage | null>(null)
@@ -861,12 +863,20 @@ export function PreviewCanvas({
               Try sample photos
             </button>
           )}
+          <button
+            type="button"
+            className="btn btn--ghost btn--lg preview__empty-demo"
+            onClick={() => setDemoOpen(true)}
+          >
+            <span aria-hidden="true">▶</span> Watch demo
+          </button>
         </div>
         <p className="preview__empty-note">
           <PrivacyBadge label="100% private" align="center" />
           <InstallButton />
           <GithubStar />
         </p>
+        <DemoVideoDialog open={demoOpen} onClose={() => setDemoOpen(false)} />
       </div>
     )
   }

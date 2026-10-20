@@ -3071,6 +3071,18 @@ select.field option {
   overflow-y: auto;
 }
 
+.modal__card--video {
+  width: min(960px, calc(100vw - 2rem));
+}
+
+.demo-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  background: #000;
+}
+
 .export-section {
   display: flex;
   flex-direction: column;
