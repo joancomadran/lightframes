@@ -6,6 +6,7 @@ import {
   isNeutralColorGrading,
   isNeutralHsl,
   isNeutralToneCurve,
+  isRangeActive,
   normalizeRotate,
   type BrushAdjustment,
   type CutoutStroke,
@@ -18,6 +19,7 @@ import {
   type HslEdits,
   type LinearAdjustment,
   type LocalAdjustment,
+  type MaskRange,
   type RadialAdjustment,
   type ToneCurve,
 } from '../types/edits'
@@ -920,6 +922,36 @@ function maskWeight(
   return adj.invert ? 1 - weight : weight
 }
 
+/**
+ * How much of a mask survives its range refinement at one sRGB-encoded pixel (0–1).
+ * Brightness keeps [lumMin, lumMax] and fades out past it; colour keeps hues near
+ * `hue`, ignoring near-grey pixels, which have no hue to judge.
+ */
+function rangeWeight(range: MaskRange, r: number, g: number, b: number): number {
+  const soft = 0.02 + (range.smoothness / 100) * 0.2
+  let weight = 1
+  if (range.lumMin > 0 || range.lumMax < 100) {
+    const luma = LUMA_R * r + LUMA_G * g + LUMA_B * b
+    const lo = range.lumMin / 100
+    const hi = range.lumMax / 100
+    if (lo > 0) weight *= smoothstep(lo - soft, lo, luma)
+    if (hi < 1) weight *= 1 - smoothstep(hi, hi + soft, luma)
+  }
+  if (range.hue !== null && weight > 0) {
+    const chroma = Math.max(r, g, b) - Math.min(r, g, b)
+    weight *= smoothstep(0.03, 0.12, chroma)
+    if (weight > 0) {
+      const { h } = rgbToHsl(r, g, b)
+      const diff = Math.abs(h - range.hue)
+      const dist = Math.min(diff, 360 - diff)
+      const half = 8 + (range.hueWidth / 100) * 82
+      const inner = half * (0.9 - (range.smoothness / 100) * 0.7)
+      weight *= 1 - smoothstep(inner, half, dist)
+    }
+  }
+  return weight
+}
+
 function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], ctx: DevelopContext): void {
   if (items.length === 0) return
   const { data, width, height } = imageData
@@ -927,6 +959,7 @@ function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], c
   for (let y = 0; y < height; y++) {
     const gy = y + ctx.yOffset
     for (let x = 0; x < width; x++) {
+      const p = (y * width + x) * 4
       let weight = 0
       let exposure = 0
       let contrast = 0
@@ -934,7 +967,11 @@ function applyLocalAdjustments(imageData: ImageData, items: LocalAdjustment[], c
       let temperature = 0
       let whiten = 0
       for (const adj of items) {
-        const w = maskWeight(adj, x, gy, fullWidth, fullHeight, ctx.brushMasks[adj.id])
+        let w = maskWeight(adj, x, gy, fullWidth, fullHeight, ctx.brushMasks[adj.id])
+        // Ranges judge the pixel as globally developed, before any mask changes it.
+        if (w > 0 && isRangeActive(adj.range)) {
+          w *= rangeWeight(adj.range, data[p]! / 255, data[p + 1]! / 255, data[p + 2]! / 255)
+        }
         if (w <= 0) continue
         weight += w
         exposure += w * adj.exposure
@@ -1110,7 +1147,10 @@ export function buildBrushMasks(
   return out
 }
 
-/** Weights of one mask over a small grid, for the on-image mask overlay. */
+/**
+ * Weights of one mask over a small grid, for the on-image mask overlay.
+ * `pixels` (RGBA, same grid) lets a range refinement show; without it ranges are ignored.
+ */
 export function computeMaskPreview(
   adj: LocalAdjustment,
   width: number,
@@ -1118,6 +1158,7 @@ export function computeMaskPreview(
   fullWidth: number,
   fullHeight: number,
   subjectMask?: MaskGrid,
+  pixels?: Uint8ClampedArray,
 ): Float32Array {
   const brush =
     adj.type === 'brush'
@@ -1130,7 +1171,12 @@ export function computeMaskPreview(
     for (let x = 0; x < width; x++) {
       const fx = ((x + 0.5) / width) * fullWidth - 0.5
       const fy = ((y + 0.5) / height) * fullHeight - 0.5
-      out[y * width + x] = maskWeight(adj, fx, fy, fullWidth, fullHeight, brush)
+      let w = maskWeight(adj, fx, fy, fullWidth, fullHeight, brush)
+      if (w > 0 && pixels && isRangeActive(adj.range)) {
+        const p = (y * width + x) * 4
+        w *= rangeWeight(adj.range, pixels[p]! / 255, pixels[p + 1]! / 255, pixels[p + 2]! / 255)
+      }
+      out[y * width + x] = w
     }
   }
   return out

@@ -28,6 +28,7 @@ import { ToneCurvePanel } from './components/ToneCurvePanel'
 import { Toolbar } from './components/Toolbar'
 import { PANELS, useEditorSession, type PanelId } from './hooks/useEditorSession'
 import { PHONE_QUERY, useMediaQuery } from './hooks/useMediaQuery'
+import { useSheetSwipe } from './hooks/useSheetSwipe'
 import type { StudioApi, StudioFormat } from './hooks/useStudio'
 import { createCarouselDoc, type CarouselDoc } from './lib/carousel'
 import { createCollageDoc, type CollageDoc } from './lib/collage'
@@ -92,6 +93,8 @@ export default function App() {
     setSheetPanel(session.panelFocus)
     setSheetCollapsed(false)
   }
+  const sheetSwipe = useSheetSwipe(sheetOpen, setSheetCollapsed)
+  const swipe = phone ? sheetSwipe.handlers : undefined
   const tabsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -401,7 +404,14 @@ export default function App() {
           {/* Phones skip the tool sheet until there is a photo: disabled sliders only crowd the welcome screen. */}
           {(!phone || canEdit) && (
           <aside
-            className={sheetOpen ? 'sidebar' : 'sidebar sidebar--collapsed'}
+            className={[
+              'sidebar',
+              !sheetOpen && 'sidebar--collapsed',
+              sheetSwipe.offset !== 0 && 'sidebar--dragging',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            style={sheetSwipe.offset ? { transform: `translateY(${sheetSwipe.offset}px)` } : undefined}
             aria-label="Editor panels"
           >
             <button
@@ -410,8 +420,9 @@ export default function App() {
               aria-label={sheetOpen ? 'Hide tools' : 'Show tools'}
               aria-expanded={sheetOpen}
               onClick={() => setSheetCollapsed((v) => !v)}
+              {...swipe}
             />
-            <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
+            <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef} {...swipe}>
               {PANELS.map(({ id, label }, index) => (
                 <button
                   key={id}
@@ -546,6 +557,7 @@ export default function App() {
                     // Teeth are small: start with a small, soft brush.
                     setBrush({ size: 0.012, feather: 0.5, flow: 1, erase: false })
                   }}
+                  onAddBackground={() => session.addLocal('subject', { name: 'Background', invert: true })}
                   onUpdate={session.updateLocal}
                   onRemove={session.removeLocal}
                   onBrushChange={setBrush}
@@ -577,6 +589,17 @@ export default function App() {
                   onExportAll={session.exportAllPresets}
                   onImport={session.importPreset}
                 />
+              )}
+
+              {/* Phones hide the sidebar footer, so the ad and support links close each panel instead. */}
+              {phone && (
+                <div className="sheet-extras">
+                  <AdSlot id="sidebar" height={96} />
+                  <div className="sheet-extras__links">
+                    <GithubStar />
+                    <DonateButton />
+                  </div>
+                </div>
               )}
             </div>
 

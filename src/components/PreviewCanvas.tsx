@@ -32,7 +32,14 @@ import { ensureCutout, getCutout, setSourceKey } from '../lib/cutout'
 import { ensurePatches } from '../lib/inpaint'
 import { loadRawPreview } from '../lib/rawDecode'
 import { developBase } from '../lib/renderPipeline'
-import { needsCutout, stepRotate, type EditParams, type HealSpot, type LocalAdjustment } from '../types/edits'
+import {
+  isRangeActive,
+  needsCutout,
+  stepRotate,
+  type EditParams,
+  type HealSpot,
+  type LocalAdjustment,
+} from '../types/edits'
 import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { AppMark } from './AppMark'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
@@ -646,7 +653,28 @@ export function PreviewCanvas({
     const scale = 360 / Math.max(contentSize.w, contentSize.h)
     const w = Math.max(1, Math.round(contentSize.w * scale))
     const h = Math.max(1, Math.round(contentSize.h * scale))
-    const weights = computeMaskPreview(maskTint, w, h, contentSize.w, contentSize.h, renderedBase?.subjectMask)
+    // Range refinements need the photo's colours: sample the rendered frame down to the tint grid.
+    let pixels: Uint8ClampedArray | undefined
+    const frame = canvasRef.current
+    if (isRangeActive(maskTint.range) && frame && frame.width > 0) {
+      const sampler = document.createElement('canvas')
+      sampler.width = w
+      sampler.height = h
+      const sctx = sampler.getContext('2d', { willReadFrequently: true })
+      if (sctx) {
+        sctx.drawImage(frame, 0, 0, w, h)
+        pixels = sctx.getImageData(0, 0, w, h).data
+      }
+    }
+    const weights = computeMaskPreview(
+      maskTint,
+      w,
+      h,
+      contentSize.w,
+      contentSize.h,
+      renderedBase?.subjectMask,
+      pixels,
+    )
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d')

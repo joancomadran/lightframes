@@ -49,11 +49,32 @@ export type ToneCurve = {
   blue?: CurvePoint[]
 }
 
+/** Limits a mask to a band of brightness and/or one colour. Any mask type can carry one. */
+export type MaskRange = {
+  /** 0–100: the brightness band the mask keeps. */
+  lumMin: number
+  lumMax: number
+  /** Hue (0–360) the mask keeps, or null for every colour. */
+  hue: number | null
+  /** 0–100: how wide a slice of hues around `hue` still counts. */
+  hueWidth: number
+  /** 0–100: how softly both limits fade out. */
+  smoothness: number
+}
+
+export const DEFAULT_MASK_RANGE: MaskRange = { lumMin: 0, lumMax: 100, hue: null, hueWidth: 35, smoothness: 40 }
+
+export function isRangeActive(range: MaskRange | undefined): range is MaskRange {
+  return !!range && (range.lumMin > 0 || range.lumMax < 100 || range.hue !== null)
+}
+
 /** Settings every local mask applies inside its area. */
 type LocalAdjustmentBase = {
   id: string
   /** Apply outside the shape instead of inside. */
   invert: boolean
+  /** Optional refinement: only pixels in this brightness / colour range are affected. */
+  range?: MaskRange
   exposure: number
   contrast: number
   saturation: number
@@ -496,7 +517,7 @@ export function cloneColorGrading(grading: ColorGrading): ColorGrading {
 
 /** Shallow per-item copy; brush strokes are treated as immutable and shared. */
 export function cloneLocalAdjustments(items: LocalAdjustment[]): LocalAdjustment[] {
-  return items.map((item) => ({ ...item }))
+  return items.map((item) => (item.range ? { ...item, range: { ...item.range } } : { ...item }))
 }
 
 export function cloneEdits(edits: EditParams): EditParams {
@@ -860,6 +881,22 @@ function normalizeStroke(value: unknown): BrushStroke | null {
   }
 }
 
+function normalizeMaskRange(value: unknown): { range?: MaskRange } {
+  if (!value || typeof value !== 'object') return {}
+  const obj = value as Record<string, unknown>
+  const pct = (v: unknown, fallback: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.min(100, Math.max(0, v)) : fallback
+  const lumMin = pct(obj.lumMin, 0)
+  const range: MaskRange = {
+    lumMin,
+    lumMax: Math.max(lumMin, pct(obj.lumMax, 100)),
+    hue: typeof obj.hue === 'number' && Number.isFinite(obj.hue) ? ((obj.hue % 360) + 360) % 360 : null,
+    hueWidth: pct(obj.hueWidth, DEFAULT_MASK_RANGE.hueWidth),
+    smoothness: pct(obj.smoothness, DEFAULT_MASK_RANGE.smoothness),
+  }
+  return isRangeActive(range) ? { range } : {}
+}
+
 function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
   if (!Array.isArray(value)) return []
   const out: LocalAdjustment[] = []
@@ -877,6 +914,7 @@ function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
       temperature: num(obj.temperature, 0),
       whiten: Math.min(100, Math.max(0, num(obj.whiten, 0))),
       ...(typeof obj.name === 'string' && obj.name ? { name: obj.name.slice(0, 40) } : {}),
+      ...normalizeMaskRange(obj.range),
     }
     if (obj.type === 'radial') {
       out.push({
