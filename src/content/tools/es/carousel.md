@@ -1,9 +1,9 @@
 ---
 key: carousel
 slug: carrusel-instagram
-title: "Hacer un carrusel de Instagram continuo"
-description: "Divide una panorámica o varias fotos en un carrusel continuo de Instagram en 4:5, 3:4 o 1:1, a 1080 px de ancho. Gratis, en el navegador y sin subir nada."
-h1: "Haz un carrusel continuo para Instagram"
+title: "Carrusel continuo para Instagram, gratis"
+description: "Divide una foto o panorámica en un carrusel continuo de Instagram: de 2 a 10 diapositivas en 4:5, 3:4 o 1:1, a 1080 px. Gratis y sin subir nada."
+h1: "Carrusel continuo para Instagram: divide tu foto en diapositivas"
 lead: "Lightframes reparte una panorámica o varias fotos entre 2 y 10 diapositivas de Instagram para que la imagen continúe al deslizar, y exporta cada una a 1080 px de ancho en 4:5, 3:4 o 1:1. Es gratis, funciona en el navegador y no sube tus fotos."
 label: "Carrusel Instagram"
 summary: "Reparte una panorámica o varias fotos en diapositivas continuas en 4:5, 3:4 o 1:1, exportadas a 1080 px de ancho."
@@ -15,6 +15,9 @@ keywords:
   - "carrusel panorámico instagram"
   - "dividir foto en partes para instagram"
   - "plantilla carrusel instagram gratis"
+  - "dividir imagen para instagram"
+  - "dividir foto para carrusel de instagram"
+  - "carrusel infinito instagram"
 steps:
   - name: "Abre tus fotos"
     text: "Entra en el editor, pulsa Open photos y añade la panorámica o las fotos del post. Si quieres, edítalas antes: el carrusel usa tus ajustes. La interfaz está en inglés."
@@ -27,7 +30,7 @@ steps:
   - name: "Previsualiza y exporta"
     text: "Pulsa Preview swipe para revisar los cortes y después Export slides. Obtienes un JPEG por diapositiva, numerado en el orden de publicación."
 faq:
-  - q: "¿Cómo divido una panorámica en un carrusel de Instagram?"
+  - q: "¿Cómo divido una foto o una panorámica en un carrusel de Instagram?"
     a: "Abre la panorámica en Lightframes, pulsa Collage en la barra superior y cambia el formato a Carousel. Elige la composición Panorama, el formato 4:5, 3:4 o 1:1 y el número de diapositivas, y exporta: cada una se guarda como un JPEG de 1080 px de ancho, lista para publicar en orden."
   - q: "¿De qué tamaño salen las diapositivas del carrusel?"
     a: "Todas miden 1080 px de ancho: 1080 × 1350 en 4:5, 1080 × 1440 en 3:4 y 1080 × 1080 en 1:1. Se guardan como JPEG con nombres carousel-01.jpg, carousel-02.jpg, etc."

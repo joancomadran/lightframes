@@ -7,7 +7,7 @@ h1: "Cómo editar fotos RAW en el navegador sin subirlas a internet"
 published: 2026-10-20
 author: Joan Comadran
 tags: ["raw", "guias"]
-tools: ["raw-editor", "presets", "batch"]
+tools: ["raw-editor", "raw-to-jpg", "presets", "batch"]
 keywords:
   - editar raw online
   - editar fotos raw en el navegador

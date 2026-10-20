@@ -1,7 +1,7 @@
 ---
 key: lut
 slug: aplicar-lut-foto
-title: "Aplicar un LUT a una foto online gratis"
+title: "Aplicar LUT online a tus fotos gratis (.cube)"
 description: "Aplica LUT .cube a tus fotos online y gratis. Importa un LUT 3D como preset, regula su intensidad del 0 al 100 % y exporta en JPEG, PNG o WebP sin subir nada."
 h1: "Cómo aplicar un LUT .cube a una foto online"
 lead: "Para aplicar un LUT a una foto, ábrela en Lightframes, pulsa Import en la pestaña Presets y elige tu archivo .cube. El LUT se convierte en un preset que puedes aplicar a una o varias fotos, con la intensidad que quieras, todo dentro del navegador."
@@ -15,6 +15,8 @@ keywords:
   - "abrir archivo cube online"
   - "usar luts en fotos gratis"
   - "lut 3d foto"
+  - "aplicar lut online gratis"
+  - "editor de fotos con luts"
 steps:
   - name: "Abre tu foto"
     text: "Abre un JPEG, PNG o RAW de cámara en el editor con Open o Folder."

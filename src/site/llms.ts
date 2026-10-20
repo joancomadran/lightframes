@@ -6,7 +6,7 @@ import { EDITOR_PATH, href } from './i18n'
 
 const url = (path: string) => new URL(path, SITE.url).href
 
-const SUMMARY = `> Lightframes is a free, open-source (MIT) photo editor that runs entirely in the web browser. Photos are processed on the user's device with WebAssembly and Web Workers and are never uploaded. No account is needed. It edits camera RAW and JPEG/PNG files, supports custom presets (including XMP and .cube LUT import), copy/paste and batch edits, batch export to JPEG/PNG/WebP, and on-device AI tools (background removal, object removal, upscaling). It is an installable PWA that works offline once loaded.`
+const SUMMARY = `> Lightframes is a free, open-source (MIT) photo editor that runs entirely in the web browser. Photos are processed on the user's device with WebAssembly and Web Workers and are never uploaded. No account is needed. It edits camera RAW and JPEG/PNG files, supports custom presets (including XMP and .cube LUT import), copy/paste and batch edits, RAW-to-JPG conversion and batch export to JPEG/PNG/WebP, and on-device AI tools (background removal, object removal, upscaling). It is an installable PWA that works offline once loaded.`
 
 const FACTS = [
   `- Editor: ${url(EDITOR_PATH)}`,

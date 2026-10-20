@@ -7,7 +7,7 @@ h1: "How to edit RAW photos in your browser without uploading them"
 published: 2026-10-20
 author: Joan Comadran
 tags: ["raw", "guides"]
-tools: ["raw-editor", "presets", "batch"]
+tools: ["raw-editor", "raw-to-jpg", "presets", "batch"]
 keywords:
   - edit raw photos in browser
   - online raw editor no upload

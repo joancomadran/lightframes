@@ -75,6 +75,8 @@ Lightframes recognises the following file extensions:
 | `.srw` | Samsung |
 | `.jpg`, `.jpeg`, `.png` | Any camera, phone or app |
 
+Only need a JPG? The [RAW to JPG converter](/tools/raw-to-jpg) guide shows how to convert one file or a whole card in one export, with a dedicated page for [Canon CR3 to JPG](/tools/cr3-to-jpg).
+
 You can export to **JPEG**, **PNG** or **WebP**, with a quality setting (50–100) for JPEG and WebP, a long-edge size from 800 to 8192 px, and a filename pattern such as `{name}-edited`.
 
 ## What you can adjust

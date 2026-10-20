@@ -16,6 +16,7 @@ keywords:
   - "instagram swipe post"
   - "split image into slides"
   - "carousel template instagram free"
+  - "split image for instagram carousel"
 steps:
   - name: "Open your photos"
     text: "Open the editor, click Open photos and add your panorama or the photos for the post. Edit them first if you like; the carousel uses your edits."

@@ -74,6 +74,8 @@ Como todo ocurre en local, después de la primera carga el editor funciona sin c
 | `.srw` | Samsung |
 | `.jpg`, `.jpeg`, `.png` | Cualquier cámara, móvil o aplicación |
 
+¿Solo necesitas un JPG? En [convertir RAW a JPG](/es/herramientas/convertir-raw-a-jpg) te explicamos cómo pasar un archivo o una tarjeta entera de una sola vez, y el CR3 tiene su propia guía: [convertir CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg).
+
 Puedes exportar en **JPEG**, **PNG** o **WebP**, con calidad ajustable (50–100) en JPEG y WebP, lado largo entre 800 y 8192 px y un patrón de nombre de archivo como `{name}-edited`.
 
 ## Qué puedes ajustar
