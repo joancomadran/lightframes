@@ -4,7 +4,7 @@ slug: privacy
 title: "Privacy policy"
 description: "How Lightframes handles your data: photos are edited locally in your browser and never uploaded. What the hosting, fonts and AI downloads involve."
 h1: "Privacy policy"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -12,7 +12,9 @@ schemaType: WebPage
 
 - **Your photos never leave your device.** Lightframes opens, decodes and edits images inside your browser (WebAssembly and Web Workers). Nothing is uploaded to us or to anyone else, and we cannot see your photos or your edits.
 - There is **no account, no login, no contact form and no newsletter**.
-- Like any website, visiting Lightframes involves some technical data (mainly your IP address) reaching the hosting provider and, only if you use the object-removal tool, Hugging Face. This policy explains each case.
+- **Amazon affiliate links.** The editor and the gear page link to Amazon.es. As an Amazon Associate, we earn from qualifying purchases. A link opens Amazon only when you click it. The cards do not load images or scripts from Amazon.
+- **Object removal** downloads its AI model from Hugging Face the first time you use it; your photos never leave your device. That download shows Hugging Face your IP address, as any download does. Background removal, subject masks and upscaling download their models from lightframes.si, not from another host.
+- Like any website, visiting Lightframes sends some technical data (mainly your IP address) to the hosting provider. Page visits are counted with Vercel Web Analytics, which does not use cookies and does not receive your photos. This policy explains each case.
 
 ## Who is responsible for your data
 
@@ -36,10 +38,10 @@ This information stays in your browser. **We never receive it**, so we do not pr
 
 ### AI tools
 
-The AI features (background removal, upscaling and object removal) also run entirely on your device. They need a model file, which is downloaded the first time you use each tool and then kept in your browser's Cache Storage:
+The AI features (background removal, subject masks, upscaling and object removal) also run entirely on your device. They need a model file, which is downloaded the first time you use each tool and then kept in your browser's Cache Storage:
 
-- The **background removal** and **upscaling** models are served from lightframes.si itself.
-- The **object removal** model (MI-GAN) is downloaded from **huggingface.co**, operated by Hugging Face, Inc. When your browser downloads it, Hugging Face receives the usual technical data of any web request (your IP address, browser type, date and time). **Your photo is not sent**: only the model file is fetched. Hugging Face processes that data under its own privacy policy (https://huggingface.co/privacy).
+- **Object removal** downloads its AI model (MI-GAN) from Hugging Face (huggingface.co) the first time you use it; your photos never leave your device. That request, like any download, reveals your IP address, browser type, and the time of the request to Hugging Face, Inc. Only the model file is fetched. Hugging Face processes that data under its own privacy policy (https://huggingface.co/privacy).
+- **Background removal, subject masks and upscaling** download their models (IS-Net and Real-ESRGAN) from lightframes.si. No other AI feature fetches a model from an external host.
 
 <!-- TODO legal review: consider self-hosting the MI-GAN model under /models/ to avoid this request to a third party. -->
 
@@ -75,7 +77,7 @@ If you open an issue or a discussion on GitHub (https://github.com/joancomadran/
 
 ## Affiliate links, donations and external sites
 
-- **Amazon affiliate links.** Some links point to Amazon.es and include our Amazon Associates tag. As an Amazon Associate, we earn from qualifying purchases. No data is shared with Amazon simply by viewing our pages: only if you click a link, Amazon receives the visit and may set its own cookies on amazon.es, under Amazon's privacy and cookie notices. We only receive aggregated reports of clicks and qualifying sales, never your identity.
+- **Amazon affiliate links.** Some links point to Amazon.es and include our Amazon Associates tag. As an Amazon Associate, we earn from qualifying purchases. Viewing a page does not load images or scripts from Amazon: the cards are drawn in the page, and a link opens Amazon only when you click it. Only then does Amazon receive the visit, and it may set its own cookies on amazon.es, under Amazon's privacy and cookie notices. We only receive aggregated reports of clicks and qualifying sales, never your identity.
 - **Donations.** The "Buy me a coffee" button links to https://buymeacoffee.com/devcoma. If you donate, the payment is handled by Buy Me a Coffee and its payment providers under their own terms. We may receive your name or the message you choose to leave, and we use it only to manage and acknowledge the donation. <!-- TODO legal review: confirm what data Buy Me a Coffee shares with the creator and the retention needed for tax purposes. -->
 - **Other links** (GitHub, model sources, etc.) take you to websites with their own privacy policies, which we do not control.
 

@@ -61,7 +61,7 @@ The three modes use different techniques:
 
 For Heal and Clone, Lightframes picks a source area automatically by looking for the best match around the spot. If it chooses badly, drag the green outline to another place or press **New source** (shortcut `/`) to try the next candidate.
 
-Remove needs the model the first time you select it. It downloads once (about 28 MB), is checked against a fixed checksum, and is then kept in your browser's storage, so later sessions start straight away, even offline. The model runs on your device's processor in a background worker, so the editor stays responsive while it fills a spot.
+Remove needs the model the first time you select it. It downloads once from Hugging Face (about 28 MB), is checked against a fixed checksum, and is then kept in your browser's storage, so later sessions start straight away, even offline. The model runs on your device's processor in a background worker, so the editor stays responsive while it fills a spot. Your photo is not part of that download.
 
 ## Controls
 
@@ -88,4 +88,4 @@ The Remove model is fast and private, but it isn't magic. It works on a crop aro
 
 Heal and Clone can only copy what's already in the frame. On a busy photo with no clean area nearby, you may need to try a few sources or switch to Remove.
 
-The first use of Remove needs an internet connection to download the model. After that it works offline. Have more questions about privacy, formats or installing the app? See the [FAQ](/faq), or [open the editor](/editor) and try it on your own photo.
+The first use of Remove needs an internet connection to download the model from Hugging Face. After that it works offline, and your photo never leaves your device. Have more questions about privacy, formats or installing the app? See the [FAQ](/faq), or [open the editor](/editor) and try it on your own photo.

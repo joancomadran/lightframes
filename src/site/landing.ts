@@ -7,13 +7,13 @@ import type { Lang } from './i18n'
 
 export const landing = {
   en: {
-    title: 'Lightframes — Free online photo editor, nothing uploaded',
+    title: 'Lightframes — Use your Lightroom presets, without Lightroom',
     description:
-      'Edit RAW and JPEG photos in your browser for free. Presets, copy/paste edits, batch export and on-device AI. No upload, no account, open source.',
-    h1: 'A free photo editor that keeps your photos on your device',
-    lead: 'Edit RAW and JPEG files, save your own presets and paste one edit across a whole shoot. Everything runs in your browser, so nothing is uploaded and there is no account to make.',
+      'Apply your presets, Lightroom XMP and .cube LUTs in batch, then export an Instagram-ready carousel. Free, in your browser, nothing uploaded.',
+    h1: 'Use your Lightroom presets, without Lightroom',
+    lead: 'Apply your own presets, Lightroom XMP files and .cube LUTs across a whole shoot, then export an Instagram-ready carousel. It all runs in the browser. Nothing is uploaded.',
     secondary: 'How it works',
-    facts: ['Free and open source', 'RAW from most cameras', 'Works offline'],
+    facts: ['Free and open source', 'Presets, XMP and LUTs', 'Nothing uploaded'],
     video: {
       label: 'Lightframes in action: editing, presets, batch export, AI tools and collages',
       caption: 'A 50-second tour of the editor. Every look on screen is a real export from Lightframes.',
@@ -27,7 +27,7 @@ export const landing = {
       points: [
         { h3: 'No upload', p: 'Files are processed locally, in the tab.' },
         { h3: 'No account', p: 'Open the editor and start. Nothing to sign up for.' },
-        { h3: 'Offline', p: 'Install it as an app; it keeps working without a connection.' },
+        { h3: 'Offline', p: 'Install it as an app. Editing keeps working without a connection after it has loaded. The first object removal also downloads a model.' },
       ],
     },
     tools: {
@@ -62,13 +62,13 @@ export const landing = {
     },
   },
   es: {
-    title: 'Lightframes — Editor de fotos online gratis y sin subir nada',
+    title: 'Lightframes — Usa tus presets de Lightroom, sin Lightroom',
     description:
-      'Edita fotos RAW y JPEG gratis en el navegador. Presets, copiar y pegar ajustes, exportación por lotes e IA en tu dispositivo. Sin subir fotos ni crear cuenta.',
-    h1: 'Un editor de fotos gratis que no saca tus fotos de tu dispositivo',
-    lead: 'Edita archivos RAW y JPEG, guarda tus propios presets y pega un mismo ajuste en toda una sesión. Todo funciona en tu navegador: no se sube nada y no hace falta cuenta.',
+      'Aplica tus presets, XMP de Lightroom y LUTs .cube por lotes y exporta un carrusel listo para Instagram. Gratis, en el navegador, sin subir nada.',
+    h1: 'Usa tus presets de Lightroom, sin Lightroom',
+    lead: 'Aplica tus presets, archivos XMP de Lightroom y LUTs .cube a toda una sesión y exporta un carrusel listo para Instagram. Todo ocurre en el navegador. No se sube nada.',
     secondary: 'Cómo funciona',
-    facts: ['Gratis y de código abierto', 'RAW de casi cualquier cámara', 'Funciona sin conexión'],
+    facts: ['Gratis y de código abierto', 'Presets, XMP y LUTs', 'Sin subir nada'],
     video: {
       label: 'Lightframes en acción: edición, presets, exportación por lotes, herramientas de IA y collages',
       caption: 'Un recorrido de 50 segundos por el editor. Cada look que aparece es una exportación real de Lightframes.',
@@ -82,7 +82,7 @@ export const landing = {
       points: [
         { h3: 'Sin subir nada', p: 'Los archivos se procesan en local, en la pestaña.' },
         { h3: 'Sin cuenta', p: 'Abre el editor y empieza. No hay registro.' },
-        { h3: 'Sin conexión', p: 'Instálalo como app y sigue funcionando sin internet.' },
+        { h3: 'Sin conexión', p: 'Instálalo como app. La edición sigue funcionando sin internet después de cargarla. El primer borrado de objetos también descarga un modelo.' },
       ],
     },
     tools: {

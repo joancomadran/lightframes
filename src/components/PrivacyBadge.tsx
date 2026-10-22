@@ -63,8 +63,8 @@ export function PrivacyBadge({ label, align = 'end' }: PrivacyBadgeProps) {
         {label && <span>{label}</span>}
       </button>
       <span id={tipId} role="tooltip" className="privacy__tip">
-        Your photos never leave your device. Everything is processed right in your browser — nothing is
-        uploaded to any server.
+        Your photos never leave your device. Editing runs in your browser and nothing is uploaded.
+        The first time you remove an object, its AI model is downloaded from Hugging Face.
       </span>
     </span>
   )

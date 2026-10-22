@@ -56,7 +56,7 @@ El sujeto lo detecta un modelo de IA que se ejecuta en tu navegador, con el proc
 3. Lightframes limpia la máscara: elimina las motas sueltas que el modelo a veces deja en fondos complicados y mantiene un margen suave para que el pelo y los bordes difusos no se corten.
 4. La máscara se calcula una vez por foto y se reutiliza en la vista previa, en la exportación y con cualquier recorte, así que cambiar el encuadre no vuelve a lanzar el modelo.
 
-Tras esa primera descarga, quitar fondos funciona sin conexión, igual que el resto del editor. La edición es no destructiva: el archivo original no se toca y si vuelves a **Original** recuperas la foto tal cual.
+Tras esa primera descarga, quitar fondos funciona sin conexión. La edición es no destructiva: el archivo original no se toca y si vuelves a **Original** recuperas la foto tal cual.
 
 ## Modos de fondo y opciones
 

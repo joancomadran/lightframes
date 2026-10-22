@@ -4,7 +4,7 @@ slug: cookies
 title: "Política de cookies"
 description: "Lightframes no usa cookies analíticas ni publicitarias. Qué guarda el editor en tu dispositivo para conservar tu trabajo y funcionar sin conexión."
 h1: "Política de cookies"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -43,7 +43,7 @@ Todos los elementos siguientes son **propios** (pertenecen a lightframes.si), lo
 - **Analítica.** Utilizamos Vercel Web Analytics para obtener estadísticas agregadas de visitas. Según Vercel, no utiliza cookies. <!-- TODO legal review: confirmar que Vercel Web Analytics no almacena nada en el dispositivo. -->
 - **Fuentes tipográficas.** Las tipografías de la web se sirven desde el propio dominio lightframes.si; no se hace ninguna petición a Google Fonts ni a otro servicio de fuentes.
 - **Descarga del modelo de IA.** El modelo de borrado de objetos se descarga desde huggingface.co. La descarga se realiza sin enviar ni aceptar cookies.
-- **Enlaces a otros sitios.** Si haces clic en un enlace a Amazon.es (enlaces de afiliado), Buy Me a Coffee o GitHub, esos sitios pueden instalar sus propias cookies **en su propio dominio**, conforme a sus respectivas políticas de cookies. Lightframes no instala ni lee esas cookies. En particular, al hacer clic en un enlace de afiliado, Amazon puede utilizar cookies para atribuir a nuestra cuenta de afiliado las compras que cumplan los requisitos aplicables.
+- **Enlaces a otros sitios.** Si haces clic en un enlace a Amazon.es (enlaces de afiliado), Buy Me a Coffee o GitHub, esos sitios pueden instalar sus propias cookies **en su propio dominio**, conforme a sus respectivas políticas de cookies. Lightframes no instala ni lee esas cookies. Ver una página de Lightframes no carga imágenes ni scripts de Amazon. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables, y Amazon solo puede usar cookies para atribuir una compra después de que hagas clic en un enlace de afiliado.
 
 ## Publicidad
 

@@ -39,7 +39,7 @@ faq:
   - q: "Can I undo a paste?"
     a: "Yes. Each photo keeps its own undo history, so Ctrl/Cmd+Z restores its previous settings."
   - q: "Are my photos uploaded during batch processing?"
-    a: "No. All editing and exporting happens in your browser on your own device, and nothing is sent to a server."
+    a: "No. All editing and exporting happens in your browser on your own device, and your photos are not sent to a server."
 updated: 2026-10-20
 ---
 
@@ -49,7 +49,7 @@ Batch editing in Lightframes means editing one photo and applying the same setti
 
 ## How it works, and where your photos stay
 
-Every step runs on your own device: photos are decoded, edited and encoded in your browser, using WebAssembly for RAW files and Web Workers for the image processing, and nothing is uploaded. Edits are non-destructive. Each photo stores its settings, and new files are only created when you export, so the originals are never changed. The open photos and their edits are saved in the browser's local storage, so a page refresh brings your batch back. After the first visit the editor also works offline.
+Every step runs on your own device: photos are decoded, edited and encoded in your browser, using WebAssembly for RAW files and Web Workers for the image processing, and nothing is uploaded. Edits are non-destructive. Each photo stores its settings, and new files are only created when you export, so the originals are never changed. The open photos and their edits are saved in the browser's local storage, so a page refresh brings your batch back. After the first visit, this kind of editing also works offline.
 
 ## Three ways to apply edits to many photos
 

@@ -2,7 +2,7 @@
 key: raw-editor
 slug: raw-photo-editor
 title: "Free RAW Photo Editor Online — No Upload"
-description: "Edit RAW photos online for free. Open ARW, CR2, CR3, NEF, DNG, RAF, ORF or RW2 files in your browser: no upload, no account, and it works offline."
+description: "Edit RAW photos online for free. Open ARW, CR2, CR3, NEF, DNG, RAF, ORF or RW2 files in your browser: no upload, no account, and editing works offline after the first visit."
 h1: "Edit RAW photos online, free and without uploading"
 lead: "Lightframes opens camera RAW files (ARW, CR2, CR3, NEF, DNG, RAF, ORF, RW2 and more) directly in your browser and develops them on your own device. It is free, needs no account, and your photos are never uploaded."
 label: "RAW editor"
@@ -30,7 +30,7 @@ faq:
   - q: "Which RAW formats can Lightframes open?"
     a: "It opens .arw, .cr2, .cr3, .nef, .nrw, .dng, .raf, .orf, .rw2, .pef and .srw files, plus JPEG and PNG. Decoding is done by LibRaw compiled to WebAssembly, so support follows what that library can read."
   - q: "Are my RAW files uploaded to a server?"
-    a: "No. The files are read and developed inside your browser on your own device. Nothing is sent to a server, and you don't need an account."
+    a: "No. The files are read and developed inside your browser on your own device. Your photos are not sent to a server, and you don't need an account."
   - q: "Does editing change my original RAW file?"
     a: "No. Edits are stored as settings and applied only when you export a new file. The RAW on your disk is never modified."
   - q: "Can I edit RAW photos offline?"

@@ -41,7 +41,7 @@ La mayoría de editores online envían tu foto a un servidor, la procesan allí 
 - **Tiempo y datos.** Un solo RAW suele pesar decenas de megas. Subir una tarjeta entera con el wifi de un hotel es lentísimo, o directamente imposible.
 - **Cuentas y límites.** Los servicios en la nube suelen pedir registro y muchos limitan el tamaño del archivo o el número de exportaciones.
 
-Lightframes hace todo el proceso dentro de la pestaña del navegador. El decodificador RAW, el motor de edición y la exportación funcionan en tu dispositivo, y el trabajo pesado se reparte entre Web Workers para que la página no se congele. Las fotos abiertas y tus ajustes se guardan en el almacenamiento del propio navegador (IndexedDB), de modo que no pierdes nada si recargas la página, y nada de eso se envía a ninguna parte. Una vez cargada, la app también funciona sin conexión.
+Lightframes hace todo el proceso dentro de la pestaña del navegador. El decodificador RAW, el motor de edición y la exportación funcionan en tu dispositivo, y el trabajo pesado se reparte entre Web Workers para que la página no se congele. Las fotos abiertas y tus ajustes se guardan en el almacenamiento del propio navegador (IndexedDB), de modo que no pierdes nada si recargas la página, y nada de eso se envía a ninguna parte. Una vez cargada, la edición también funciona sin conexión. La primera vez que borras un objeto, esa herramienta descarga su modelo de Hugging Face.
 
 ## ¿Cómo se edita un RAW en Lightframes, paso a paso?
 

@@ -34,7 +34,7 @@ faq:
   - q: "What sizes can I export a collage in?"
     a: "There are eight sizes: 9:16 (1080 × 1920), 3:4 (1080 × 1440), 4:5 (1080 × 1350), 1:1 (1080 × 1080), 4:3 (1440 × 1080), 3:2 (1620 × 1080), 16:9 (1920 × 1080) and 1.91:1 (1080 × 566). Every slide in a post uses the same size, and each is exported as a JPEG."
   - q: "Are my photos uploaded to make the collage?"
-    a: "No. The collage is laid out and rendered inside your browser, and the finished JPEG files are saved straight to your device. Nothing is sent to a server."
+    a: "No. The collage is laid out and rendered inside your browser, and the finished JPEG files are saved straight to your device. Your photos are not sent to a server."
   - q: "Can I edit the photos before putting them in a collage?"
     a: "Yes. The collage uses each photo with the edits you made in the editor, including crop, colour, presets and retouching. Change an edit and the collage picks it up."
 updated: 2026-10-20
@@ -50,7 +50,7 @@ It lives inside the photo editor, so the photos in your collage are the develope
 
 The collage is built and exported entirely in your browser; your photos never leave your device. When you export, Lightframes develops each photo with its edits at the resolution its cell actually needs, draws every slide at full size and saves it as a JPEG. Cell edges are snapped to whole pixels, so neighbouring photos never leave a thin seam.
 
-There's no account and no upload, and once the app is loaded it works offline too.
+There's no account and no upload, and once the app is loaded, collage also works offline.
 
 ## Sizes
 

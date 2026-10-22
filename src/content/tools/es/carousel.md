@@ -39,7 +39,7 @@ faq:
   - q: "¿La imagen encaja exactamente entre una diapositiva y la siguiente?"
     a: "Sí. Toda la tira se genera de una vez a tamaño completo y se corta por el ancho exacto de cada diapositiva, así que una foto que cruza un corte continúa píxel a píxel en la siguiente. Publica las diapositivas en su orden y no las recortes en Instagram."
   - q: "¿Se suben mis fotos para hacer el carrusel?"
-    a: "No. Lightframes monta y exporta las diapositivas dentro de tu navegador. No se envía nada a ningún servidor y no necesitas cuenta."
+    a: "No. Lightframes monta y exporta las diapositivas dentro de tu navegador. Tus fotos no se envían a ningún servidor y no necesitas cuenta."
   - q: "¿Puedo hacer el carrusel desde el móvil?"
     a: "Sí. El carrusel funciona con el dedo: arrastra para mover, tira de las esquinas para redimensionar y toca las fotos de la lista para colocarlas. Si el navegador del móvil lo permite, al exportar aparecen los botones Save y Share para mandar las diapositivas directamente al menú de compartir."
 updated: 2026-10-20

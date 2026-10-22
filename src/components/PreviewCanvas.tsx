@@ -908,7 +908,7 @@ export function PreviewCanvas({
           </button>
         </div>
         <p className="preview__empty-note">
-          <PrivacyBadge label="100% private" align="center" />
+          <PrivacyBadge label="Nothing uploaded" align="center" />
           <InstallButton />
           <GithubStar />
           <DonateButton />

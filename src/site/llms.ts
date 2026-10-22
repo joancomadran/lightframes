@@ -6,7 +6,7 @@ import { EDITOR_PATH, href } from './i18n'
 
 const url = (path: string) => new URL(path, SITE.url).href
 
-const SUMMARY = `> Lightframes is a free, open-source (MIT) photo editor that runs entirely in the web browser. Photos are processed on the user's device with WebAssembly and Web Workers and are never uploaded. No account is needed. It edits camera RAW and JPEG/PNG files, supports custom presets (including XMP and .cube LUT import), copy/paste and batch edits, RAW-to-JPG conversion and batch export to JPEG/PNG/WebP, and on-device AI tools (background removal, object removal, upscaling). It is an installable PWA that works offline once loaded.`
+const SUMMARY = `> Lightframes is a free, open-source (MIT) photo editor that runs entirely in the web browser. Photos are processed on the user's device with WebAssembly and Web Workers and are never uploaded. No account is needed. It edits camera RAW and JPEG/PNG files, supports custom presets (including XMP and .cube LUT import), copy/paste and batch edits, RAW-to-JPG conversion and batch export to JPEG/PNG/WebP, and on-device AI tools (background removal, object removal, upscaling). It is an installable PWA. Editing works offline once the app has loaded. Object removal downloads its model from Hugging Face the first time it is used; background removal, subject masks and upscaling download theirs from lightframes.si. Page visits are counted with cookieless Vercel Web Analytics. The site includes Amazon affiliate links that open Amazon only when clicked.`
 
 const FACTS = [
   `- Editor: ${url(EDITOR_PATH)}`,
@@ -14,7 +14,7 @@ const FACTS = [
   `- Source code: ${SITE.github} (MIT license)`,
   `- Maker: ${SITE.author.name}, AI engineer and full stack developer in Barcelona (${SITE.author.url})`,
   '- Languages: site in English and Spanish (/es/); the editor interface is in English.',
-  '- Privacy: photos stay on the device; edits, presets and the session are stored in the browser.',
+  '- Privacy: photos stay on the device and are never uploaded. Edits, presets and the session are stored in the browser. Visits use cookieless Vercel Web Analytics. The first use of object removal downloads MI-GAN from Hugging Face (that request shows your IP, like any download). Other AI models come from this site. Amazon affiliate links open Amazon only when clicked.',
 ]
 
 export async function llmsTxt(): Promise<string> {

@@ -4,7 +4,7 @@ slug: cookies
 title: "Cookie policy"
 description: "Lightframes sets no analytics or advertising cookies. This page lists what the editor stores on your device to keep your work and run offline."
 h1: "Cookie policy"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -43,7 +43,7 @@ All the items below are **first-party** (they belong to lightframes.si), are cre
 - **Analytics.** We use Vercel Web Analytics to obtain aggregated visit statistics. According to Vercel, it does not use cookies. <!-- TODO legal review: confirm that Vercel Web Analytics stores nothing on the device. -->
 - **Fonts.** The site's fonts are served from lightframes.si itself; no request is made to Google Fonts or any other font service.
 - **AI model download.** The object-removal model is downloaded from huggingface.co. The download is made without sending or accepting cookies.
-- **Links to other sites.** If you click a link to Amazon.es (affiliate links), Buy Me a Coffee or GitHub, those sites may set their own cookies **on their own domain**, under their own cookie policies. Lightframes does not set or read those cookies. In particular, when you click an Amazon affiliate link, Amazon may use cookies to attribute any qualifying purchase to our Associates account.
+- **Links to other sites.** If you click a link to Amazon.es (affiliate links), Buy Me a Coffee or GitHub, those sites may set their own cookies **on their own domain**, under their own cookie policies. Lightframes does not set or read those cookies. Viewing a Lightframes page does not load images or scripts from Amazon. As an Amazon Associate, we earn from qualifying purchases, and Amazon may use cookies to attribute a purchase only after you click an affiliate link.
 
 ## Advertising
 

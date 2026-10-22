@@ -6,15 +6,15 @@
     },
     {
       "q": "¿Cómo puede ser gratis? ¿Dónde está la trampa?",
-      "a": "Lightframes funciona en tu propio dispositivo, así que apenas tiene costes de servidor. Se financia con algunos espacios de anuncios discretos, enlaces de afiliado a material fotográfico y donaciones voluntarias, y su código es abierto con licencia MIT para que cualquiera pueda comprobar qué hace."
+      "a": "Lightframes funciona en tu propio dispositivo, así que apenas tiene costes de servidor, y tus fotos no se suben. El editor y la página de equipo incluyen enlaces de afiliado a Amazon.es. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables. Esos enlaces abren Amazon solo al hacer clic, y las tarjetas no cargan imágenes ni scripts de Amazon. También ayudan las donaciones voluntarias, y el código es abierto con licencia MIT para que cualquiera pueda comprobar qué hace."
     },
     {
       "q": "¿Se suben mis fotos a algún servidor?",
-      "a": "No. Lightframes abre, edita y exporta tus fotos íntegramente dentro del navegador mediante WebAssembly y Web Workers, y los archivos nunca salen de tu dispositivo. Lo único que descarga es la propia app y, si usas las herramientas de IA, los archivos de sus modelos."
+      "a": "No. Lightframes abre, edita y exporta tus fotos íntegramente dentro del navegador mediante WebAssembly y Web Workers, y los archivos nunca salen de tu dispositivo. Se descarga la propia app y, la primera vez que usas cada herramienta de IA, su modelo. El borrado de objetos descarga su modelo de IA de Hugging Face la primera vez que lo usas; tus fotos no salen de tu dispositivo. La eliminación de fondo, las máscaras de sujeto y la ampliación descargan sus modelos desde lightframes.si."
     },
     {
       "q": "¿Es privado? ¿Qué datos guarda Lightframes?",
-      "a": "Lightframes solo guarda tus fotos abiertas, tus ajustes y tus presets en el almacenamiento de tu propio navegador (IndexedDB y almacenamiento local) para poder recuperar la sesión. No se envía nada a ningún servidor; Clear workspace quita las fotos abiertas y, si borras los datos del sitio en el navegador, se elimina todo."
+      "a": "Lightframes solo guarda tus fotos abiertas, tus ajustes y tus presets en el almacenamiento de tu propio navegador (IndexedDB y almacenamiento local) para poder recuperar la sesión. Esas fotos no se envían a ningún servidor. Las visitas se cuentan con Vercel Web Analytics, que no usa cookies y no ve tus fotos. El borrado de objetos descarga su modelo de IA de Hugging Face la primera vez que lo usas; esa descarga revela tu dirección IP a Hugging Face, y la foto se queda en tu dispositivo. Clear workspace quita las fotos abiertas y, si borras los datos del sitio en el navegador, se elimina la copia local."
     },
     {
       "q": "¿Necesito crear una cuenta para usar Lightframes?",
@@ -30,7 +30,7 @@
     },
     {
       "q": "¿Funciona sin conexión? ¿Se puede instalar como app?",
-      "a": "Sí. Lightframes es una aplicación web progresiva (PWA): después de abrirla una vez con conexión funciona sin internet, y puedes instalarla con el botón Install app o desde el menú del navegador (en iPhone y iPad, Compartir → Añadir a pantalla de inicio; en Safari para Mac, Archivo → Añadir al Dock). Los modelos de IA se descargan la primera vez que usas cada herramienta y a partir de ahí también funcionan sin conexión."
+      "a": "La edición, sí, después de abrirla una vez con conexión. Lightframes es una aplicación web progresiva (PWA) y puedes instalarla con el botón Install app o desde el menú del navegador (en iPhone y iPad, Compartir → Añadir a pantalla de inicio; en Safari para Mac, Archivo → Añadir al Dock). El borrado de objetos descarga su modelo de IA de Hugging Face la primera vez que lo usas. La eliminación de fondo, las máscaras de sujeto y la ampliación descargan sus modelos desde lightframes.si. Cuando un modelo ya está guardado, esa herramienta también funciona sin conexión."
     },
     {
       "q": "¿En qué navegadores y dispositivos funciona?",
@@ -50,7 +50,7 @@
     },
     {
       "q": "¿Las funciones de IA envían mis fotos a la nube?",
-      "a": "No. El borrado de objetos, la eliminación de fondo, las máscaras de sujeto y la ampliación con IA se ejecutan en tu dispositivo, dentro del navegador; tus fotos nunca se suben. Cada modelo se descarga una vez la primera vez que lo usas (unos 28 MB el de borrado, 45 MB el de fondo y sujeto y 5 MB el de ampliación), se verifica y se guarda para usos posteriores y sin conexión."
+      "a": "No. El borrado de objetos, la eliminación de fondo, las máscaras de sujeto y la ampliación con IA se ejecutan en tu dispositivo, dentro del navegador; tus fotos nunca se suben. El borrado de objetos descarga su modelo de IA de Hugging Face la primera vez que lo usas; tus fotos no salen de tu dispositivo. Esa descarga revela tu dirección IP a Hugging Face, como cualquier descarga. La eliminación de fondo, las máscaras de sujeto y la ampliación descargan sus modelos desde lightframes.si. Los archivos pesan unos 28 MB (borrado), 45 MB (fondo y sujeto) y 5 MB (ampliación). Cada uno se comprueba una vez y luego se guarda para usos posteriores y sin conexión."
     },
     {
       "q": "¿Lightframes es de código abierto? ¿Dónde está el código?",

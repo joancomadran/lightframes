@@ -4,7 +4,7 @@ slug: terminos
 title: "Aviso legal y condiciones de uso"
 description: "Aviso legal y condiciones de uso de Lightframes, editor de fotos gratuito y de código abierto que funciona en el navegador: titular, licencia y responsabilidad."
 h1: "Aviso legal y condiciones de uso"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -67,7 +67,7 @@ Nada de lo dispuesto en estas condiciones limita ni excluye la responsabilidad q
 ## Enlaces externos, enlaces de afiliado y donaciones
 
 - El sitio contiene enlaces a webs de terceros (por ejemplo, GitHub, Hugging Face, Amazon.es o Buy Me a Coffee). No las controlamos ni respondemos de sus contenidos, disponibilidad o prácticas de privacidad. Si tuviéramos conocimiento efectivo de que una web enlazada contiene contenidos ilícitos, retiraríamos el enlace, conforme al artículo 17 de la LSSI-CE.
-- **Enlaces de afiliado.** Algunos enlaces a Amazon.es son enlaces de afiliado. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables. Esto no modifica el precio que pagas. Cualquier compra constituye un contrato entre tú y Amazon, sujeto a las condiciones de Amazon.
+- **Enlaces de afiliado.** Algunos enlaces a Amazon.es son enlaces de afiliado. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables. Esto no modifica el precio que pagas. El enlace abre Amazon solo al hacer clic. Las tarjetas no cargan imágenes ni scripts de Amazon. Cualquier compra constituye un contrato entre tú y Amazon, sujeto a las condiciones de Amazon.
 - **Las donaciones** a través de Buy Me a Coffee son voluntarias y no dan acceso a ningún servicio ni función adicional. Las gestiona Buy Me a Coffee conforme a sus propias condiciones.
 - **Publicidad.** El sitio reserva espacios para anuncios; actualmente no hay ninguna red publicitaria activa. <!-- TODO legal review: actualizar si se activa una red publicitaria. -->
 

@@ -241,7 +241,8 @@ export function HealPanel({
           <a href="https://github.com/Picsart-AI-Research/MI-GAN" target="_blank" rel="noreferrer">
             MI-GAN
           </a>{' '}
-          by Picsart AI Research (MIT). The model runs on your device; your photo is never uploaded.
+          by Picsart AI Research (MIT). The model is downloaded from Hugging Face the first time you use it
+          and then runs on your device; your photo is never uploaded.
         </p>
       )}
     </section>
