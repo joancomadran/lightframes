@@ -14,7 +14,9 @@ The editor and the [gear page](https://www.lightframes.si/gear) include links to
 
 ## Demo
 
-> **GIF placeholder.** A 20–30 second demo belongs here (`docs/demo.gif`): open a RAW, apply an XMP preset, paste it across a shoot, export a carousel. The file is not in the repo yet. Do not replace this note with a fabricated animation.
+[![Adjust a photo, paste the edit across the shoot, export, then apply presets](docs/demo.gif)](https://www.lightframes.si)
+
+Fifteen seconds from the promo: sliders on an open photo, paste across the shoot, export, then presets (XMP and .cube LUTs). [MP4](docs/demo.mp4) if the GIF does not play.
 
 The stills below are real screenshots.
 
