@@ -1,61 +1,75 @@
 # Lightframes
 
-**[Try it now → lightframes.si](https://www.lightframes.si)** · [Open the editor](https://www.lightframes.si/editor)
+**Use your Lightroom presets, without Lightroom.**
 
-Free, **open-source**, local photo editor focused on custom presets and copy/paste edits. The code is MIT-licensed and your photos never leave your device: no uploads, no account, no cloud.
+Apply your presets, XMP and `.cube` LUTs in batch and export an Instagram-ready carousel. Free, open source, in the browser. Nothing is uploaded.
+
+**[Try it → lightframes.si](https://www.lightframes.si)** · [Open the editor](https://www.lightframes.si/editor) · [MIT license](./LICENSE)
+
+Lightroom and Camera Raw are trademarks of Adobe. Lightframes is an independent project and is not affiliated with or endorsed by Adobe.
+
+## Demo
+
+> **GIF placeholder.** A 20–30 second demo belongs here (`docs/demo.gif`): open a RAW, apply an XMP preset, paste it across a shoot, export a carousel. The file is not in the repo yet. Do not replace this note with a fabricated animation.
+
+The stills below are real screenshots.
 
 ![Lightframes editor with a RAW photo open and the presets panel](docs/screenshots/editor.jpg)
-
-Runs entirely in the browser. Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. Installable as an app (PWA) and works offline once loaded.
-
-## Screenshots
 
 | Start screen                                     | Carousel                                                                             |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | ![Empty start screen](docs/screenshots/home.jpg) | ![Carousel mode splitting a panorama across 4 slides](docs/screenshots/carousel.jpg) |
 
+Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. The app is an installable PWA and works offline once it has loaded.
+
 ## Features
 
-- **Open** JPEG, PNG and camera RAW (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW). Toolbar **Open** uses the file picker; Filmstrip **Folder** opens a whole directory. More opens append to the filmstrip. RAW previews are a half-size LibRaw (WASM) decode, developed again at full resolution on export; the embedded JPEG is the fallback
-- **Adjust**: light, white balance (with picker), presence, HSL / color, effects, master tone curve, crop / straighten / rotate
-- **Local adjustments**: linear, radial, brush and AI subject masks
-- **Retouch**: heal, clone and AI object removal (MI-GAN); AI background removal / replacement (IS-Net)
-- Histogram with shadow/highlight clipping overlay, undo / redo, before/after (whole image or split)
-- **Filmstrip**: multi-select, star ratings, pick / reject flags, filters
-- **Copy / paste edits** across a selection, choosing which settings to paste
-- **Presets**: save / update your own, dial intensity 0–100%, import JSON, XMP or `.cube` LUTs, export as JSON
-- **Export** JPEG / PNG / WebP with quality, max edge (up to 8192 px), filename pattern, optional 2× / 4× AI upscaling (Real-ESRGAN); several photos export as one ZIP
-- **Collage and carousel**: collages of 1–9 photos per slide in several sizes, and seamless swipe carousels (4:5, 3:4, 1:1) exported at 1080 px wide, both with ready-made layouts
-- AI models run on-device with ONNX Runtime Web; each downloads once, is checked against a SHA-256 hash and is cached
-- Works fully offline after the app is loaded
+- **RAW, JPEG and PNG.** RAW formats: ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW. Decoded in the browser with LibRaw (WebAssembly). The preview is a half-size decode; export develops the file again at full resolution. If the decode fails, the embedded JPEG is the fallback. **Open** uses the file picker; Filmstrip **Folder** opens a directory (Chromium). More opens append to the filmstrip.
+- **Non-destructive edits.** Light, white balance (with a picker), texture, clarity, dehaze, HSL, effects, a master tone curve and per-channel curves, crop, straighten and rotate. Undo / redo, histogram, shadow/highlight clipping, and a before/after view of the whole image or a split.
+- **Presets.** Save and update your own, set intensity from 0–100%, import and export JSON. Built-in looks ship with the app.
+- **XMP.** `.xmp` develop presets (including Lightroom and Camera Raw) are mapped onto Lightframes sliders. What is imported: basic tone (exposure, contrast, highlights, shadows, whites, blacks), white balance (a relative temperature, or an approximation of Kelvin), tint, HSL, the tone curve (master and per channel), vibrance and saturation, texture, clarity, dehaze, colour grading (or the older split toning), vignette amount and midpoint, grain, sharpening, and luminance and colour noise reduction. What is **not** imported: camera profiles, lens corrections, local masks, crop and transform, calibration, and detail controls beyond those sliders. A preset that depends on the missing pieces will not match Lightroom.
+- **LUTs.** `.cube` 3D LUTs, applied after the parametric edits.
+- **Batch.** Copy / paste edits onto a selection (you choose which groups), or sync the active photo's edits. Several photos export as one ZIP.
+- **Spot removal.** Heal and clone in the Retouch panel, plus on-device AI object removal (MI-GAN). The inpainting model is downloaded from Hugging Face the first time you use it, checked against a SHA-256, and cached. The photo is not uploaded with that download.
+- **On-device AI.** Subject and background masks (IS-Net) for local adjustments and for background removal or replacement (transparency, a flat colour, or a blur), with a refine brush. Optional 2× / 4× upscale on export (Real-ESRGAN). The segmentation and upscale models are served from this site, not from a third party. Each model downloads once, is hash-checked, and then runs in the browser.
+- **Local adjustments.** Linear, radial, brush and AI subject masks, including brightness and colour range limits.
+- **Liquify.** A warp tool on its own panel.
+- **Collage Studio.** Up to 9 photos on a slide, several aspect ratios (including 4:5, 1:1 and 3:4) and ready-made layouts.
+- **Carousel Studio.** Seamless carousels of 2–10 slides, with ready-made layouts. The Instagram shapes (4:5, 1:1 and 3:4) export at 1080 px wide.
+- **Export.** JPEG, PNG or WebP, with quality, a long edge up to 8192 px, a filename pattern and an optional text watermark.
 
-## Requirements
+## Quick start
 
-- Node.js 20+ (for development)
-- A modern Chromium-based browser recommended (Chrome, Edge, Brave) for folder open + best canvas performance
-
-## Run locally
+Node.js 20+.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the URL Astro prints (usually `http://localhost:4321`). The landing page is at `/` and the editor at `/editor`.
+Open the URL Astro prints (usually `http://localhost:4321`). The landing page is `/`. The editor is `/editor`.
 
-| Script            | What it does                                     |
-| ----------------- | ------------------------------------------------ |
-| `npm run dev`     | Dev server with hot reload                       |
-| `npm run build`   | Type-check (`astro check`) and build to `dist/`  |
-| `npm run preview` | Serve the production build locally               |
-| `npm run check`   | Type-check `.astro`, `.ts` and `.tsx` files only |
-| `npm run lint`    | Lint with oxlint                                 |
+| Script            | What it does                                    |
+| ----------------- | ----------------------------------------------- |
+| `npm run dev`     | Dev server with hot reload                      |
+| `npm run build`   | Type-check (`astro check`) and build to `dist/` |
+| `npm run preview` | Serve the production build locally              |
+| `npm run check`   | Type-check `.astro`, `.ts` and `.tsx` only      |
+| `npm run lint`    | Lint with oxlint                                |
 
-`dist/` is plain static files: serve it from any static host. Once loaded, the editor itself needs no network.
+`dist/` is static files. Any static host can serve it. After the app has loaded, editing itself does not need a network. A Chromium browser (Chrome, Edge, Brave) is the best bet for opening a folder and for canvas performance. Large RAW files and the AI tools are slower on phones.
+
+## Tech stack
+
+- Astro static site (English and Spanish), React + TypeScript editor island
+- Canvas preview: CPU pixel pipeline, dual-resolution scrubbing, Web Worker pool
+- LibRaw compiled to WebAssembly for RAW
+- ONNX Runtime Web for the AI models (WASM; WebGPU for upscale when the browser has it)
+- IndexedDB for the session and presets, with a `localStorage` backup of presets
+- Workbox service worker. Variable fonts (Bricolage Grotesque and Figtree) are self-hosted with `@fontsource-variable` and bundled into the site, so page load does not request Google Fonts
+- MIT license
 
 ## Project structure
-
-The repo is one Astro project. The site pages are static HTML with no JavaScript; the editor is a React island on its own page.
 
 ```
 astro.config.mjs        site URL, integrations (React, sitemap, PWA)
@@ -65,96 +79,64 @@ src/
   App.tsx, components/, hooks/, lib/, types/   the editor (React)
   EditorRoot.tsx        editor entry, mounted by src/pages/editor.astro
   pages/                routes: landing, editor, tools, blog, FAQ, legal, robots.txt, llms.txt…
-  site/                 site layouts, components, views, i18n, JSON-LD, copy for the landing page
-  content/              editable content: tools, blog, pages, FAQ (Markdown / JSON, EN + ES)
-  content.config.ts     content schema (frontmatter is validated at build time)
+  site/                 layouts, i18n, JSON-LD, landing copy
+  content/              tools, blog, pages, FAQ (Markdown / JSON, EN + ES)
 public/                 icons, manifest, samples, AI models, site images
 promo/                  promo video (Remotion), separate package
 ```
 
-### Website and blog
-
-The site is in English and Spanish (`/es/…`, with localized slugs and `hreflang`). Tool pages, guides, the FAQ and the legal pages are Markdown or JSON files in `src/content/`, so they can be edited without touching components. Every page has a canonical URL, Open Graph tags and JSON-LD. The build also generates the sitemap, RSS feeds, `robots.txt`, `llms.txt` and `llms-full.txt`.
-
-See **[docs/SEO.md](docs/SEO.md)** for the URL map, frontmatter fields, how to add a post and the open SEO tasks.
+Tool pages, guides, the FAQ and the legal pages are Markdown or JSON in `src/content/`. See [docs/SEO.md](docs/SEO.md) for the URL map and how to add a post.
 
 ## Offline use and PWA
 
-1. Open the production build once while online. A service worker precaches the app, including the LibRaw WASM, and caches Google Fonts on first visit.
-2. After that, the editor loads, and open, edit, preset and export all work without a network connection. In Chromium you can also install it from the address bar.
-3. The AI models and the inpainting runtime are too big to precache: each is cached the first time it is used.
-4. For a fully air-gapped install, self-host the font files and remove the Google Fonts `<link>` tags in `src/pages/editor.astro` and `src/site/layouts/Base.astro`.
-
-The installed app starts at `/editor`. The manifest keeps `id: "/"`, so installs made before the editor moved there stay the same app, and the landing page sends standalone launches at `/` on to the editor.
-
-## Presets
-
-Presets are named `EditParams` stacks stored in IndexedDB (`lightframes-presets`), with a backup copy in `localStorage`, and exportable as JSON. Import also accepts:
-
-- **XMP**: develop settings from `.xmp` presets mapped onto the basic + HSL sliders
-- **CUBE**: 3D LUT applied after parametric edits (stored on the preset as `edits.lut`)
+1. Open the production build once while online. The service worker precaches the app, including the LibRaw WASM and the self-hosted font files.
+2. After that, open, edit, presets and export work without a network. In Chromium you can install it from the address bar.
+3. The AI models and the ONNX runtime are not precached. Segmentation and upscale come from this site the first time you use them. Object removal downloads MI-GAN from Hugging Face the first time you use it. Each is cached after that.
+4. The installed app starts at `/editor`.
 
 ## Shortcuts
 
-Press `?` in the editor for the full list.
+Press `?` in the editor for the full list. Shortcuts are ignored while a text field is focused.
 
-| Shortcut                    | Action                                    |
-| --------------------------- | ----------------------------------------- |
-| `Ctrl/Cmd+Z`                | Undo                                      |
-| `Ctrl/Cmd+Shift+Z` / `Ctrl/Cmd+Y` | Redo                                |
-| `Ctrl/Cmd+C`                | Copy edits                                |
-| `Ctrl/Cmd+V`                | Paste edits to selection (choose settings) |
-| `Ctrl/Cmd+A`                | Select all in filmstrip                   |
-| `Ctrl/Cmd+E`                | Export dialog                             |
-| `Shift+1`–`8`               | Switch panel                              |
-| `W`                         | White balance picker                      |
-| `R`                         | Crop                                      |
-| `Q`                         | Retouch: spots and background             |
-| `M` / `Shift+M`             | New linear / radial mask                  |
-| `K` / `Shift+K`             | New brush / AI subject mask               |
-| `\`                         | Before (whole image)                      |
-| `Y`                         | Before / after split                      |
-| `J`                         | Clipping overlay                          |
-| `G`                         | Show / hide filmstrip                     |
-| `1`–`5` / `0`               | Rate stars / clear rating                 |
-| `P` / `X` / `U`             | Pick / reject / unflag                    |
-| `[` `]` or `↑` `↓`          | Previous / next photo                     |
+| Shortcut                          | Action                                     |
+| --------------------------------- | ------------------------------------------ |
+| `Ctrl/Cmd+Z`                      | Undo                                       |
+| `Ctrl/Cmd+Shift+Z` / `Ctrl/Cmd+Y` | Redo                                       |
+| `Ctrl/Cmd+C`                      | Copy edits                                 |
+| `Ctrl/Cmd+V`                      | Paste edits to the selection               |
+| `Ctrl/Cmd+A`                      | Select all in the filmstrip                |
+| `Ctrl/Cmd+E`                      | Export dialog                              |
+| `Shift+1`–`8`                     | Switch panel                               |
+| `W`                               | White balance picker                       |
+| `R`                               | Crop                                       |
+| `Q`                               | Retouch: spots and background              |
+| `M` / `Shift+M`                   | New linear / radial mask                   |
+| `K` / `Shift+K`                   | New brush / AI subject mask                |
+| `\`                               | Before (whole image)                       |
+| `Y`                               | Before / after split                       |
+| `J`                               | Clipping overlay                           |
+| `G`                               | Show / hide filmstrip                      |
+| `1`–`5` / `0`                     | Rate stars / clear rating                  |
+| `P` / `X` / `U`                   | Pick / reject / unflag                     |
+| `[` `]` or `↑` `↓`                | Previous / next photo                      |
 
-(Ignored when focus is in a text field.)
+## Contributing
 
-## Ad slots
-
-The editor reserves two quiet regions outside the canvas. No ad network is wired: each slot shows an Amazon.es affiliate card when it has a pick in `SLOT_ADS` (`src/lib/affiliate.ts`), otherwise nothing.
-
-| Slot      | `data-ad-slot` | Placement                   |
-| --------- | -------------- | --------------------------- |
-| Sidebar   | `sidebar`      | Below presets (~120px)      |
-| Filmstrip | `filmstrip`    | Below the file list (~90px) |
-
-Empty slots show a placeholder in dev, or in production with:
+Issues and pull requests are welcome. For anything larger than a small fix, open an issue first so the approach is agreed.
 
 ```bash
-VITE_ADS_ENABLED=true npm run build
+npm install
+npm run lint
+npm run build
 ```
 
-The same affiliate list (`GEAR`) feeds the editor's gear dialog and the `/gear` page.
-
-## Stack
-
-- Astro (static site, blog, i18n, sitemap, RSS)
-- React + TypeScript editor island
-- Canvas preview (CPU pixel pipeline with dual-resolution scrubbing, Web Worker pool)
-- LibRaw (WASM) for RAW, ONNX Runtime Web for the AI models
-- IndexedDB session restore, Workbox service worker
-- MIT license
-
-An optional **Tauri** desktop wrap is planned post-MVP; this repo ships as a web app first.
+Bug reports are most useful with the browser, the device, and, for RAW, the camera model. Please don't add a third-party script, font host, ad network or tracker: the privacy claim is that a page load stays on this origin, apart from the cases named in the privacy policy.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE).
 
-Sample photos in `public/samples/` (and the preset renders made from them in `src/assets/looks/` and `public/site/looks/thumbs/`) are © the Lightframes author, all rights reserved. They are not covered by the MIT license and may not be reused outside this project. The AI models keep their own licenses (see `public/models/`).
+Sample photos in `public/samples/` (and the preset renders made from them) are © the Lightframes author, all rights reserved. They are not covered by the MIT license. The AI models keep their own licenses (see `public/models/NOTICE.md`).
 
 ---
 
@@ -162,5 +144,5 @@ Sample photos in `public/samples/` (and the preset renders made from them in `sr
 
 <p align="center">
   Your photos, your presets, your device.<br>
-  <strong><a href="https://www.lightframes.si">Open Lightframes →</a></strong> · if it saves you time, a ⭐ on the repo helps others find it.
+  <strong><a href="https://www.lightframes.si">Open Lightframes →</a></strong>
 </p>
