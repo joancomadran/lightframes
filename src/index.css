@@ -2813,6 +2813,19 @@ a.github-star {
   background: #fff;
 }
 
+.liquify-hint {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* ——— Spot removal ——— */
 
 .heal-overlay {

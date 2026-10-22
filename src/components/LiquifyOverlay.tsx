@@ -31,6 +31,9 @@ export type LiquifyOverlayConfig = {
 
 /** Bloat, pinch, twirl and restore keep working while the brush is held still: one point per tick. */
 const TICK_MS = 33
+/** A tap or click acts like a short hold (about half a second), so it shows even on a small screen. */
+const TAP_TICKS = 15
+const HINT_MS = 1400
 
 const stop = (e: ReactMouseEvent) => e.stopPropagation()
 
@@ -63,11 +66,21 @@ export function LiquifyOverlay({
   const { tool, sizePreview } = config
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null)
   const [painting, setPainting] = useState(false)
-  const strokeRef = useRef<{ pointerId: number; stroke: LiquifyStroke; latest: { x: number; y: number } } | null>(null)
+  /** "Drag to push", shown where a push tapped without moving. */
+  const [hint, setHint] = useState<{ x: number; y: number } | null>(null)
+  const hintTimer = useRef(0)
+  const strokeRef = useRef<{
+    pointerId: number
+    stroke: LiquifyStroke
+    latest: { x: number; y: number }
+    /** Whether the stroke reached the edits: a push only does once it moves. */
+    started: boolean
+  } | null>(null)
   const configRef = useRef(config)
   useLayoutEffect(() => {
     configRef.current = config
   })
+  useEffect(() => () => window.clearTimeout(hintTimer.current), [])
 
   const radius = (tool.size * Math.max(geometry.width, geometry.height) * frame.width) / Math.max(1, framedSize(geometry).w)
 
@@ -85,6 +98,10 @@ export function LiquifyOverlay({
     const current = strokeRef.current
     if (!current) return
     current.stroke = { ...current.stroke, points: [...current.stroke.points, p.x, p.y] }
+    if (!current.started) {
+      current.started = true
+      configRef.current.onBegin()
+    }
     configRef.current.onChange(current.stroke)
   }
 
@@ -99,10 +116,20 @@ export function LiquifyOverlay({
   }, [painting, tool.mode])
 
   const finish = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (strokeRef.current?.pointerId !== e.pointerId) return
+    const current = strokeRef.current
+    if (current?.pointerId !== e.pointerId) return
     strokeRef.current = null
     setPainting(false)
-    configRef.current.onCommit()
+    if (current.started) {
+      configRef.current.onCommit()
+      return
+    }
+    // A push that never moved changes nothing: say how it works instead.
+    if (e.type === 'pointercancel') return
+    const rect = e.currentTarget.getBoundingClientRect()
+    setHint({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+    window.clearTimeout(hintTimer.current)
+    hintTimer.current = window.setTimeout(() => setHint(null), HINT_MS)
   }
 
   return (
@@ -113,15 +140,22 @@ export function LiquifyOverlay({
         if (e.button !== 0 || strokeRef.current) return
         e.stopPropagation()
         e.currentTarget.setPointerCapture(e.pointerId)
+        // Touch has no hover: show the brush under the finger from the start.
+        const rect = e.currentTarget.getBoundingClientRect()
+        setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+        setHint(null)
         const p = toSource(e)
+        const mode = e.altKey ? altMode(tool.mode) : tool.mode
+        const push = mode === 'push'
         const stroke: LiquifyStroke = {
-          mode: e.altKey ? altMode(tool.mode) : tool.mode,
-          points: [p.x, p.y],
+          mode,
+          points: push ? [p.x, p.y] : Array.from({ length: TAP_TICKS }, () => [p.x, p.y]).flat(),
           size: tool.size,
           strength: tool.strength,
         }
-        strokeRef.current = { pointerId: e.pointerId, stroke, latest: p }
+        strokeRef.current = { pointerId: e.pointerId, stroke, latest: p, started: !push }
         setPainting(true)
+        if (push) return
         config.onBegin()
         config.onChange(stroke)
       }}
@@ -154,6 +188,11 @@ export function LiquifyOverlay({
             height: radius * 2,
           }}
         />
+      )}
+      {hint && (
+        <span className="liquify-hint" style={{ left: hint.x, top: hint.y }} role="status">
+          Drag to push
+        </span>
       )}
       {cursor && !sizePreview && (
         <>
