@@ -334,155 +334,27 @@ a {
   }
 }
 
-/* Before / after compare */
+/* Promo video */
 
-.compare {
+.promo {
   margin: 0;
 }
 
-.compare__frame {
-  position: relative;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
+.promo__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
   border-radius: 12px;
   border: 1px solid var(--line-strong);
   background: var(--bg-panel);
   box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.8);
 }
 
-.compare__frame:has(.compare__range:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-.compare__frame img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.compare__after {
-  clip-path: inset(0 0 0 var(--split));
-}
-
-.compare__handle {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--split);
-  width: 2px;
-  margin-left: -1px;
-  background: var(--accent);
-  pointer-events: none;
-}
-
-.compare__handle::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 34px;
-  height: 34px;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
-  /* two chevrons */
-  background-image:
-    linear-gradient(135deg, transparent 45%, var(--accent-ink) 45% 55%, transparent 55%),
-    linear-gradient(45deg, transparent 45%, var(--accent-ink) 45% 55%, transparent 55%),
-    linear-gradient(-45deg, transparent 45%, var(--accent-ink) 45% 55%, transparent 55%),
-    linear-gradient(-135deg, transparent 45%, var(--accent-ink) 45% 55%, transparent 55%);
-  background-size: 8px 8px;
-  background-repeat: no-repeat;
-  background-position:
-    9px 9px,
-    9px 17px,
-    17px 9px,
-    17px 17px;
-}
-
-.compare__range {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: ew-resize;
-  -webkit-appearance: none;
-  appearance: none;
-  touch-action: pan-y;
-}
-
-.compare__tag {
-  position: absolute;
-  bottom: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(12, 16, 14, 0.72);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  pointer-events: none;
-}
-
-.compare__tag--before {
-  left: 12px;
-}
-
-.compare__tag--after {
-  right: 12px;
-  color: var(--accent);
-}
-
-.compare figcaption {
-  margin-top: 16px;
-}
-
-.compare figcaption p {
+.promo figcaption {
   margin-top: 12px;
   font-size: 0.875rem;
   color: var(--text-muted);
-}
-
-.looks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.looks button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 4px 12px 4px 4px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text-muted);
-  font: 500 0.875rem/1 var(--font-ui);
-  cursor: pointer;
-}
-
-.looks button img {
-  width: 44px;
-  height: 30px;
-  border-radius: 4px;
-  object-fit: cover;
-}
-
-.looks button:hover {
-  color: var(--text);
-  background: var(--bg-elevated);
-}
-
-.looks button[aria-pressed='true'] {
-  border-color: var(--accent);
-  color: var(--text);
-  background: var(--bg-elevated);
 }
 
 /* Sections */

@@ -21,6 +21,8 @@ const SECTIONS: { title: string; items: [string, string][] }[] = [
       ['R', 'Crop'],
       ['Q', 'Retouch: spots & background'],
       ['H', 'Show / hide spot outlines'],
+      ['L', 'Liquify'],
+      ['Alt + hold', 'Liquify: pinch ↔ bloat, twirl the other way'],
     ],
   },
   {

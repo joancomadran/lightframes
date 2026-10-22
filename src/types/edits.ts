@@ -161,6 +161,31 @@ export type HealSpot = {
   dy: number
 }
 
+/**
+ * Liquify brushes: push drags the pixels along with the brush; bloat and pinch
+ * grow or shrink what is under it, and twirl spins it, for as long as the brush
+ * is held there; restore eases earlier warps back towards the original.
+ */
+export type LiquifyMode = 'push' | 'bloat' | 'pinch' | 'twirl' | 'twirlLeft' | 'restore'
+
+/**
+ * One liquify stroke. Lives in source image space (before rotation and crop),
+ * like heal spots, and applies after spot removal.
+ */
+export type LiquifyStroke = {
+  mode: LiquifyMode
+  /**
+   * Flat [x0, y0, x1, y1, …] in source image space (0–1): where the brush was
+   * on the photo as it looked then. Bloat, pinch, twirl and restore act once
+   * per point and record one point per tick while held, so time counts too.
+   */
+  points: number[]
+  /** Radius as a fraction of the source's long edge. */
+  size: number
+  /** 0–1: how strongly each stamp moves the pixels. */
+  strength: number
+}
+
 export type BackgroundMode = 'original' | 'transparent' | 'color' | 'blur'
 
 /** A hand fix to the subject cutout: paint to keep (add to the subject) or erase. */
@@ -235,6 +260,8 @@ export type EditParams = {
   localAdjustments: LocalAdjustment[]
   /** Spot removal, applied to the source pixels before everything else. */
   heal: HealSpot[]
+  /** Liquify strokes, applied after spot removal and before orientation and crop. */
+  liquify: LiquifyStroke[]
   background: BackgroundEdit
   hsl: HslEdits
   /** Optional look-up table applied after parametric edits (from .cube). */
@@ -253,6 +280,7 @@ export type BasicEditKey = Exclude<
   | 'toneCurve'
   | 'localAdjustments'
   | 'heal'
+  | 'liquify'
   | 'background'
   | 'colorGrading'
 >
@@ -423,6 +451,7 @@ export const DEFAULT_EDITS: EditParams = {
   toneCurve: createDefaultToneCurve(),
   localAdjustments: [],
   heal: [],
+  liquify: [],
   background: { mode: 'original', color: '#ffffff', blur: 40, refine: [] },
   hsl: createDefaultHsl(),
 }
@@ -533,6 +562,8 @@ export function cloneEdits(edits: EditParams): EditParams {
     localAdjustments: cloneLocalAdjustments(edits.localAdjustments ?? []),
     // Spot paths are treated as immutable and shared, like brush strokes.
     heal: (edits.heal ?? []).map((spot) => ({ ...spot })),
+    // Stroke points are treated as immutable and shared, like spot paths.
+    liquify: (edits.liquify ?? []).map((stroke) => ({ ...stroke })),
     // Refine strokes are treated as immutable and shared, like brush strokes.
     background: { ...DEFAULT_EDITS.background, ...edits.background },
     colorGrading: cloneColorGrading(edits.colorGrading ?? createDefaultColorGrading()),
@@ -553,12 +584,14 @@ export function mergeEdits(base: EditParams, patch: Partial<EditParams>): EditPa
     toneCurve: curvePatch,
     localAdjustments: localPatch,
     heal: healPatch,
+    liquify: liquifyPatch,
     background: backgroundPatch,
     colorGrading: gradingPatch,
     ...rest
   } = patch
   const next = cloneEdits({ ...base, ...rest })
   if (healPatch) next.heal = healPatch.map((spot) => ({ ...spot }))
+  if (liquifyPatch) next.liquify = liquifyPatch.map((stroke) => ({ ...stroke }))
   if (backgroundPatch) next.background = { ...next.background, ...backgroundPatch }
   if (hslPatch) {
     for (const channel of HSL_CHANNELS) {
@@ -844,6 +877,7 @@ export function isNeutralEdits(edits: EditParams): boolean {
     isNeutralColorGrading(edits.colorGrading) &&
     edits.localAdjustments.length === 0 &&
     edits.heal.length === 0 &&
+    edits.liquify.length === 0 &&
     edits.background.mode === 'original' &&
     !edits.lut
   )
@@ -988,6 +1022,29 @@ function normalizeHeal(value: unknown): HealSpot[] {
   return out
 }
 
+const LIQUIFY_MODES: LiquifyMode[] = ['push', 'bloat', 'pinch', 'twirl', 'twirlLeft', 'restore']
+
+function normalizeLiquify(value: unknown): LiquifyStroke[] {
+  if (!Array.isArray(value)) return []
+  const out: LiquifyStroke[] = []
+  const num = (v: unknown, fallback: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback
+  for (const raw of value) {
+    if (!raw || typeof raw !== 'object') continue
+    const obj = raw as Record<string, unknown>
+    if (!Array.isArray(obj.points)) continue
+    const points = obj.points.filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+    if (points.length < 2) continue
+    out.push({
+      mode: LIQUIFY_MODES.includes(obj.mode as LiquifyMode) ? (obj.mode as LiquifyMode) : 'push',
+      points: points.length % 2 === 0 ? points : points.slice(0, -1),
+      size: Math.min(0.5, Math.max(0.002, num(obj.size, 0.08))),
+      strength: clamp01(num(obj.strength, 0.5)),
+    })
+  }
+  return out
+}
+
 /** Whether rendering these edits needs the subject cutout (background modes, subject masks). */
 export function needsCutout(edits: EditParams): boolean {
   return edits.background.mode !== 'original' || edits.localAdjustments.some((adj) => adj.type === 'subject')
@@ -1017,6 +1074,7 @@ export function normalizeEdits(value: unknown): EditParams | null {
     next.localAdjustments = normalizeLocalAdjustments(obj.localAdjustments)
   }
   if (obj.heal !== undefined) next.heal = normalizeHeal(obj.heal)
+  if (obj.liquify !== undefined) next.liquify = normalizeLiquify(obj.liquify)
   if (obj.background && typeof obj.background === 'object') {
     const bg = obj.background as Record<string, unknown>
     next.background = {

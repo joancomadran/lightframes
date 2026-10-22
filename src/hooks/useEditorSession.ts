@@ -60,10 +60,11 @@ export type PanelId =
   | "curve"
   | "crop"
   | "heal"
+  | "liquify"
   | "local"
   | "presets";
 
-/** Panels in tab order; Shift + 1…8 jumps to them. */
+/** Panels in tab order; Shift + 1…9 jumps to them. */
 export const PANELS: { id: PanelId; label: string }[] = [
   { id: "adjust", label: "Adjust" },
   { id: "color", label: "Color" },
@@ -71,6 +72,7 @@ export const PANELS: { id: PanelId; label: string }[] = [
   { id: "curve", label: "Curve" },
   { id: "crop", label: "Crop" },
   { id: "heal", label: "Retouch" },
+  { id: "liquify", label: "Liquify" },
   { id: "local", label: "Local" },
   { id: "presets", label: "Presets" },
 ];
@@ -609,6 +611,7 @@ export function useEditorSession({
             rotate: p.edits.rotate,
             crop: cloneEdits(p.edits).crop,
             heal: cloneEdits(p.edits).heal,
+            liquify: cloneEdits(p.edits).liquify,
             background: { ...p.edits.background },
           },
         };
@@ -631,6 +634,7 @@ export function useEditorSession({
           blended.rotate = photo.edits.rotate;
           blended.crop = cloneEdits(photo.edits).crop;
           blended.heal = cloneEdits(photo.edits).heal;
+          blended.liquify = cloneEdits(photo.edits).liquify;
           blended.background = { ...photo.edits.background };
           return { ...photo, edits: blended };
         }),
@@ -748,6 +752,7 @@ export function useEditorSession({
           edits: {
             ...cloneEdits(photo.edits),
             heal: [],
+            liquify: [],
             background: { ...DEFAULT_EDITS.background },
           },
         };
@@ -1154,7 +1159,7 @@ export function useEditorSession({
         setShowClipping((v) => !v);
         return;
       }
-      // Shift + 1…8 picks a panel (e.code: Shift changes e.key on most layouts).
+      // Shift + 1…9 picks a panel (e.code: Shift changes e.key on most layouts).
       const digit = /^Digit([0-9])$/.exec(e.code)?.[1];
       if (e.shiftKey && !mod && digit) {
         const panel = PANELS[Number(digit) - 1];
@@ -1194,6 +1199,11 @@ export function useEditorSession({
       if (!mod && key === "q") {
         e.preventDefault();
         setPanelFocus("heal");
+        return;
+      }
+      if (!mod && key === "l") {
+        e.preventDefault();
+        setPanelFocus("liquify");
         return;
       }
       if (key === "[" || key === "arrowup") {

@@ -323,15 +323,15 @@ export function LocalAdjustPanel({
                     {adj.type === 'radial' && (
                       <Slider
                         label="Feather"
-                        value={adj.feather}
+                        value={adj.feather * 100}
                         min={0}
-                        max={1}
-                        step={0.01}
-                        defaultValue={0.35}
+                        max={100}
+                        step={1}
+                        defaultValue={35}
                         disabled={disabled}
-                        format={(v) => `${Math.round(v * 100)}%`}
-                        onChange={(feather, opts) => {
-                          onUpdate(adj.id, { feather })
+                        format={(v) => `${Math.round(v)}%`}
+                        onChange={(v, opts) => {
+                          onUpdate(adj.id, { feather: v / 100 })
                           if (opts?.commit) commitSoon()
                         }}
                         onBegin={onBegin}

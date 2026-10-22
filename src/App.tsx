@@ -16,6 +16,8 @@ import type { HealTool } from './components/HealOverlay'
 import type { RefineTool } from './components/RefineOverlay'
 import { HealPanel } from './components/HealPanel'
 import { HistogramPanel } from './components/HistogramPanel'
+import type { LiquifyTool } from './components/LiquifyOverlay'
+import { LiquifyPanel } from './components/LiquifyPanel'
 import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import type { BrushSettings } from './components/MaskOverlay'
 import { PanelIcon } from './components/PanelIcon'
@@ -35,7 +37,7 @@ import { createCollageDoc, type CollageDoc } from './lib/collage'
 import { aspectRatioFor } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
-import { DEFAULT_EDITS, type HealSpot } from './types/edits'
+import { DEFAULT_EDITS, type HealSpot, type LiquifyStroke } from './types/edits'
 
 export type AppMode = 'edit' | 'collage'
 
@@ -70,6 +72,9 @@ export default function App() {
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null)
   const [showSpots, setShowSpots] = useState(true)
   const [refineTool, setRefineTool] = useState<RefineTool | null>(null)
+  const [liquifyTool, setLiquifyTool] = useState<LiquifyTool>({ mode: 'push', size: 0.08, strength: 0.5 })
+  /** The strokes before the one being painted. */
+  const liquifyBase = useRef<LiquifyStroke[]>([])
   // The refine brush only makes sense while the background is being replaced.
   const refining =
     canEdit && session.panelFocus === 'heal' && edits.background.mode !== 'original' ? refineTool : null
@@ -376,6 +381,20 @@ export default function App() {
                     }
                   : null
               }
+              liquifyOverlay={
+                canEdit && session.panelFocus === 'liquify'
+                  ? {
+                      tool: liquifyTool,
+                      sizePreview,
+                      onBegin: () => {
+                        liquifyBase.current = edits.liquify
+                        begin()
+                      },
+                      onChange: (stroke) => session.updateEdits({ liquify: [...liquifyBase.current, stroke] }),
+                      onCommit: commit,
+                    }
+                  : null
+              }
               refineOverlay={
                 refining
                   ? {
@@ -540,6 +559,17 @@ export default function App() {
                   onSizePreview={previewBrushSize}
                   onBegin={begin}
                   onCommit={commit}
+                />
+              )}
+
+              {session.panelFocus === 'liquify' && (
+                <LiquifyPanel
+                  strokeCount={edits.liquify.length}
+                  disabled={!canEdit}
+                  tool={liquifyTool}
+                  onToolChange={setLiquifyTool}
+                  onClear={() => session.updateEdits({ liquify: [] }, { commit: true })}
+                  onSizePreview={previewBrushSize}
                 />
               )}
 

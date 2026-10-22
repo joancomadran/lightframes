@@ -27,6 +27,7 @@ import {
   type RenderSource,
 } from '../lib/imageProcessing'
 import { healKey, rankHealSources } from '../lib/heal'
+import { liquifyField, liquifyKey } from '../lib/liquify'
 import { getAiVersion, subscribeAi } from '../lib/ai'
 import { ensureCutout, getCutout, setSourceKey } from '../lib/cutout'
 import { ensurePatches } from '../lib/inpaint'
@@ -48,6 +49,7 @@ import { GearDialog } from './GearDialog'
 import { HealOverlay, type HealOverlayConfig } from './HealOverlay'
 import { RefineOverlay, type RefineOverlayConfig } from './RefineOverlay'
 import { InstallButton } from './InstallButton'
+import { LiquifyOverlay, type LiquifyOverlayConfig } from './LiquifyOverlay'
 import { MaskOverlay, type MaskOverlayConfig } from './MaskOverlay'
 import { DonateButton } from './DonateButton'
 import { GithubStar } from './GithubStar'
@@ -88,6 +90,8 @@ type PreviewCanvasProps = {
   healOverlay?: HealOverlayConfig | null
   /** When set, paint keep / erase fixes onto the background cutout (takes over from healOverlay). */
   refineOverlay?: RefineOverlayConfig | null
+  /** When set, push, bloat, pinch and twirl the photo with a brush. */
+  liquifyOverlay?: LiquifyOverlayConfig | null
   /** Mask to tint red over the image (mask overlay, O). */
   maskTint?: LocalAdjustment | null
   /** While set, clicking the image picks a neutral point for white balance. */
@@ -190,6 +194,7 @@ export function PreviewCanvas({
   maskOverlay = null,
   healOverlay = null,
   refineOverlay = null,
+  liquifyOverlay = null,
   maskTint = null,
   onPickWhiteBalance = null,
   apiRef,
@@ -352,7 +357,7 @@ export function PreviewCanvas({
   const getBase = useCallback((source: RenderSource, renderEdits: EditParams, maxEdge: number) => {
     const c = renderEdits.crop
     const cutout = needsCutout(renderEdits) ? getCutout(source) : null
-    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}|${cutout ? `cut${JSON.stringify(renderEdits.background.refine)}` : ''}`
+    const key = `${maxEdge}|${renderEdits.rotate}|${c.x},${c.y},${c.width},${c.height},${c.straighten}|${healKey(renderEdits.heal)}|${liquifyKey(renderEdits.liquify)}|${cutout ? `cut${JSON.stringify(renderEdits.background.refine)}` : ''}`
     const cached = baseCacheRef.current
     if (cached && cached.source === source && cached.key === key) return cached.base
     const base = prepareBaseWithCutout(source, renderEdits, maxEdge, cutout)
@@ -750,7 +755,7 @@ export function PreviewCanvas({
       lastTapRef.current = null
     } else if (pointersRef.current.size === 1) {
       startDrag(e.pointerId, e.clientX, e.clientY)
-      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay && !healOverlay && !refineOverlay) {
+      if (e.pointerType === 'touch' && !compareMode && !cropActive && !maskOverlay && !healOverlay && !refineOverlay && !liquifyOverlay) {
         const hold = { timer: 0, x: e.clientX, y: e.clientY, fired: false }
         hold.timer = window.setTimeout(() => {
           hold.fired = true
@@ -918,6 +923,14 @@ export function PreviewCanvas({
   }
 
   const zoomPercent = Math.round(zoom * 100)
+  // Spots and cutout fixes are painted over the liquified photo but stored before liquify: map through it.
+  const retouchGeometry = sourceDims && {
+    width: sourceDims.w,
+    height: sourceDims.h,
+    rotate: renderEdits.rotate,
+    crop: renderEdits.crop,
+    liquify: healOverlay || refineOverlay ? liquifyField(renderEdits.liquify, sourceDims.w, sourceDims.h) : null,
+  }
   const overlayFrame = {
     left: tx,
     top: ty,
@@ -1016,20 +1029,24 @@ export function PreviewCanvas({
         {maskOverlay && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
           <MaskOverlay frame={overlayFrame} config={maskOverlay} />
         )}
-        {refineOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
-          <RefineOverlay
-            frame={overlayFrame}
-            geometry={{ width: sourceDims.w, height: sourceDims.h, rotate: renderEdits.rotate, crop: renderEdits.crop }}
-            config={refineOverlay}
-          />
+        {refineOverlay && retouchGeometry && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+          <RefineOverlay frame={overlayFrame} geometry={retouchGeometry} config={refineOverlay} />
         )}
-        {healOverlay && !refineOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+        {healOverlay && !refineOverlay && retouchGeometry && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
           <HealOverlay
             frame={overlayFrame}
             viewport={viewportSize}
-            geometry={{ width: sourceDims.w, height: sourceDims.h, rotate: renderEdits.rotate, crop: renderEdits.crop }}
+            geometry={retouchGeometry}
             config={healOverlay}
             pickSource={findHealSource}
+          />
+        )}
+        {liquifyOverlay && sourceDims && !compareMode && !onPickWhiteBalance && contentSize.w > 0 && (
+          <LiquifyOverlay
+            frame={overlayFrame}
+            viewport={viewportSize}
+            geometry={{ width: sourceDims.w, height: sourceDims.h, rotate: renderEdits.rotate, crop: renderEdits.crop }}
+            config={liquifyOverlay}
           />
         )}
       </div>

@@ -13,6 +13,7 @@ export type PasteGroupId =
   | 'masks'
   | 'crop'
   | 'heal'
+  | 'liquify'
   | 'background'
 
 export type PasteGroup = {
@@ -36,6 +37,7 @@ export const PASTE_GROUPS: PasteGroup[] = [
   { id: 'masks', label: 'Masks', keys: ['localAdjustments'], local: true },
   { id: 'crop', label: 'Crop & rotate', keys: ['crop', 'rotate'], local: true },
   { id: 'heal', label: 'Spot removal', keys: ['heal'], local: true },
+  { id: 'liquify', label: 'Liquify', keys: ['liquify'], local: true },
   { id: 'background', label: 'Background', keys: ['background'], local: true },
 ]
 

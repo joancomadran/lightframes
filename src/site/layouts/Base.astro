@@ -100,10 +100,12 @@ const t = ui[lang]
     </main>
     <Footer lang={lang} />
     <Analytics />
-    <script is:inline>
-      if ('serviceWorker' in navigator) {
-        addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
-      }
-    </script>
+    {import.meta.env.PROD && (
+      <script is:inline>
+        if ('serviceWorker' in navigator) {
+          addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+        }
+      </script>
+    )}
   </body>
 </html>

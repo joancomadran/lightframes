@@ -1300,14 +1300,49 @@ a.github-star {
 }
 
 .cslider__value {
+  appearance: none;
+  min-width: 0;
+  margin: 0;
+  padding: 0.1rem 0;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  font: inherit;
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
+  cursor: text;
   user-select: none;
+}
+
+.cslider__value:hover:not(:disabled),
+.cslider__value:focus-visible {
+  border-bottom-color: currentColor;
+  outline: none;
+}
+
+.cslider__value:disabled {
+  cursor: default;
 }
 
 .cslider--edited .cslider__value {
   color: var(--accent);
+}
+
+/* Typing a value: same slot as the number it replaces. */
+.cslider__input {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0.05rem 0.2rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+  outline: none;
 }
 
 .cslider input[type='range'] {
@@ -1582,7 +1617,7 @@ a.github-star {
 /* Two rows of four on desktop: eight tabs in one row don't fit the sidebar. */
 .panel-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0;
   padding: 0;
   border-bottom: 1px solid var(--line);
@@ -2768,6 +2803,14 @@ a.github-star {
 
 .brush-cursor--erase {
   border-color: #ff8a8a;
+}
+
+/* Liquify has no feather ring: a centre dot shows where the warp is strongest. */
+.brush-cursor--dot {
+  width: 4px;
+  height: 4px;
+  border-width: 1px;
+  background: #fff;
 }
 
 /* ——— Spot removal ——— */

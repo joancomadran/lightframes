@@ -31,6 +31,15 @@ const PATHS: Record<PanelId, ReactNode> = {
       <path d="M11 11h.01M13 13h.01M13 11h.01M11 13h.01" />
     </g>
   ),
+  // A wavy grid: the mesh liquify bends.
+  liquify: (
+    <>
+      <path d="M3 6c3-2 6 2 9 0s6-2 9 0" />
+      <path d="M3 12c3-2 6 2 9 0s6-2 9 0" />
+      <path d="M3 18c3-2 6 2 9 0s6-2 9 0" />
+      <path d="M8 4c-1.5 5 1.5 11 0 16M16 4c1.5 5-1.5 11 0 16" />
+    </>
+  ),
   local: (
     <>
       <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />

@@ -5,15 +5,6 @@ import type { Lang } from './i18n'
  * "editor de fotos online gratis"); the sections answer the questions people ask before trying it.
  */
 
-/** Before/after looks: real exports of /samples/twelve-apostles.jpg with the built-in presets. */
-export const LOOKS = [
-  { id: 'warm-film', name: 'Warm Film' },
-  { id: 'nordic', name: 'Nordic' },
-  { id: 'teal-orange', name: 'Teal & Orange' },
-  { id: 'moody-forest', name: 'Moody Forest' },
-  { id: 'b-w-noir', name: 'B&W Noir' },
-] as const
-
 export const landing = {
   en: {
     title: 'Lightframes — Free online photo editor, nothing uploaded',
@@ -23,12 +14,9 @@ export const landing = {
     lead: 'Edit RAW and JPEG files, save your own presets and paste one edit across a whole shoot. Everything runs in your browser, so nothing is uploaded and there is no account to make.',
     secondary: 'How it works',
     facts: ['Free and open source', 'RAW from most cameras', 'Works offline'],
-    compare: {
-      before: 'Before',
-      after: 'After',
-      slider: 'Drag to compare before and after',
-      looks: 'Built-in presets',
-      caption: 'Sample photo, exported from Lightframes with each built-in preset.',
+    video: {
+      label: 'Lightframes in action: editing, presets, batch export, AI tools and collages',
+      caption: 'A 50-second tour of the editor. Every look on screen is a real export from Lightframes.',
     },
     privacy: {
       h2: 'Your photos never leave your device',
@@ -81,12 +69,9 @@ export const landing = {
     lead: 'Edita archivos RAW y JPEG, guarda tus propios presets y pega un mismo ajuste en toda una sesión. Todo funciona en tu navegador: no se sube nada y no hace falta cuenta.',
     secondary: 'Cómo funciona',
     facts: ['Gratis y de código abierto', 'RAW de casi cualquier cámara', 'Funciona sin conexión'],
-    compare: {
-      before: 'Antes',
-      after: 'Después',
-      slider: 'Arrastra para comparar el antes y el después',
-      looks: 'Presets incluidos',
-      caption: 'Foto de ejemplo exportada desde Lightframes con cada preset incluido.',
+    video: {
+      label: 'Lightframes en acción: edición, presets, exportación por lotes, herramientas de IA y collages',
+      caption: 'Un recorrido de 50 segundos por el editor. Cada look que aparece es una exportación real de Lightframes.',
     },
     privacy: {
       h2: 'Tus fotos no salen de tu dispositivo',

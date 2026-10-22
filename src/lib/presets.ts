@@ -161,8 +161,8 @@ export function createPreset(name: string, edits: EditParams): Preset {
   return {
     id: crypto.randomUUID(),
     name: name.trim() || 'Untitled preset',
-    // Spots only make sense on the photo they were painted on; a look doesn't remove backgrounds.
-    edits: { ...cloneEdits(edits), heal: [], background: { ...DEFAULT_EDITS.background } },
+    // Spots and liquify only make sense on the photo they were painted on; a look doesn't remove backgrounds.
+    edits: { ...cloneEdits(edits), heal: [], liquify: [], background: { ...DEFAULT_EDITS.background } },
     createdAt: new Date().toISOString(),
   }
 }

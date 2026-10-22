@@ -18,6 +18,7 @@ import {
   type HealSpot,
   type HslEdits,
   type LinearAdjustment,
+  type LiquifyStroke,
   type LocalAdjustment,
   type MaskRange,
   type RadialAdjustment,
@@ -26,6 +27,7 @@ import {
 import { isFullCrop } from './crop'
 import { applyLutToImageData } from './cubeLut'
 import { applyHeal, frameToSource, healBounds, healKey, type HealGeometry } from './heal'
+import { liquifyArea, liquifyField, liquifyKey, warpPixels } from './liquify'
 import type { LinearImage } from './rawDecode'
 
 /*
@@ -1873,28 +1875,31 @@ function transformLinear(
   }
 }
 
-/** Healed copies only stay cached at preview sizes; exports are one-off and large. */
-const HEAL_CACHE_PIXELS = 2400 * 2400
+/** Retouched (healed, liquified) copies only stay cached at preview sizes; exports are one-off and large. */
+const RETOUCH_CACHE_PIXELS = 2400 * 2400
 
-const healCache = new WeakMap<object, Map<string, { key: string; image: HTMLCanvasElement | LinearImage }>>()
+type RetouchCache = WeakMap<object, Map<string, { key: string; image: HTMLCanvasElement | LinearImage }>>
 
-function cachedHeal<T extends HTMLCanvasElement | LinearImage>(
+const healCache: RetouchCache = new WeakMap()
+const liquifyCache: RetouchCache = new WeakMap()
+
+function cachedRetouch<T extends HTMLCanvasElement | LinearImage>(
+  cache: RetouchCache,
   owner: object,
   width: number,
   height: number,
-  spots: HealSpot[],
+  key: string,
   build: () => T | null,
 ): T | null {
   const size = `${width}x${height}`
-  const key = healKey(spots)
-  const cached = healCache.get(owner)?.get(size)
+  const cached = cache.get(owner)?.get(size)
   if (cached?.key === key) return cached.image as T
   const image = build()
-  if (image && width * height <= HEAL_CACHE_PIXELS) {
-    let bySize = healCache.get(owner)
+  if (image && width * height <= RETOUCH_CACHE_PIXELS) {
+    let bySize = cache.get(owner)
     if (!bySize) {
       bySize = new Map()
-      healCache.set(owner, bySize)
+      cache.set(owner, bySize)
     }
     bySize.set(size, { key, image })
   }
@@ -1905,7 +1910,7 @@ function cachedHeal<T extends HTMLCanvasElement | LinearImage>(
 function healLinear(src: LinearImage, spots: HealSpot[]): LinearImage {
   if (spots.length === 0) return src
   return (
-    cachedHeal(src, src.width, src.height, spots, () => {
+    cachedRetouch(healCache, src, src.width, src.height, healKey(spots), () => {
       const data = src.data.slice()
       applyHeal(
         {
@@ -1925,7 +1930,7 @@ function healLinear(src: LinearImage, spots: HealSpot[]): LinearImage {
 
 /** The source drawn at `w`×`h` with spot removal applied; only the touched window is read back. */
 function healCanvas(source: HTMLImageElement | ImageBitmap, w: number, h: number, spots: HealSpot[]) {
-  return cachedHeal(source, w, h, spots, () => {
+  return cachedRetouch(healCache, source, w, h, healKey(spots), () => {
     const canvas = document.createElement('canvas')
     canvas.width = w
     canvas.height = h
@@ -1952,6 +1957,81 @@ function healCanvas(source: HTMLImageElement | ImageBitmap, w: number, h: number
     ctx.putImageData(pixels, area.x0, area.y0)
     return canvas
   })
+}
+
+/** Linear image with liquify applied (a copy); `sourceWidth`×`sourceHeight` is the photo it was painted on. */
+function liquifyLinear(
+  src: LinearImage,
+  strokes: LiquifyStroke[],
+  sourceWidth: number,
+  sourceHeight: number,
+): LinearImage {
+  if (strokes.length === 0) return src
+  return (
+    cachedRetouch(liquifyCache, src, src.width, src.height, liquifyKey(strokes), () => {
+      const field = liquifyField(strokes, sourceWidth, sourceHeight)
+      const area = field && liquifyArea(field, src.width, src.height)
+      if (!field || !area) return src
+      const data = warpPixels({ data: src.data, width: src.width, height: src.height, stride: 3 }, field, area.moved)
+      return { ...src, data }
+    }) ?? src
+  )
+}
+
+/** `input` drawn at `w`×`h` with liquify applied; only the moved window is read back. */
+function liquifyCanvas(
+  input: HTMLImageElement | ImageBitmap | HTMLCanvasElement,
+  w: number,
+  h: number,
+  strokes: LiquifyStroke[],
+  sourceWidth: number,
+  sourceHeight: number,
+) {
+  return cachedRetouch(liquifyCache, input, w, h, liquifyKey(strokes), () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return null
+    ctx.drawImage(input, 0, 0, w, h)
+    const field = liquifyField(strokes, sourceWidth, sourceHeight)
+    const area = field && liquifyArea(field, w, h)
+    if (!field || !area) return canvas
+    const { read, moved } = area
+    const pixels = ctx.getImageData(read.x0, read.y0, read.x1 - read.x0, read.y1 - read.y0)
+    pixels.data.set(
+      warpPixels(
+        {
+          data: pixels.data,
+          width: pixels.width,
+          height: pixels.height,
+          stride: 4,
+          left: read.x0,
+          top: read.y0,
+          fullWidth: w,
+          fullHeight: h,
+        },
+        field,
+        moved,
+      ),
+    )
+    ctx.putImageData(pixels, read.x0, read.y0)
+    return canvas
+  })
+}
+
+/** The square source-space cutout, moved along with the liquified pixels. */
+function liquifyMask(
+  mask: Uint8ClampedArray,
+  strokes: LiquifyStroke[],
+  sourceWidth: number,
+  sourceHeight: number,
+): Uint8ClampedArray {
+  const field = liquifyField(strokes, sourceWidth, sourceHeight)
+  if (!field) return mask
+  const n = Math.round(Math.sqrt(mask.length))
+  const area = liquifyArea(field, n, n)
+  return area ? warpPixels({ data: mask, width: n, height: n, stride: 1 }, field, area.moved) : mask
 }
 
 /** Pixel size of the source as decoded (a half-size RAW preview reports its own size). */
@@ -2223,7 +2303,7 @@ export function prepareBaseWithCutout(
   const base = prepareBase(source, edits, maxEdge)
   if (!base || !raw) return base
   const { width, height } = sourceDimensions(source)
-  const cutout = refineCutout(raw, edits.background.refine, width, height)
+  const cutout = liquifyMask(refineCutout(raw, edits.background.refine, width, height), edits.liquify ?? [], width, height)
   const geometry = { width, height, rotate: normalizeRotate(edits.rotate ?? 0), crop: edits.crop }
   const out: BaseImage = { ...base }
   if (edits.background.mode !== 'original') out.cutout = framedMask(cutout, geometry, base.width, base.height)
@@ -2240,7 +2320,13 @@ export function prepareBaseWithCutout(
 /** Orientation, straighten, crop and downscale — everything but the colour work. */
 export function prepareBase(source: RenderSource, edits: EditParams, maxEdge = 2400): BaseImage | null {
   if (isLinearImage(source)) {
-    const { image, alpha } = transformLinear(healLinear(scaleLinear(source, maxEdge), edits.heal ?? []), edits)
+    const retouched = liquifyLinear(
+      healLinear(scaleLinear(source, maxEdge), edits.heal ?? []),
+      edits.liquify ?? [],
+      source.width,
+      source.height,
+    )
+    const { image, alpha } = transformLinear(retouched, edits)
     const data = new Uint8ClampedArray(image.width * image.height * 4)
     for (let k = 0, i = 3; k < image.width * image.height; k++, i += 4) {
       data[i] = alpha ? alpha[k]! : 255
@@ -2279,7 +2365,11 @@ export function prepareBase(source: RenderSource, edits: EditParams, maxEdge = 2
     sctx.rotate(-Math.PI / 2)
   }
   const spots = edits.heal ?? []
-  sctx.drawImage(spots.length > 0 ? (healCanvas(source, w, h, spots) ?? source) : source, 0, 0, w, h)
+  const healed = spots.length > 0 ? (healCanvas(source, w, h, spots) ?? source) : source
+  const strokes = edits.liquify ?? []
+  const retouched =
+    strokes.length > 0 ? (liquifyCanvas(healed, w, h, strokes, srcW, srcH) ?? healed) : healed
+  sctx.drawImage(retouched, 0, 0, w, h)
   sctx.restore()
 
   let work = scratch

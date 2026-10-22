@@ -1,5 +1,6 @@
 import type { CropRect, HealSpot, RotateDegrees } from '../types/edits'
 import { isFullCrop } from './crop'
+import { liquifyFromSource, liquifyToSource, type LiquifyField } from './liquify'
 
 /*
  * Spot removal: the painted area is replaced with pixels
@@ -551,6 +552,8 @@ export type HealGeometry = {
   height: number
   rotate: RotateDegrees
   crop: CropRect
+  /** Liquify between the source and the framing, for overlays drawn over the liquified photo. */
+  liquify?: LiquifyField | null
 }
 
 type Frame = {
@@ -602,9 +605,10 @@ export function framedSize(geo: HealGeometry): { w: number; h: number } {
 
 /** Source (0–1) → framed image (0–1). Mirrors prepareBase's orientation, straighten and crop. */
 export function sourceToFrame(geo: HealGeometry, x: number, y: number): { x: number; y: number } {
+  const shown = geo.liquify ? liquifyFromSource(geo.liquify, x, y) : { x, y }
   const f = frameOf(geo)
-  const sx = x * geo.width
-  const sy = y * geo.height
+  const sx = shown.x * geo.width
+  const sy = shown.y * geo.height
   let ox = sx
   let oy = sy
   if (geo.rotate === 90) {
@@ -653,5 +657,6 @@ export function frameToSource(geo: HealGeometry, u: number, v: number): { x: num
     sx = f.oh - oy
     sy = ox
   }
-  return { x: sx / geo.width, y: sy / geo.height }
+  const p = { x: sx / geo.width, y: sy / geo.height }
+  return geo.liquify ? liquifyToSource(geo.liquify, p.x, p.y) : p
 }

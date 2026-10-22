@@ -50,10 +50,12 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [webApplication('en
     <noscript>
       <p>Lightframes is a photo editor that runs in your browser. Please enable JavaScript to use it.</p>
     </noscript>
-    <script is:inline>
-      if ('serviceWorker' in navigator) {
-        addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
-      }
-    </script>
+    {import.meta.env.PROD && (
+      <script is:inline>
+        if ('serviceWorker' in navigator) {
+          addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+        }
+      </script>
+    )}
   </body>
 </html>
