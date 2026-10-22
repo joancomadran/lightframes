@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { AdSlot } from './components/AdSlot'
 import { AdjustmentsPanel } from './components/AdjustmentsPanel'
 import { BackgroundPanel } from './components/BackgroundPanel'
 import { CarouselStudio } from './components/CarouselStudio'
@@ -620,9 +621,10 @@ export default function App() {
                 />
               )}
 
-              {/* Phones hide the sidebar footer, so the support links close each panel instead. */}
+              {/* Phones hide the sidebar footer, so the ad and support links close each panel instead. */}
               {phone && (
                 <div className="sheet-extras">
+                  <AdSlot id="sidebar" height={96} />
                   <div className="sheet-extras__links">
                     <GithubStar />
                     <DonateButton />
@@ -631,6 +633,7 @@ export default function App() {
               )}
             </div>
 
+            <AdSlot id="sidebar" height={250} />
             <div className="sidebar__github">
               <GithubStar />
               <DonateButton compact />

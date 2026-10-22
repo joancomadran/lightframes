@@ -10,7 +10,7 @@ const SUMMARY = `> Lightframes is a free, open-source (MIT) photo editor that ru
 
 const FACTS = [
   `- Editor: ${url(EDITOR_PATH)}`,
-  '- Price: free. No ads and no account. Optional donations.',
+  '- Price: free. Funded by affiliate links, a few small ad spaces and optional donations.',
   `- Source code: ${SITE.github} (MIT license)`,
   `- Maker: ${SITE.author.name}, AI engineer and full stack developer in Barcelona (${SITE.author.url})`,
   '- Languages: site in English and Spanish (/es/); the editor interface is in English.',

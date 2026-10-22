@@ -873,6 +873,43 @@ a {
   border-radius: var(--radius);
 }
 
+/* Gear */
+
+.disclosure {
+  margin-top: 18px;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.gear-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gear-list li {
+  padding-block: 18px 22px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.gear-list p {
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+
+.gear-list a {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
 /* 404 */
 
 .not-found {

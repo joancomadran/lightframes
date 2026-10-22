@@ -17,6 +17,7 @@ export default defineConfig({
     pwa(),
   ],
   vite: {
+    // The editor still reads VITE_ADS_ENABLED
     envPrefix: ['VITE_', 'PUBLIC_'],
     optimizeDeps: {
       // Pre-bundling moves these packages away from the .wasm files they load relative to themselves

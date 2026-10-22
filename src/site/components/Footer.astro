@@ -38,6 +38,7 @@ const year = new Date().getFullYear()
       <ul>
         <li><a href={href('blog', lang)}>{t.nav.blog}</a></li>
         <li><a href={href('faq', lang)}>{t.nav.faq}</a></li>
+        <li><a href={href('gear', lang)}>{t.nav.gear}</a></li>
         <li><a href={changelog}>{t.footer.changelog}</a></li>
       </ul>
     </nav>
@@ -54,6 +55,7 @@ const year = new Date().getFullYear()
     </nav>
   </div>
   <div class="wrap site-footer__legal">
+    <p>{t.footer.affiliate}</p>
     <p>© {year} Lightframes. MIT-licensed code. {t.footer.madeBy} <a href={SITE.author.url} rel="author">{SITE.author.name}</a>.</p>
   </div>
 </footer>

@@ -2,9 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "astro",
   "cleanUrls": true,
-  "trailingSlash": false,
-  "redirects": [
-    { "source": "/gear", "destination": "/", "permanent": true },
-    { "source": "/es/equipo", "destination": "/es", "permanent": true }
-  ]
+  "trailingSlash": false
 }

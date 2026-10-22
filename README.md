@@ -8,6 +8,10 @@ Apply your presets, XMP and `.cube` LUTs in batch and export an Instagram-ready 
 
 Lightroom and Camera Raw are trademarks of Adobe. Lightframes is an independent project and is not affiliated with or endorsed by Adobe.
 
+Your photos are opened, edited and exported in the browser. Nothing is uploaded.
+
+The editor and the [gear page](https://www.lightframes.si/gear) include links to Amazon.es. As an Amazon Associate, Lightframes earns from qualifying purchases. The cards are drawings in the page: they do not load images or scripts from Amazon. Amazon is contacted only when you click a link.
+
 ## Demo
 
 > **GIF placeholder.** A 20–30 second demo belongs here (`docs/demo.gif`): open a RAW, apply an XMP preset, paste it across a shoot, export a carousel. The file is not in the repo yet. Do not replace this note with a fabricated animation.

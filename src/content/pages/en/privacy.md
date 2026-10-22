@@ -12,6 +12,7 @@ schemaType: WebPage
 
 - **Your photos never leave your device.** Lightframes opens, decodes and edits images inside your browser (WebAssembly and Web Workers). Nothing is uploaded to us or to anyone else, and we cannot see your photos or your edits.
 - There is **no account, no login, no contact form and no newsletter**.
+- **Amazon affiliate links.** The editor and the gear page link to Amazon.es. As an Amazon Associate, we earn from qualifying purchases. A link opens Amazon only when you click it. The cards do not load images or scripts from Amazon.
 - Like any website, visiting Lightframes involves some technical data (mainly your IP address) reaching the hosting provider and, only if you use the object-removal tool, Hugging Face. This policy explains each case.
 
 ## Who is responsible for your data
@@ -73,14 +74,18 @@ There is no contact form. If you send us a direct message on X ([@dev_coma](http
 
 If you open an issue or a discussion on GitHub (https://github.com/joancomadran/lightframes), that content is **public** and is processed by GitHub, Inc. under its own terms and privacy policy.
 
-## Donations and external sites
+## Affiliate links, donations and external sites
 
+- **Amazon affiliate links.** Some links point to Amazon.es and include our Amazon Associates tag. As an Amazon Associate, we earn from qualifying purchases. Viewing a page does not load images or scripts from Amazon: the cards are drawn in the page, and a link opens Amazon only when you click it. Only then does Amazon receive the visit, and it may set its own cookies on amazon.es, under Amazon's privacy and cookie notices. We only receive aggregated reports of clicks and qualifying sales, never your identity.
 - **Donations.** The "Buy me a coffee" button links to https://buymeacoffee.com/devcoma. If you donate, the payment is handled by Buy Me a Coffee and its payment providers under their own terms. We may receive your name or the message you choose to leave, and we use it only to manage and acknowledge the donation. <!-- TODO legal review: confirm what data Buy Me a Coffee shares with the creator and the retention needed for tax purposes. -->
-- **Other links** (GitHub, model sources, etc.) take you to websites with their own privacy policies, which we do not control. Nothing is sent to those sites just by loading Lightframes.
+- **Other links** (GitHub, model sources, etc.) take you to websites with their own privacy policies, which we do not control.
 
 ## Advertising
 
-Lightframes does not show advertisements and does not load an advertising network, advertising cookies or affiliate trackers.
+The site has space reserved for advertising, but **no advertising network is currently active** and no advertising cookies are set.
+
+<!-- TODO legal review: rewrite this section if and when an ad network is enabled. -->
+If we enable an advertising service in the future (for example, Google AdSense), we will update this policy and the Cookie policy beforehand, and a consent management platform will ask for your consent before any non-essential cookie or similar technology is used. You will be able to refuse or withdraw consent as easily as you gave it.
 
 ## International transfers
 
@@ -114,4 +119,4 @@ We do not make automated decisions or create profiles that produce legal or simi
 
 ## Changes to this policy
 
-We may update this policy when the site changes. The date at the top shows the latest version. If a change is significant, we will make it visible on the site.
+We may update this policy when the site changes (for example, if we self-host fonts or enable advertising). The date at the top shows the latest version. If a change is significant, we will make it visible on the site.

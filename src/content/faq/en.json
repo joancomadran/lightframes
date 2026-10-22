@@ -6,7 +6,7 @@
     },
     {
       "q": "How is Lightframes free? What's the catch?",
-      "a": "Lightframes runs on your own device, so it has almost no server costs to cover. There are no ads. Optional donations help, and the code is open source under the MIT licence so anyone can check what it does."
+      "a": "Lightframes runs on your own device, so it has almost no server costs to cover, and your photos are not uploaded. The editor and the gear page include Amazon.es affiliate links. As an Amazon Associate, Lightframes earns from qualifying purchases. Those links open Amazon only when you click them, and the cards do not load images or scripts from Amazon. Optional donations help too, and the code is open source under the MIT licence so anyone can check what it does."
     },
     {
       "q": "Are my photos uploaded to a server?",
@@ -62,7 +62,7 @@
     },
     {
       "q": "How can I support Lightframes?",
-      "a": "You can star the project on GitHub, share it with other photographers, or buy the developer a coffee through the link in the app. Bug reports and contributions on GitHub help too."
+      "a": "You can star the project on GitHub, share it with other photographers, buy the developer a coffee through the link in the app, or use the recommended gear links when you buy photo equipment. Bug reports and contributions on GitHub help too."
     }
   ]
 }

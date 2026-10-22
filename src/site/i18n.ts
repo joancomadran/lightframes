@@ -10,6 +10,7 @@ const SECTIONS = {
   tools: { en: '/tools', es: '/es/herramientas' },
   blog: { en: '/blog', es: '/es/blog' },
   faq: { en: '/faq', es: '/es/preguntas-frecuentes' },
+  gear: { en: '/gear', es: '/es/equipo' },
   pages: { en: '', es: '/es' },
 } satisfies Record<string, Record<Lang, string>>
 
@@ -42,7 +43,7 @@ export const ui = {
   en: {
     langName: 'English',
     skip: 'Skip to content',
-    nav: { tools: 'Tools', blog: 'Blog', faq: 'FAQ', about: 'About' },
+    nav: { tools: 'Tools', blog: 'Blog', faq: 'FAQ', gear: 'Gear', about: 'About' },
     openEditor: 'Open the editor',
     openEditorShort: 'Open editor',
     home: 'Home',
@@ -60,6 +61,8 @@ export const ui = {
       cookies: 'Cookies',
       terms: 'Legal notice & terms',
       madeBy: 'Made by',
+      affiliate:
+        'Some gear links are Amazon affiliate links: as an Amazon Associate, Lightframes earns from qualifying purchases.',
     },
     tool: {
       steps: 'How to do it',
@@ -89,6 +92,14 @@ export const ui = {
       description: 'Answers about Lightframes: price, privacy, RAW formats, exporting, offline use, presets and on-device AI.',
       h1: 'Frequently asked questions',
     },
+    gearPage: {
+      title: 'Photography gear for editing and backup',
+      description:
+        'Gear that makes editing and backing up photos easier: SD cards, portable SSDs, card readers, calibrators and lenses.',
+      h1: 'Gear',
+      lead: 'Things that make shooting, importing and backing up less painful. Links go to Amazon.es.',
+      cta: 'See on Amazon',
+    },
     notFound: {
       title: 'Page not found',
       h1: 'This page isn’t here',
@@ -101,7 +112,7 @@ export const ui = {
   es: {
     langName: 'Español',
     skip: 'Saltar al contenido',
-    nav: { tools: 'Herramientas', blog: 'Blog', faq: 'Preguntas', about: 'Sobre' },
+    nav: { tools: 'Herramientas', blog: 'Blog', faq: 'Preguntas', gear: 'Equipo', about: 'Sobre' },
     openEditor: 'Abrir el editor',
     openEditorShort: 'Abrir editor',
     home: 'Inicio',
@@ -119,6 +130,8 @@ export const ui = {
       cookies: 'Cookies',
       terms: 'Aviso legal',
       madeBy: 'Hecho por',
+      affiliate:
+        'Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables.',
     },
     tool: {
       steps: 'Cómo hacerlo',
@@ -149,6 +162,14 @@ export const ui = {
       description:
         'Respuestas sobre Lightframes: precio, privacidad, formatos RAW, exportación, uso sin conexión, presets e IA en el dispositivo.',
       h1: 'Preguntas frecuentes',
+    },
+    gearPage: {
+      title: 'Equipo fotográfico para editar y hacer copias',
+      description:
+        'Equipo que facilita editar y guardar copias de tus fotos: tarjetas SD, SSD portátiles, lectores, calibradores y objetivos.',
+      h1: 'Equipo',
+      lead: 'Cosas que hacen más fácil disparar, importar y guardar copias. Los enlaces van a Amazon.es.',
+      cta: 'Ver en Amazon',
     },
     notFound: {
       title: 'Página no encontrada',

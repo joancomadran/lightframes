@@ -43,11 +43,14 @@ Todos los elementos siguientes son **propios** (pertenecen a lightframes.si), lo
 - **Analítica.** Utilizamos Vercel Web Analytics para obtener estadísticas agregadas de visitas. Según Vercel, no utiliza cookies. <!-- TODO legal review: confirmar que Vercel Web Analytics no almacena nada en el dispositivo. -->
 - **Fuentes tipográficas.** Las tipografías de la web se sirven desde el propio dominio lightframes.si; no se hace ninguna petición a Google Fonts ni a otro servicio de fuentes.
 - **Descarga del modelo de IA.** El modelo de borrado de objetos se descarga desde huggingface.co. La descarga se realiza sin enviar ni aceptar cookies.
-- **Enlaces a otros sitios.** Si haces clic en un enlace a Buy Me a Coffee o GitHub, esos sitios pueden instalar sus propias cookies **en su propio dominio**, conforme a sus respectivas políticas de cookies. Lightframes no instala ni lee esas cookies. Cargar una página de Lightframes no contacta con esos sitios.
+- **Enlaces a otros sitios.** Si haces clic en un enlace a Amazon.es (enlaces de afiliado), Buy Me a Coffee o GitHub, esos sitios pueden instalar sus propias cookies **en su propio dominio**, conforme a sus respectivas políticas de cookies. Lightframes no instala ni lee esas cookies. Ver una página de Lightframes no carga imágenes ni scripts de Amazon. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables, y Amazon solo puede usar cookies para atribuir una compra después de que hagas clic en un enlace de afiliado.
 
 ## Publicidad
 
-Lightframes no muestra anuncios y no utiliza cookies publicitarias ni rastreadores de afiliados.
+La web reserva espacios para anuncios, pero **actualmente no hay ninguna red publicitaria activa** ni se utilizan cookies publicitarias.
+
+<!-- TODO legal review: sustituir esta sección por el listado real de cookies y el mecanismo de consentimiento si se activa una red publicitaria. -->
+Si en el futuro activamos un servicio de publicidad (por ejemplo, Google AdSense), actualizaremos antes esta política y una plataforma de gestión del consentimiento te pedirá permiso **antes** de utilizar cualquier cookie o tecnología similar que no sea estrictamente necesaria. Podrás aceptarlas, rechazarlas o configurarlas, y cambiar tu decisión en cualquier momento con la misma facilidad con que la tomaste.
 
 ## Cómo borrar o bloquear estos datos
 

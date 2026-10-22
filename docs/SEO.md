@@ -18,6 +18,7 @@ npm run build    # astro check + build → dist/
 | `/blog`, `/blog/<slug>` | `/es/blog`, `/es/blog/<slug>` | `src/content/blog/{en,es}/*.md` |
 | `/blog/rss.xml` | `/es/blog/rss.xml` | generado |
 | `/faq` | `/es/preguntas-frecuentes` | `src/content/faq/{en,es}.json` (las 6 primeras salen también en la home) |
+| `/gear` | `/es/equipo` | `src/lib/affiliate.ts` (compartido con el editor) + traducciones en `src/site/views/GearView.astro` |
 | `/about`, `/changelog`, `/privacy`, `/cookies`, `/terms` | `/es/sobre-lightframes`, `/es/novedades`, `/es/privacidad`, `/es/cookies`, `/es/terminos` | `src/content/pages/{en,es}/*.md` |
 | `/sitemap-index.xml`, `/robots.txt`, `/llms.txt`, `/llms-full.txt` | | generados en el build |
 
@@ -58,4 +59,4 @@ Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par 
 7. ~~**Textos legales.**~~ Hecho: titular Joan Comadran (persona física, España), contacto por X (https://x.com/dev_coma). Quedan comentarios `<!-- TODO legal review … -->` en el Markdown, que salen en el HTML publicado: revisarlos o quitarlos.
 8. **Datos de Instagram en los posts del carrusel** (ratio 3:4 y límite de diapositivas): marcados con TODO para comprobarlos.
 9. **Marca.** Lightroom solo se puede nombrar en frases de compatibilidad ("importa presets .xmp de Lightroom / Camera Raw", "funciona con tus presets de Lightroom") y como "alternativa gratis a Lightroom" en textos descriptivos. Nunca comparativas punto por punto, críticas ni nada que sugiera afiliación con Adobe; donde se nombre en detalle, añadir que Lightroom y Camera Raw son marcas de Adobe. No mencionar otros productos concretos.
-10. ~~**Afiliados de Amazon.**~~ Hecho: se quitaron las tarjetas de afiliado, el diálogo de equipo del editor y las páginas `/gear` y `/es/equipo`. `vercel.json` redirige esas URLs a la home de cada idioma.
+10. **Afiliados de Amazon.** El texto de divulgación obligatorio en español está en `src/lib/affiliate.ts` y se muestra en `/gear` y en el pie en español.
