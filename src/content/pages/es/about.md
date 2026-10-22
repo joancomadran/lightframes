@@ -4,7 +4,7 @@ slug: sobre-lightframes
 title: "Sobre Lightframes"
 description: "Quién hace Lightframes, por qué edita tus fotos en tu dispositivo y no en la nube, cómo se financia y cómo funciona este proyecto de código abierto (MIT)."
 h1: "Sobre Lightframes"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: AboutPage
 ---
 
@@ -25,7 +25,7 @@ Porque editar tus fotos no debería obligarte a entregarlas. Muchos editores onl
 Lightframes va por un tercer camino: un editor completo que se abre como una web, pero hace todo el trabajo en tu ordenador o tu móvil. Se basa en unas pocas ideas:
 
 - **Privado desde el diseño.** Las fotos se abren desde tu disco y se procesan en la pestaña del navegador. No se mandan a ningún servidor para editarlas y no hay cuenta con la que iniciar sesión.
-- **Local y sin conexión.** Las fotos abiertas y tus ajustes se guardan en el almacenamiento del navegador, así que no pierdes nada al recargar. Tras la primera visita, la app funciona sin internet y puedes instalarla como aplicación.
+- **Local y sin conexión.** Las fotos abiertas y tus ajustes se guardan en el almacenamiento del navegador, así que no pierdes nada al recargar. Tras la primera visita, la edición funciona sin internet y puedes instalarla como aplicación. La primera vez que borras un objeto, esa herramienta descarga su modelo de Hugging Face.
 - **Presets y copiar/pegar ajustes.** Lo normal es editar una tanda de fotos hechas con la misma luz. Con Lightframes guardas un estilo como preset, regulas su intensidad, importas presets XMP o LUT `.cube`, y copias los ajustes de una foto a toda una selección eligiendo cuáles se pegan.
 - **Gratis.** Todas las funciones están disponibles para todo el mundo. No hay versión de pago ni marcas de agua que haya que pagar para quitar.
 
@@ -40,9 +40,9 @@ No necesitas saber nada de esto para usarlo, pero explica cómo una web puede re
 - **WebAssembly** permite que el navegador ejecute, casi a velocidad nativa, código pensado originalmente para programas de escritorio. Lightframes lo usa para ejecutar dentro de la página LibRaw, un decodificador RAW de código abierto con muchos años de recorrido.
 - **Web Workers** son hilos en segundo plano. El trabajo pesado con los píxeles se reparte entre varios para que la interfaz siga fluida mientras mueves un control.
 - **Modelos de IA en el propio dispositivo** hacen funcionar las herramientas inteligentes. Se ejecutan en el navegador con ONNX Runtime Web:
-  - borrar objetos usa MI-GAN (licencia MIT),
-  - detectar el sujeto y quitar el fondo usa IS-Net (Apache-2.0),
-  - ampliar fotos usa Real-ESRGAN (BSD-3-Clause).
+  - borrar objetos usa MI-GAN (licencia MIT), que se descarga de Hugging Face la primera vez que lo usas,
+  - detectar el sujeto y quitar el fondo usa IS-Net (Apache-2.0), que se descarga desde lightframes.si,
+  - ampliar fotos usa Real-ESRGAN (BSD-3-Clause), también desde lightframes.si.
 
   Cada modelo se descarga una sola vez, la primera vez que usas la herramienta, se comprueba con una huella fija y se guarda en la caché del navegador. Tu foto se procesa en local; no viaja con esa descarga.
 

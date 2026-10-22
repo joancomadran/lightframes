@@ -41,7 +41,7 @@ Most online editors work by sending your photo to a server, processing it there 
 - **Time and data.** A single RAW is often tens of megabytes. Uploading a full card over a hotel connection is slow, or simply not possible.
 - **Accounts and limits.** Server-side tools usually need a sign-up, and many cap the file size or the number of exports.
 
-Lightframes runs the whole pipeline in the browser tab. The RAW decoder, the editing engine and the export all run on your device; the heavy pixel work is spread across Web Workers so the page stays responsive. Your open photos and edits are kept in your browser's own storage (IndexedDB), so a page refresh doesn't lose your work, and none of it is sent anywhere. Once the app has loaded, it also works offline.
+Lightframes runs the whole pipeline in the browser tab. The RAW decoder, the editing engine and the export all run on your device; the heavy pixel work is spread across Web Workers so the page stays responsive. Your open photos and edits are kept in your browser's own storage (IndexedDB), so a page refresh doesn't lose your work, and none of it is sent anywhere. Once the app has loaded, editing also works offline. The first use of object removal still downloads its model from Hugging Face.
 
 ## How do you edit a RAW photo in Lightframes, step by step?
 

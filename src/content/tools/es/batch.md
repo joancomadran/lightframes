@@ -39,7 +39,7 @@ faq:
   - q: "¿Se puede deshacer un pegado?"
     a: "Sí. Cada foto tiene su propio historial, así que Ctrl/Cmd+Z le devuelve los ajustes que tenía."
   - q: "¿Se suben mis fotos para procesarlas?"
-    a: "No. Toda la edición y la exportación ocurre en tu navegador, en tu propio dispositivo, sin enviar nada a ningún servidor."
+    a: "No. Toda la edición y la exportación ocurre en tu navegador, en tu propio dispositivo, y tus fotos no se envían a ningún servidor."
 updated: 2026-10-20
 ---
 
@@ -51,7 +51,7 @@ La interfaz del editor está en inglés, así que en esta guía verás los boton
 
 ## Cómo funciona y dónde se quedan tus fotos
 
-Todo el proceso ocurre en tu dispositivo: las fotos se leen, se editan y se codifican dentro del navegador, con WebAssembly para los RAW y Web Workers para el procesado, y no se sube nada. La edición es no destructiva: cada foto guarda sus ajustes y los archivos nuevos solo se crean al exportar, así que los originales no cambian. Las fotos abiertas y sus ajustes se guardan en el almacenamiento local del navegador, de modo que si recargas la página recuperas el lote. Tras la primera visita, el editor también funciona sin conexión.
+Todo el proceso ocurre en tu dispositivo: las fotos se leen, se editan y se codifican dentro del navegador, con WebAssembly para los RAW y Web Workers para el procesado, y no se sube nada. La edición es no destructiva: cada foto guarda sus ajustes y los archivos nuevos solo se crean al exportar, así que los originales no cambian. Las fotos abiertas y sus ajustes se guardan en el almacenamiento local del navegador, de modo que si recargas la página recuperas el lote. Tras la primera visita, este tipo de edición también funciona sin conexión.
 
 ## Tres formas de aplicar ajustes a muchas fotos
 

@@ -54,7 +54,7 @@ The subject is detected by an AI model that runs in your browser, on your device
 3. Lightframes cleans the mask, dropping small floating specks the model may leave in busy backgrounds while keeping a soft margin so hair and fuzzy edges survive.
 4. The mask is computed once per photo and reused for the preview, the export and any crop, so changing the framing doesn't run the model again.
 
-After that first download, background removal works offline, like the rest of the editor. The edit is non-destructive: the original file is untouched, and switching back to **Original** restores the photo.
+After that first download, background removal works offline. The edit is non-destructive: the original file is untouched, and switching back to **Original** restores the photo.
 
 ## Background modes and options
 

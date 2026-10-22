@@ -34,7 +34,7 @@ faq:
   - q: "¿En qué tamaños puedo exportar el collage?"
     a: "Hay ocho tamaños: 9:16 (1080 × 1920), 3:4 (1080 × 1440), 4:5 (1080 × 1350), 1:1 (1080 × 1080), 4:3 (1440 × 1080), 3:2 (1620 × 1080), 16:9 (1920 × 1080) y 1.91:1 (1080 × 566). Todas las diapositivas de una publicación usan el mismo tamaño y cada una se exporta en JPEG."
   - q: "¿Se suben mis fotos para hacer el collage?"
-    a: "No. El collage se monta y se genera dentro de tu navegador, y los JPEG terminados se guardan directamente en tu dispositivo. No se envía nada a ningún servidor."
+    a: "No. El collage se monta y se genera dentro de tu navegador, y los JPEG terminados se guardan directamente en tu dispositivo. Tus fotos no se envían a ningún servidor."
   - q: "¿Puedo editar las fotos antes de meterlas en el collage?"
     a: "Sí. El collage usa cada foto con los ajustes que le hayas hecho en el editor: recorte, color, presets y retoques. Si cambias un ajuste, el collage lo recoge."
 updated: 2026-10-20
@@ -50,7 +50,7 @@ Está dentro del editor de fotos, así que las fotos del collage son las version
 
 El collage se monta y se exporta por completo en tu navegador; tus fotos no salen de tu dispositivo. Al exportar, Lightframes revela cada foto con sus ajustes a la resolución que de verdad necesita su celda, dibuja cada diapositiva a tamaño completo y la guarda como JPEG. Los bordes de las celdas se ajustan a píxeles enteros, para que nunca quede una línea fina entre fotos vecinas.
 
-No hay cuenta ni subida de archivos y, una vez cargada la app, también funciona sin conexión.
+No hay cuenta ni subida de archivos y, una vez cargada la app, el collage también funciona sin conexión.
 
 ## Tamaños
 

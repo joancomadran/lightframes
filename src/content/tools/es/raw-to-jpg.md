@@ -32,7 +32,7 @@ faq:
   - q: "¿Qué formatos RAW puedo convertir a JPG?"
     a: "Canon .cr3 y .cr2, Sony .arw, Nikon .nef y .nrw, .dng, Fujifilm .raf, Olympus / OM System .orf, Panasonic .rw2, Pentax .pef y Samsung .srw. La lectura la hace LibRaw compilado a WebAssembly, así que la compatibilidad con cada modelo de cámara depende de lo que soporte esa librería."
   - q: "¿Tengo que subir mis RAW para convertirlos?"
-    a: "No. El RAW se lee, se revela y se codifica en JPG dentro de tu navegador, en tu propio dispositivo. No se envía nada a ningún servidor y no necesitas cuenta."
+    a: "No. El RAW se lee, se revela y se codifica en JPG dentro de tu navegador, en tu propio dispositivo. Tus fotos no se envían a ningún servidor y no necesitas cuenta."
   - q: "¿El JPG sale a resolución completa?"
     a: "Sí. Con Size en Original, la exportación se revela a partir de todos los datos del sensor, hasta 8192 px en el lado largo; los sensores más grandes se reducen a esa medida. También puedes elegir un lado largo menor o un tamaño fijo para redes sociales."
   - q: "¿Puedo convertir muchos RAW a JPG a la vez?"

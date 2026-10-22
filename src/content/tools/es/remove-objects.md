@@ -61,7 +61,7 @@ Cada modo usa una técnica distinta:
 
 En Heal y Clone, Lightframes elige solo la zona de origen buscando la que mejor encaja alrededor. Si no acierta, arrastra el contorno verde a otro sitio o pulsa **New source** (atajo `/`) para probar la siguiente opción.
 
-Remove necesita el modelo la primera vez que lo eliges. Se descarga una sola vez (unos 28 MB), se comprueba con una suma de verificación fija y se guarda en el almacenamiento del navegador, así que en las siguientes sesiones arranca al momento, incluso sin conexión. El modelo se ejecuta en el procesador de tu dispositivo, en segundo plano, para que el editor no se quede bloqueado mientras rellena.
+Remove necesita el modelo la primera vez que lo eliges. Se descarga una sola vez de Hugging Face (unos 28 MB), se comprueba con una suma de verificación fija y se guarda en el almacenamiento del navegador, así que en las siguientes sesiones arranca al momento, incluso sin conexión. El modelo se ejecuta en el procesador de tu dispositivo, en segundo plano, para que el editor no se quede bloqueado mientras rellena. La foto no forma parte de esa descarga.
 
 ## Controles
 
@@ -88,4 +88,4 @@ El modelo de Remove es rápido y privado, pero no hace milagros. Trabaja sobre u
 
 Heal y Clone solo pueden copiar lo que ya hay en el encuadre. En una foto muy cargada sin zonas limpias cerca, quizá tengas que probar varios orígenes o pasarte a Remove.
 
-La primera vez que usas Remove necesitas conexión para descargar el modelo; después funciona sin internet. Si tienes dudas sobre privacidad, formatos o cómo instalar la app, consulta las [preguntas frecuentes](/es/preguntas-frecuentes), o [abre el editor](/editor) y pruébalo con tu propia foto.
+La primera vez que usas Remove necesitas conexión para descargar el modelo de Hugging Face; tus fotos no salen de tu dispositivo. Después funciona sin internet. Si tienes dudas sobre privacidad, formatos o cómo instalar la app, consulta las [preguntas frecuentes](/es/preguntas-frecuentes), o [abre el editor](/editor) y pruébalo con tu propia foto.

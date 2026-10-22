@@ -27,7 +27,7 @@ export const landing = {
       points: [
         { h3: 'No upload', p: 'Files are processed locally, in the tab.' },
         { h3: 'No account', p: 'Open the editor and start. Nothing to sign up for.' },
-        { h3: 'Offline', p: 'Install it as an app; it keeps working without a connection.' },
+        { h3: 'Offline', p: 'Install it as an app. Editing keeps working without a connection after it has loaded. The first object removal also downloads a model.' },
       ],
     },
     tools: {
@@ -82,7 +82,7 @@ export const landing = {
       points: [
         { h3: 'Sin subir nada', p: 'Los archivos se procesan en local, en la pestaña.' },
         { h3: 'Sin cuenta', p: 'Abre el editor y empieza. No hay registro.' },
-        { h3: 'Sin conexión', p: 'Instálalo como app y sigue funcionando sin internet.' },
+        { h3: 'Sin conexión', p: 'Instálalo como app. La edición sigue funcionando sin internet después de cargarla. El primer borrado de objetos también descarga un modelo.' },
       ],
     },
     tools: {

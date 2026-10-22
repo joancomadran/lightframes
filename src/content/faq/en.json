@@ -10,11 +10,11 @@
     },
     {
       "q": "Are my photos uploaded to a server?",
-      "a": "No. Lightframes opens, edits and exports your photos entirely inside your browser using WebAssembly and Web Workers, and the files never leave your device. The only things it downloads are the app itself and, if you use the AI tools, their model files."
+      "a": "No. Lightframes opens, edits and exports your photos entirely inside your browser using WebAssembly and Web Workers, and the files never leave your device. The app downloads itself, and the AI tools download a model the first time you use each one. Object removal downloads its AI model from Hugging Face the first time you use it; your photos never leave your device. Background removal, subject masks and upscaling download their models from lightframes.si."
     },
     {
       "q": "Is Lightframes private? What data does it keep?",
-      "a": "Lightframes keeps your open photos, edits and presets only in your own browser's storage (IndexedDB and local storage) so it can restore your session. Nothing is sent to a server; Clear workspace removes the open photos, and clearing the site data in your browser wipes everything."
+      "a": "Lightframes keeps your open photos, edits and presets only in your own browser's storage (IndexedDB and local storage) so it can restore your session. Those photos are not sent to a server. Visits are counted with Vercel Web Analytics, which does not use cookies and does not see your photos. Object removal downloads its AI model from Hugging Face the first time you use it; that download reveals your IP address to Hugging Face, and the photo stays on your device. Clear workspace removes the open photos, and clearing the site data in your browser wipes the local copy."
     },
     {
       "q": "Do I need to create an account to use Lightframes?",
@@ -30,7 +30,7 @@
     },
     {
       "q": "Does Lightframes work offline? Can I install it as an app?",
-      "a": "Yes. Lightframes is a progressive web app: after one visit online it works offline, and you can install it from the Install app button or your browser's menu (on iPhone and iPad, Share → Add to Home Screen; in Safari on Mac, File → Add to Dock). AI models are downloaded the first time you use each tool and then also work offline."
+      "a": "Editing does, after one visit online. Lightframes is a progressive web app, and you can install it from the Install app button or your browser's menu (on iPhone and iPad, Share → Add to Home Screen; in Safari on Mac, File → Add to Dock). Object removal downloads its AI model from Hugging Face the first time you use it. Background removal, subject masks and upscaling download their models from lightframes.si. After a model is cached, that tool works offline too."
     },
     {
       "q": "Which browsers and devices does Lightframes work on?",
@@ -50,7 +50,7 @@
     },
     {
       "q": "Do the AI features send my photos to the cloud?",
-      "a": "No. Object removal, background removal, subject masks and AI upscaling all run on your device in the browser; your photos are never uploaded. Each model downloads once the first time you use it (about 28 MB for removal, 45 MB for background and subject, 5 MB for upscaling), is verified, and is then cached for later and offline use."
+      "a": "No. Object removal, background removal, subject masks and AI upscaling all run on your device in the browser; your photos are never uploaded. Object removal downloads its AI model from Hugging Face the first time you use it; your photos never leave your device. That download reveals your IP address to Hugging Face, like any download. Background removal, subject masks and upscaling download their models from lightframes.si. The files are about 28 MB (removal), 45 MB (background and subject) and 5 MB (upscaling). Each is checked once and then cached for later and offline use."
     },
     {
       "q": "Is Lightframes open source? Where is the code?",

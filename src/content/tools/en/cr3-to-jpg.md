@@ -35,7 +35,7 @@ faq:
   - q: "Can I batch convert CR3 to JPG?"
     a: "Yes. Open a folder or several files, select them all and export once. Every photo is developed with the same settings and the JPGs download together as a ZIP."
   - q: "Are my CR3 files uploaded?"
-    a: "No. Decoding, editing and JPEG encoding all happen in your browser on your own device. Nothing is sent to a server."
+    a: "No. Decoding, editing and JPEG encoding all happen in your browser on your own device. Your photos are not sent to a server."
   - q: "Does it also convert CR2?"
     a: "Yes. Older Canon .cr2 files are converted in exactly the same way, and so are RAW files from other brands; see the RAW to JPG converter."
   - q: "Will the colours match my Canon JPEGs?"
@@ -56,7 +56,7 @@ The CR3 is decoded on your device by LibRaw, an open-source RAW library compiled
 - **Thumbnails** come from the preview Canon embeds in each CR3, so a folder of files appears quickly.
 - **The export** is developed from the full sensor data with the white balance the camera recorded, then encoded as JPEG at the quality you choose.
 - **A fallback.** If a file can't be developed, for example from a camera newer than the bundled LibRaw, Lightframes exports the full-size JPEG Canon stored inside the CR3 instead.
-- **Nothing leaves the tab.** The files are never uploaded, and after the first visit the editor works offline.
+- **The files stay in the tab.** The files are never uploaded, and after the first visit editing works offline.
 
 ## Converting a whole card of CR3 files
 

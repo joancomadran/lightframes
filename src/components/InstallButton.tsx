@@ -2,8 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useInstallPrompt, type ManualInstall } from '../hooks/useInstallPrompt'
 
 const MANUAL_STEPS: Record<ManualInstall, string> = {
-  ios: 'Tap the Share button, then “Add to Home Screen”. Lightframes opens in its own window and works offline.',
-  'mac-safari': 'In Safari, choose File → Add to Dock. Lightframes opens in its own window and works offline.',
+  ios: 'Tap the Share button, then “Add to Home Screen”. Lightframes opens in its own window, and editing works offline after it has loaded.',
+  'mac-safari': 'In Safari, choose File → Add to Dock. Lightframes opens in its own window, and editing works offline after it has loaded.',
 }
 
 /**
@@ -46,7 +46,7 @@ export function InstallButton() {
         className="btn btn--ghost btn--sm install__btn"
         aria-describedby={manual ? tipId : undefined}
         aria-expanded={manual ? open : undefined}
-        title={manual ? undefined : 'Install Lightframes as an app — works offline, in its own window'}
+        title={manual ? undefined : 'Install Lightframes as an app — editing works offline after it has loaded, in its own window'}
         onClick={() => (manual ? setOpen((v) => !v) : void install())}
       >
         <svg

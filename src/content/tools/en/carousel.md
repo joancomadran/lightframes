@@ -38,7 +38,7 @@ faq:
   - q: "Will the photo line up exactly across the slides?"
     a: "Yes. The whole strip is rendered once at full size and cut at exact slide widths, so a photo that crosses a cut continues pixel for pixel on the next slide. Post the slides in their numbered order and don't crop them in the app."
   - q: "Are my photos uploaded to make the carousel?"
-    a: "No. Lightframes builds and exports the slides inside your browser. Nothing is sent to a server and you don't need an account."
+    a: "No. Lightframes builds and exports the slides inside your browser. Your photos are not sent to a server and you don't need an account."
   - q: "Can I make a carousel on my phone?"
     a: "Yes. The carousel works with touch: drag to move, drag corners to resize, tap photos in the list to place them. When your phone's browser supports it, export offers Save and Share buttons, so you can send the slides straight to the share sheet."
 updated: 2026-10-20

@@ -4,7 +4,7 @@ slug: about
 title: "About Lightframes"
 description: "Who builds Lightframes, why it edits photos on your device instead of in the cloud, how it's funded, and how the open-source (MIT) project works."
 h1: "About Lightframes"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: AboutPage
 ---
 
@@ -25,7 +25,7 @@ Because editing your photos shouldn't mean handing them over. Many online editor
 Lightframes takes a third route: a full editor that loads like a web page but does all the work on your own computer or phone. It's built around a few ideas:
 
 - **Private by design.** Your photos are opened from your disk and processed in the browser tab. They aren't sent to a server to be edited, and there's no account to sign into.
-- **Local and offline.** Your open photos and edits are saved in your browser's own storage, so a refresh doesn't lose your work. After the first visit the app works without a connection, and you can install it as an app.
+- **Local and offline.** Your open photos and edits are saved in your browser's own storage, so a refresh doesn't lose your work. After the first visit, editing works without a connection, and you can install it as an app. The first time you remove an object, that tool downloads its model from Hugging Face.
 - **Presets and copy/paste edits.** Most of the time you edit a set of photos taken in the same light. Lightframes lets you save a look as a preset, dial its strength, import presets from XMP or `.cube` LUT files, and copy one photo's settings onto a whole selection, choosing which settings to bring across.
 - **Free.** Every feature is available to everyone. There's no paid tier and no watermark you have to pay to remove.
 
@@ -40,9 +40,9 @@ You don't need to know any of this to use Lightframes, but it explains how a web
 - **WebAssembly** lets the browser run code that was originally written for desktop programs at close to native speed. Lightframes uses it to run LibRaw, an established open-source RAW decoder, inside the page.
 - **Web Workers** are background threads. The heavy pixel work is split across several of them so the interface stays responsive while you drag a slider.
 - **On-device AI models** power the smart tools. They run in the browser with ONNX Runtime Web:
-  - object removal uses MI-GAN (MIT licence),
-  - subject and background detection use IS-Net (Apache-2.0),
-  - upscaling uses Real-ESRGAN (BSD-3-Clause).
+  - object removal uses MI-GAN (MIT licence), downloaded from Hugging Face the first time you use it,
+  - subject and background detection use IS-Net (Apache-2.0), downloaded from lightframes.si,
+  - upscaling uses Real-ESRGAN (BSD-3-Clause), also from lightframes.si.
 
   Each model is downloaded once, the first time you use the tool, checked against a fixed fingerprint, and cached in your browser. Your photo is processed locally; it isn't sent along with that download.
 

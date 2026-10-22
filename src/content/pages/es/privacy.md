@@ -13,7 +13,8 @@ schemaType: WebPage
 - **Tus fotos no salen de tu dispositivo.** Lightframes abre, decodifica y edita las imágenes dentro de tu navegador (WebAssembly y Web Workers). No se suben a nuestros servidores ni a los de terceros, y no tenemos acceso ni a tus fotos ni a tus ediciones.
 - **No hay cuentas de usuario, registro, formulario de contacto ni boletín.**
 - **Enlaces de afiliado de Amazon.** El editor y la página de equipo enlazan a Amazon.es. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables. El enlace abre Amazon solo al hacer clic. Las tarjetas no cargan imágenes ni scripts de Amazon.
-- Como en cualquier web, al visitar Lightframes ciertos datos técnicos (principalmente tu dirección IP) llegan al proveedor de alojamiento y, solo si usas la herramienta de borrado de objetos, a Hugging Face. A continuación te explicamos cada caso.
+- **El borrado de objetos** descarga su modelo de IA de Hugging Face la primera vez que lo usas; tus fotos no salen de tu dispositivo. Esa descarga, como cualquier otra, muestra tu dirección IP a Hugging Face. La eliminación de fondo, las máscaras de sujeto y la ampliación descargan sus modelos desde lightframes.si, no desde otro servidor.
+- Como en cualquier web, al visitar Lightframes ciertos datos técnicos (principalmente tu dirección IP) llegan al proveedor de alojamiento. Las visitas se cuentan con Vercel Web Analytics, que no usa cookies y no recibe tus fotos. A continuación te explicamos cada caso.
 
 ## Responsable del tratamiento
 
@@ -37,10 +38,10 @@ Esta información permanece en tu navegador. **Nosotros no la recibimos en ning�
 
 ### Herramientas de inteligencia artificial
 
-Las funciones de IA (eliminación de fondo, ampliación y borrado de objetos) también se ejecutan íntegramente en tu dispositivo. Para ello necesitan un archivo de modelo, que se descarga la primera vez que usas cada herramienta y queda guardado en la Cache Storage del navegador:
+Las funciones de IA (eliminación de fondo, máscaras de sujeto, ampliación y borrado de objetos) también se ejecutan íntegramente en tu dispositivo. Para ello necesitan un archivo de modelo, que se descarga la primera vez que usas cada herramienta y queda guardado en la Cache Storage del navegador:
 
-- Los modelos de **eliminación de fondo** y de **ampliación** se sirven desde el propio dominio lightframes.si.
-- El modelo de **borrado de objetos** (MI-GAN) se descarga desde **huggingface.co**, servicio de Hugging Face, Inc. Al descargarlo, Hugging Face recibe los datos técnicos propios de cualquier petición web (tu dirección IP, el tipo de navegador, la fecha y la hora). **Tu foto no se envía**: solo se descarga el archivo del modelo. Hugging Face trata esos datos conforme a su propia política de privacidad (https://huggingface.co/privacy).
+- **El borrado de objetos** descarga su modelo de IA (MI-GAN) de Hugging Face (huggingface.co) la primera vez que lo usas; tus fotos no salen de tu dispositivo. Esa petición, como cualquier descarga, revela tu dirección IP, el tipo de navegador y la hora a Hugging Face, Inc. Solo se descarga el archivo del modelo. Hugging Face trata esos datos conforme a su propia política de privacidad (https://huggingface.co/privacy).
+- **La eliminación de fondo, las máscaras de sujeto y la ampliación** descargan sus modelos (IS-Net y Real-ESRGAN) desde lightframes.si. Ninguna otra función de IA pide un modelo a un servidor externo.
 
 <!-- TODO legal review: valorar alojar el modelo MI-GAN en /models/ para evitar esta petición a un tercero. -->
 

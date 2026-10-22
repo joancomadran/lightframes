@@ -24,7 +24,7 @@ The stills below are real screenshots.
 | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
 | ![Empty start screen](docs/screenshots/home.jpg) | ![Carousel mode splitting a panorama across 4 slides](docs/screenshots/carousel.jpg) |
 
-Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. The app is an installable PWA and works offline once it has loaded.
+Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. The app is an installable PWA. Editing works offline once it has loaded. The first use of object removal also downloads its model from Hugging Face.
 
 ## Features
 
@@ -61,7 +61,7 @@ Open the URL Astro prints (usually `http://localhost:4321`). The landing page is
 | `npm run check`   | Type-check `.astro`, `.ts` and `.tsx` only      |
 | `npm run lint`    | Lint with oxlint                                |
 
-`dist/` is static files. Any static host can serve it. After the app has loaded, editing itself does not need a network. A Chromium browser (Chrome, Edge, Brave) is the best bet for opening a folder and for canvas performance. Large RAW files and the AI tools are slower on phones.
+`dist/` is static files. Any static host can serve it. After the app has loaded, ordinary editing does not need a network. The first object removal downloads its model; see Offline use below. A Chromium browser (Chrome, Edge, Brave) is the best bet for opening a folder and for canvas performance. Large RAW files and the AI tools are slower on phones.
 
 ## Tech stack
 
