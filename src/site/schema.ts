@@ -53,8 +53,8 @@ export function webApplication(lang: Lang, featureList: string[]): Node {
     url: absoluteUrl('/editor'),
     description:
       lang === 'es'
-        ? 'Editor de fotos gratis y de código abierto que funciona en el navegador: RAW, presets, edición por lotes e IA en el dispositivo, sin subir tus fotos.'
-        : 'Free, open-source photo editor that runs in the browser: RAW, presets, batch edits and on-device AI, without uploading your photos.',
+        ? 'Aplica tus presets de Lightroom, XMP y LUTs .cube por lotes y exporta un carrusel listo para Instagram. Gratis, en el navegador, sin subir tus fotos.'
+        : 'Apply your Lightroom presets, XMP and .cube LUTs in batch and export an Instagram-ready carousel. Free, in the browser, nothing uploaded.',
     applicationCategory: 'MultimediaApplication',
     applicationSubCategory: 'Photo editor',
     operatingSystem: 'Any (modern web browser)',
