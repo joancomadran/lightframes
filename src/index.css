@@ -1050,25 +1050,6 @@ a.github-star {
   color: var(--text);
 }
 
-.gear-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: none;
-  font-size: 0.78rem;
-  color: var(--text);
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-@media (hover: hover) {
-  .gear-pill:hover {
-    border-color: rgba(232, 239, 228, 0.35);
-    background: var(--bg-elevated);
-  }
-}
-
 .github-star > svg:last-child {
   color: #f5c84c;
 }
@@ -1114,20 +1095,6 @@ a.github-star {
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
-}
-
-/* Sidebar ad: medium rectangle on tall screens, a banner on shorter ones. */
-.sidebar > .ad-slot {
-  margin: 0;
-  border: none;
-  border-top: 1px solid var(--line);
-  border-radius: 0;
-}
-
-@media (max-height: 960px) {
-  .sidebar > .ad-slot {
-    height: 100px;
-  }
 }
 
 .sidebar__github {
@@ -2448,177 +2415,6 @@ a.github-star {
   }
 }
 
-/* ——— Ad slots ——— */
-
-.ad-slot {
-  height: var(--ad-height, 120px);
-  margin: 0.55rem;
-  margin-top: auto;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius);
-  background: rgba(0, 0, 0, 0.2);
-  color: var(--text-muted);
-}
-
-.ad-slot__label {
-  font-size: 0.65rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.ad-slot__hint {
-  font-size: 0.75rem;
-  opacity: 0.7;
-}
-
-.ad-slot--affiliate {
-  container-type: size;
-  border: 1px solid rgba(200, 245, 96, 0.35);
-  background: linear-gradient(160deg, rgba(200, 245, 96, 0.1), rgba(200, 245, 96, 0.02) 60%);
-  overflow: hidden;
-}
-
-/* The sidebar slot is normally flush; the affiliate card floats so it reads as an ad, not a panel. */
-.sidebar > .ad-slot--affiliate {
-  margin: auto 0.55rem 0.55rem;
-  border: 1px solid rgba(200, 245, 96, 0.35);
-  border-radius: var(--radius);
-}
-
-.ad-card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  text-align: center;
-  color: var(--text);
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.ad-card__badge {
-  position: absolute;
-  top: 0.4rem;
-  left: 0.4rem;
-  padding: 0.05rem 0.35rem;
-  border-radius: 4px;
-  background: var(--accent);
-  color: #111;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.ad-card__media {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.ad-card__media svg,
-.ad-card__media img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
-}
-
-.ad-card__body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
-.ad-card__title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.ad-card__detail {
-  font-size: 0.75rem;
-  line-height: 1.35;
-  color: var(--text-muted);
-}
-
-.ad-card__cta {
-  margin-top: 0.3rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #111;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-
-@media (hover: hover) {
-  .ad-card:hover {
-    background: rgba(200, 245, 96, 0.06);
-  }
-
-  .ad-card:hover .ad-card__cta {
-    background: #d4fa7a;
-  }
-}
-
-/* Banner-height slots (filmstrip, short sidebars): picture left, text right. */
-@container (max-height: 140px) {
-  .ad-card {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 0.6rem;
-    padding: 0.5rem 0.6rem;
-    text-align: left;
-  }
-
-  .ad-card__media {
-    width: 56px;
-    height: 56px;
-  }
-
-  .ad-card__body {
-    align-items: flex-start;
-    gap: 0.1rem;
-  }
-
-  .ad-card__title {
-    font-size: 0.78rem;
-  }
-
-  .ad-card__detail {
-    display: none;
-  }
-
-  .ad-card__cta {
-    margin-top: 0.2rem;
-    padding: 0.15rem 0.55rem;
-    font-size: 0.68rem;
-  }
-
-  .ad-card__badge {
-    top: 0.3rem;
-    left: 0.3rem;
-    font-size: 0.55rem;
-  }
-}
-
 /* ——— Responsive ——— */
 
 @media (prefers-reduced-motion: reduce) {
@@ -3337,63 +3133,6 @@ select.field option {
 
 .modal__card--video {
   width: min(960px, calc(100vw - 2rem));
-}
-
-.gear {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.gear__list {
-  display: grid;
-  gap: 0.35rem;
-  margin: 0.4rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.gear__item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  column-gap: 0.75rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  color: var(--text);
-  text-decoration: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.gear__title {
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.gear__detail {
-  grid-row: 2;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.gear__go {
-  grid-row: 1 / 3;
-  grid-column: 2;
-  align-self: center;
-  color: var(--accent);
-}
-
-@media (hover: hover) {
-  .gear__item:hover {
-    border-color: rgba(200, 245, 96, 0.35);
-    background: var(--bg-elevated);
-  }
-}
-
-.gear__note {
-  margin: 0.25rem 0 0;
-  font-size: 0.72rem;
-  color: var(--text-muted);
 }
 
 .demo-video {
@@ -4450,10 +4189,6 @@ kbd {
       'film side';
   }
 
-  .sidebar > .ad-slot {
-    height: 100px;
-  }
-
   /* Filmstrip turns into a horizontal row of square thumbnails. */
   .filmstrip {
     flex-direction: row;
@@ -4464,7 +4199,6 @@ kbd {
 
   .filmstrip--sparse,
   .filmstrip__header,
-  .filmstrip > .ad-slot,
   .filmstrip__name {
     display: none;
   }
@@ -4573,7 +4307,6 @@ kbd {
   }
 
   .histogram-panel,
-  .sidebar > .ad-slot,
   .preview__ctl--secondary {
     display: none;
   }
@@ -4812,10 +4545,6 @@ kbd {
     padding: 0.5rem 1rem 1rem;
   }
 
-  .sheet-extras > .ad-slot {
-    margin: 0;
-  }
-
   .sheet-extras__links {
     display: flex;
     flex-wrap: wrap;
@@ -4839,7 +4568,6 @@ kbd {
     -webkit-overflow-scrolling: touch;
   }
 
-  .sidebar > .ad-slot,
   .sidebar__github {
     display: none;
   }
@@ -5093,12 +4821,5 @@ kbd {
 
   .preview__empty-actions {
     margin-top: 1.25rem;
-  }
-}
-
-/* Phones: the gear list is a desktop extra; the sheet already carries the affiliate card. */
-@media (max-width: 767px) {
-  .gear-pill {
-    display: none;
   }
 }

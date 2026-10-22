@@ -22,7 +22,6 @@ import {
   type CollageSlide,
 } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
-import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
 import { Slider } from './Slider'
 import {
@@ -762,8 +761,6 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
             </div>
           </section>
         </div>
-
-        <AdSlot id="sidebar" height={250} />
       </aside>
     </div>
   )

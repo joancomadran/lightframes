@@ -4,7 +4,7 @@ slug: terminos
 title: "Aviso legal y condiciones de uso"
 description: "Aviso legal y condiciones de uso de Lightframes, editor de fotos gratuito y de código abierto que funciona en el navegador: titular, licencia y responsabilidad."
 h1: "Aviso legal y condiciones de uso"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -64,12 +64,11 @@ En la medida en que lo permita la ley, no seremos responsables de:
 
 Nada de lo dispuesto en estas condiciones limita ni excluye la responsabilidad que no pueda limitarse o excluirse legalmente, incluida la derivada de dolo o culpa grave, ni los derechos que te reconoce la normativa de protección de los consumidores y usuarios.
 
-## Enlaces externos, enlaces de afiliado y donaciones
+## Enlaces externos y donaciones
 
-- El sitio contiene enlaces a webs de terceros (por ejemplo, GitHub, Hugging Face, Amazon.es o Buy Me a Coffee). No las controlamos ni respondemos de sus contenidos, disponibilidad o prácticas de privacidad. Si tuviéramos conocimiento efectivo de que una web enlazada contiene contenidos ilícitos, retiraríamos el enlace, conforme al artículo 17 de la LSSI-CE.
-- **Enlaces de afiliado.** Algunos enlaces a Amazon.es son enlaces de afiliado. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables. Esto no modifica el precio que pagas. Cualquier compra constituye un contrato entre tú y Amazon, sujeto a las condiciones de Amazon.
+- El sitio contiene enlaces a webs de terceros (por ejemplo, GitHub, Hugging Face o Buy Me a Coffee). No las controlamos ni respondemos de sus contenidos, disponibilidad o prácticas de privacidad. Si tuviéramos conocimiento efectivo de que una web enlazada contiene contenidos ilícitos, retiraríamos el enlace, conforme al artículo 17 de la LSSI-CE.
 - **Las donaciones** a través de Buy Me a Coffee son voluntarias y no dan acceso a ningún servicio ni función adicional. Las gestiona Buy Me a Coffee conforme a sus propias condiciones.
-- **Publicidad.** El sitio reserva espacios para anuncios; actualmente no hay ninguna red publicitaria activa. <!-- TODO legal review: actualizar si se activa una red publicitaria. -->
+- **Publicidad.** Lightframes no muestra anuncios.
 
 ## Privacidad y cookies
 

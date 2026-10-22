@@ -4,7 +4,7 @@ slug: about
 title: "About Lightframes"
 description: "Who builds Lightframes, why it edits photos on your device instead of in the cloud, how it's funded, and how the open-source (MIT) project works."
 h1: "About Lightframes"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: AboutPage
 ---
 
@@ -50,15 +50,9 @@ The app itself is written in TypeScript with React, and the whole thing is a set
 
 ## How is Lightframes funded?
 
-Running the site costs money and building it takes time, so Lightframes is funded in three low-key ways:
+Running the site costs money and building it takes time. Lightframes is free, with no ads and no paid tier. If the editor saves you time, you can [buy Joan a coffee](https://buymeacoffee.com/devcoma).
 
-- **A small, clearly labelled ad space in the app.** Today it shows affiliate cards for photography gear.
-- **Affiliate links.** The [gear page](/gear) and those ad cards link to products on Amazon.es. If you buy something through them, Lightframes earns a small commission at no extra cost to you. As an Amazon Associate, Lightframes earns from qualifying purchases.
-- **Optional donations.** If the editor saves you time, you can [buy Joan a coffee](https://buymeacoffee.com/devcoma).
-
-None of these involve your photos. The site counts page visits with Vercel Web Analytics, which doesn't see the pictures you open in the editor.
-
-<!-- TODO: confirm the analytics wording against the privacy policy, and update this section if a third-party ad network is added. -->
+That donation does not involve your photos. The site counts page visits with Vercel Web Analytics, which doesn't use cookies and doesn't see the pictures you open in the editor.
 
 ## Is Lightframes open source?
 

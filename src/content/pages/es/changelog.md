@@ -4,17 +4,21 @@ slug: novedades
 title: "Novedades de Lightframes"
 description: "Todas las actualizaciones de Lightframes, el editor de fotos gratuito en el navegador: herramientas nuevas, funciones de edición y mejoras, con su fecha."
 h1: "Novedades"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
 Lo que ha cambiado en Lightframes, de lo más reciente a lo más antiguo. El historial completo está en el [registro de cambios de GitHub](https://github.com/joancomadran/lightframes/commits/main).
 
+## 22 de octubre de 2026
+
+- **Sin anuncios ni enlaces de afiliado.** Desaparecen las tarjetas de Amazon.es, el diálogo de equipo del editor y la página de equipo. Las donaciones siguen siendo voluntarias. Más en [Sobre Lightframes](/es/sobre-lightframes).
+
 ## 20 de octubre de 2026
 
 - **Máscaras por rango.** Ahora puedes limitar los ajustes locales a un rango de brillo (de lo más oscuro a lo más claro) y a un rango de color, con un control de suavidad. Muy útil para tocar solo el cielo dentro de una máscara lineal, o solo los tonos cálidos de una pincelada.
 - **Paneles más cómodos en el móvil.** Desliza hacia abajo el panel de edición para plegarlo y hacia arriba para recuperarlo.
-- **Recomendaciones de equipo y donaciones.** Un botón de "Buy me a coffee" y un pequeño espacio señalizado con material fotográfico recomendado (enlaces de afiliado). En [Sobre Lightframes](/es/sobre-lightframes) te contamos cómo se financia el proyecto.
+- **Recomendaciones de equipo y donaciones.** Un botón de "Buy me a coffee" y un pequeño espacio señalizado con material fotográfico recomendado (enlaces de afiliado). Esas recomendaciones se quitaron el 22 de octubre.
 - **Vídeo de demostración.** La pantalla de inicio tiene un botón para ver un vídeo corto del editor en marcha.
 
 ## 19 de octubre de 2026

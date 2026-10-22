@@ -6,7 +6,7 @@
     },
     {
       "q": "How is Lightframes free? What's the catch?",
-      "a": "Lightframes runs on your own device, so it has almost no server costs to cover. A few small ad spaces and affiliate links to photo gear help fund it, along with optional donations, and the code is open source under the MIT licence so anyone can check what it does."
+      "a": "Lightframes runs on your own device, so it has almost no server costs to cover. There are no ads. Optional donations help, and the code is open source under the MIT licence so anyone can check what it does."
     },
     {
       "q": "Are my photos uploaded to a server?",
@@ -62,7 +62,7 @@
     },
     {
       "q": "How can I support Lightframes?",
-      "a": "You can star the project on GitHub, share it with other photographers, buy the developer a coffee through the link in the app, or use the recommended gear links when you buy photo equipment. Bug reports and contributions on GitHub help too."
+      "a": "You can star the project on GitHub, share it with other photographers, or buy the developer a coffee through the link in the app. Bug reports and contributions on GitHub help too."
     }
   ]
 }

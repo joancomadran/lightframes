@@ -4,7 +4,7 @@ slug: privacidad
 title: "Política de privacidad"
 description: "Cómo trata Lightframes tus datos: tus fotos se editan en tu navegador y nunca se suben. Qué implican el alojamiento, las fuentes y las descargas de IA."
 h1: "Política de privacidad"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -73,18 +73,14 @@ No hay formulario de contacto. Si nos envías un mensaje directo en X ([@dev_com
 
 Si abres una incidencia (*issue*) o una conversación en GitHub (https://github.com/joancomadran/lightframes), ese contenido es **público** y lo trata GitHub, Inc. conforme a sus propias condiciones y política de privacidad.
 
-## Enlaces de afiliado, donaciones y sitios externos
+## Donaciones y sitios externos
 
-- **Enlaces de afiliado de Amazon.** Algunos enlaces llevan a Amazon.es e incluyen nuestro identificador del Programa de Afiliados de Amazon. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables. Por el mero hecho de ver nuestras páginas no se comparte ningún dato con Amazon: solo si haces clic en uno de esos enlaces, Amazon registra la visita y puede instalar sus propias cookies en amazon.es, conforme a sus avisos de privacidad y de cookies. Nosotros solo recibimos informes agregados de clics y ventas, nunca tu identidad.
 - **Donaciones.** El botón «Buy me a coffee» enlaza con https://buymeacoffee.com/devcoma. Si haces una donación, el pago lo gestionan Buy Me a Coffee y sus proveedores de pago conforme a sus propias condiciones. Podemos recibir tu nombre o el mensaje que decidas dejar, que solo utilizaremos para gestionar y agradecer la donación. <!-- TODO legal review: confirmar qué datos comparte Buy Me a Coffee con el creador y el plazo de conservación necesario a efectos fiscales. -->
-- **Otros enlaces** (GitHub, orígenes de los modelos, etc.) llevan a sitios con sus propias políticas de privacidad, que no controlamos.
+- **Otros enlaces** (GitHub, orígenes de los modelos, etc.) llevan a sitios con sus propias políticas de privacidad, que no controlamos. Cargar una página de Lightframes no contacta con esos sitios.
 
 ## Publicidad
 
-La web reserva espacios para anuncios, pero **actualmente no hay ninguna red publicitaria activa** ni se instalan cookies publicitarias.
-
-<!-- TODO legal review: reescribir esta sección cuando se active una red publicitaria. -->
-Si en el futuro activamos un servicio de publicidad (por ejemplo, Google AdSense), actualizaremos previamente esta política y la Política de cookies, y una plataforma de gestión del consentimiento te pedirá permiso antes de utilizar cualquier cookie o tecnología similar que no sea estrictamente necesaria. Podrás rechazarlas o retirar tu consentimiento con la misma facilidad con que lo diste.
+Lightframes no muestra anuncios y no carga ninguna red publicitaria, cookies publicitarias ni rastreadores de afiliados.
 
 ## Transferencias internacionales
 
@@ -118,4 +114,4 @@ No tomamos decisiones automatizadas ni elaboramos perfiles que produzcan efectos
 
 ## Cambios en esta política
 
-Podemos actualizar esta política cuando cambie el funcionamiento de la web (por ejemplo, si alojamos las fuentes en nuestro dominio o activamos la publicidad). La fecha indicada muestra la versión vigente. Si el cambio es relevante, lo indicaremos de forma visible en la web.
+Podemos actualizar esta política cuando cambie el funcionamiento de la web. La fecha indicada muestra la versión vigente. Si el cambio es relevante, lo indicaremos de forma visible en la web.

@@ -45,7 +45,6 @@ import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { AppMark } from './AppMark'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
 import { DemoVideoDialog } from './DemoVideoDialog'
-import { GearDialog } from './GearDialog'
 import { HealOverlay, type HealOverlayConfig } from './HealOverlay'
 import { RefineOverlay, type RefineOverlayConfig } from './RefineOverlay'
 import { InstallButton } from './InstallButton'
@@ -235,7 +234,6 @@ export function PreviewCanvas({
   const holdRef = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null)
   const [holding, setHolding] = useState(false)
   const [demoOpen, setDemoOpen] = useState(false)
-  const [gearOpen, setGearOpen] = useState(false)
   /** Bases currently drawn on the main and the "before" canvas: the before layer only shows once they match. */
   const [renderedBase, setRenderedBase] = useState<BaseImage | null>(null)
   const [beforeBase, setBeforeBase] = useState<BaseImage | null>(null)
@@ -912,12 +910,8 @@ export function PreviewCanvas({
           <InstallButton />
           <GithubStar />
           <DonateButton />
-          <button type="button" className="gear-pill" onClick={() => setGearOpen(true)}>
-            Recommended gear
-          </button>
         </p>
         <DemoVideoDialog open={demoOpen} onClose={() => setDemoOpen(false)} />
-        <GearDialog open={gearOpen} onClose={() => setGearOpen(false)} />
       </div>
     )
   }

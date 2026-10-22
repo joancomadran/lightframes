@@ -4,17 +4,21 @@ slug: changelog
 title: "Changelog: What's New in Lightframes"
 description: "Every update to Lightframes, the free in-browser photo editor: new tools, editing features and fixes, newest first, with the date each one shipped."
 h1: "Changelog"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
 What's changed in Lightframes, newest first. The full history is in the [commit log on GitHub](https://github.com/joancomadran/lightframes/commits/main).
 
+## 22 October 2026
+
+- **No ads or affiliate links.** The Amazon.es gear cards, the editor's gear dialog and the gear page are gone. Donations stay optional. See [About](/about).
+
 ## 20 October 2026
 
 - **Range masks.** Local adjustments can now be limited to a brightness range (darkest to brightest) and to a colour range, with a smoothness control. Useful for touching only the sky in a linear mask, or only the warm tones inside a brush stroke.
 - **Smoother panels on phones.** Swipe down on the editing panel to fold it away and up to bring it back.
-- **Gear recommendations and donations.** A "Buy me a coffee" button, plus a small, labelled space with photography gear picks (affiliate links). See [About](/about) for how the project is funded.
+- **Gear recommendations and donations.** A "Buy me a coffee" button, plus a small, labelled space with photography gear picks (affiliate links). The gear picks were removed on 22 October.
 - **Demo video.** The start screen has a button to watch a short video of the editor in action.
 
 ## 19 October 2026

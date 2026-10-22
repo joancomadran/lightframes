@@ -4,7 +4,7 @@ slug: terms
 title: "Legal notice & terms of use"
 description: "Legal notice and terms of use of Lightframes, the free, open-source photo editor that runs in your browser: site owner, licence, liability and law."
 h1: "Legal notice & terms of use"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -62,12 +62,11 @@ To the extent permitted by law, we are not liable for:
 
 Nothing in these terms limits or excludes liability that cannot be limited or excluded by law, including liability for wilful misconduct or gross negligence, nor the rights you have as a consumer under applicable law.
 
-## External links, affiliate links and donations
+## External links and donations
 
-- The site contains links to third-party websites (for example, GitHub, Hugging Face, Amazon.es or Buy Me a Coffee). We do not control them and are not responsible for their content, availability or privacy practices. If we become aware that a linked site contains unlawful content, we will remove the link.
-- **Affiliate links.** Some links to Amazon.es are affiliate links. As an Amazon Associate, we earn from qualifying purchases. This does not change the price you pay. Any purchase is a contract between you and Amazon, under Amazon's conditions.
+- The site contains links to third-party websites (for example, GitHub, Hugging Face or Buy Me a Coffee). We do not control them and are not responsible for their content, availability or privacy practices. If we become aware that a linked site contains unlawful content, we will remove the link.
 - **Donations** through Buy Me a Coffee are voluntary and do not give access to any additional service or feature. They are processed by Buy Me a Coffee under its own terms.
-- **Advertising.** There is space reserved for ads; no advertising network is currently active. <!-- TODO legal review: update if an ad network is enabled. -->
+- **Advertising.** Lightframes does not show advertisements.
 
 ## Privacy and cookies
 

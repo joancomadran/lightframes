@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FilmstripFilter } from '../hooks/useEditorSession'
 import type { PhotoSession } from '../types/edits'
-import { AdSlot } from './AdSlot'
 
 type FilmstripProps = {
   photos: PhotoSession[]
@@ -257,8 +256,6 @@ export function Filmstrip({
           )
         })}
       </ul>
-
-      <AdSlot id="filmstrip" height={90} />
     </aside>
   )
 }

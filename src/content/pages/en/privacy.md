@@ -4,7 +4,7 @@ slug: privacy
 title: "Privacy policy"
 description: "How Lightframes handles your data: photos are edited locally in your browser and never uploaded. What the hosting, fonts and AI downloads involve."
 h1: "Privacy policy"
-updated: 2026-10-20
+updated: 2026-10-22
 schemaType: WebPage
 ---
 
@@ -73,18 +73,14 @@ There is no contact form. If you send us a direct message on X ([@dev_coma](http
 
 If you open an issue or a discussion on GitHub (https://github.com/joancomadran/lightframes), that content is **public** and is processed by GitHub, Inc. under its own terms and privacy policy.
 
-## Affiliate links, donations and external sites
+## Donations and external sites
 
-- **Amazon affiliate links.** Some links point to Amazon.es and include our Amazon Associates tag. As an Amazon Associate, we earn from qualifying purchases. No data is shared with Amazon simply by viewing our pages: only if you click a link, Amazon receives the visit and may set its own cookies on amazon.es, under Amazon's privacy and cookie notices. We only receive aggregated reports of clicks and qualifying sales, never your identity.
 - **Donations.** The "Buy me a coffee" button links to https://buymeacoffee.com/devcoma. If you donate, the payment is handled by Buy Me a Coffee and its payment providers under their own terms. We may receive your name or the message you choose to leave, and we use it only to manage and acknowledge the donation. <!-- TODO legal review: confirm what data Buy Me a Coffee shares with the creator and the retention needed for tax purposes. -->
-- **Other links** (GitHub, model sources, etc.) take you to websites with their own privacy policies, which we do not control.
+- **Other links** (GitHub, model sources, etc.) take you to websites with their own privacy policies, which we do not control. Nothing is sent to those sites just by loading Lightframes.
 
 ## Advertising
 
-The site has space reserved for advertising, but **no advertising network is currently active** and no advertising cookies are set.
-
-<!-- TODO legal review: rewrite this section if and when an ad network is enabled. -->
-If we enable an advertising service in the future (for example, Google AdSense), we will update this policy and the Cookie policy beforehand, and a consent management platform will ask for your consent before any non-essential cookie or similar technology is used. You will be able to refuse or withdraw consent as easily as you gave it.
+Lightframes does not show advertisements and does not load an advertising network, advertising cookies or affiliate trackers.
 
 ## International transfers
 
@@ -118,4 +114,4 @@ We do not make automated decisions or create profiles that produce legal or simi
 
 ## Changes to this policy
 
-We may update this policy when the site changes (for example, if we self-host fonts or enable advertising). The date at the top shows the latest version. If a change is significant, we will make it visible on the site.
+We may update this policy when the site changes. The date at the top shows the latest version. If a change is significant, we will make it visible on the site.

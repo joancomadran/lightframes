@@ -15,7 +15,6 @@ import {
 } from '../lib/carousel'
 import { MAX_ZOOM, MIN_ZOOM, aspectById, coverWindow } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
-import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
 import { Slider } from './Slider'
 import {
@@ -847,8 +846,6 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
             </div>
           </section>
         </div>
-
-        <AdSlot id="sidebar" height={250} />
       </aside>
 
       {previewOpen && (

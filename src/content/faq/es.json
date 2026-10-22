@@ -6,7 +6,7 @@
     },
     {
       "q": "¿Cómo puede ser gratis? ¿Dónde está la trampa?",
-      "a": "Lightframes funciona en tu propio dispositivo, así que apenas tiene costes de servidor. Se financia con algunos espacios de anuncios discretos, enlaces de afiliado a material fotográfico y donaciones voluntarias, y su código es abierto con licencia MIT para que cualquiera pueda comprobar qué hace."
+      "a": "Lightframes funciona en tu propio dispositivo, así que apenas tiene costes de servidor. No hay anuncios. Ayudan las donaciones voluntarias, y su código es abierto con licencia MIT para que cualquiera pueda comprobar qué hace."
     },
     {
       "q": "¿Se suben mis fotos a algún servidor?",
@@ -62,7 +62,7 @@
     },
     {
       "q": "¿Cómo puedo apoyar el proyecto?",
-      "a": "Puedes darle una estrella en GitHub, recomendarlo a otros fotógrafos, invitar a un café al desarrollador desde el enlace de la app o usar los enlaces de material recomendado cuando compres equipo fotográfico. Avisar de errores y contribuir en GitHub también ayuda."
+      "a": "Puedes darle una estrella en GitHub, recomendarlo a otros fotógrafos o invitar a un café al desarrollador desde el enlace de la app. Avisar de errores y contribuir en GitHub también ayuda."
     }
   ]
 }
