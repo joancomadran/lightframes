@@ -52,6 +52,7 @@ import {
   type PhotoSession,
   type Preset,
 } from "../types/edits";
+import { uid } from "../lib/uid";
 
 export type PanelId =
   | "adjust"
@@ -106,7 +107,7 @@ async function makePhoto(
   const thumbnail = await makeThumbnail(image);
 
   return {
-    id: crypto.randomUUID(),
+    id: uid(),
     name: file.name,
     path: file.name,
     objectUrl,

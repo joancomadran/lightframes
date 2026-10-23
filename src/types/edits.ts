@@ -1,3 +1,5 @@
+import { uid } from '../lib/uid'
+
 export type HslChannel =
   | 'reds'
   | 'oranges'
@@ -716,7 +718,7 @@ export function createRadialAdjustment(
   patch?: Partial<Omit<RadialAdjustment, 'id' | 'type'>>,
 ): RadialAdjustment {
   return {
-    id: crypto.randomUUID(),
+    id: uid(),
     type: 'radial',
     ...LOCAL_DEFAULTS,
     cx: 0.5,
@@ -732,7 +734,7 @@ export function createLinearAdjustment(
   patch?: Partial<Omit<LinearAdjustment, 'id' | 'type'>>,
 ): LinearAdjustment {
   return {
-    id: crypto.randomUUID(),
+    id: uid(),
     type: 'linear',
     ...LOCAL_DEFAULTS,
     x1: 0.5,
@@ -747,7 +749,7 @@ export function createBrushAdjustment(
   patch?: Partial<Omit<BrushAdjustment, 'id' | 'type'>>,
 ): BrushAdjustment {
   return {
-    id: crypto.randomUUID(),
+    id: uid(),
     type: 'brush',
     ...LOCAL_DEFAULTS,
     strokes: [],
@@ -758,7 +760,7 @@ export function createBrushAdjustment(
 export function createLocalAdjustment(type: LocalAdjustmentType): LocalAdjustment {
   if (type === 'linear') return createLinearAdjustment()
   if (type === 'brush') return createBrushAdjustment()
-  if (type === 'subject') return { id: crypto.randomUUID(), type: 'subject', ...LOCAL_DEFAULTS }
+  if (type === 'subject') return { id: uid(), type: 'subject', ...LOCAL_DEFAULTS }
   return createRadialAdjustment()
 }
 
@@ -940,7 +942,7 @@ function normalizeLocalAdjustments(value: unknown): LocalAdjustment[] {
     if (!raw || typeof raw !== 'object') continue
     const obj = raw as Record<string, unknown>
     const base = {
-      id: typeof obj.id === 'string' ? obj.id : crypto.randomUUID(),
+      id: typeof obj.id === 'string' ? obj.id : uid(),
       invert: obj.invert === true,
       exposure: num(obj.exposure, 0),
       contrast: num(obj.contrast, 0),
@@ -1009,7 +1011,7 @@ function normalizeHeal(value: unknown): HealSpot[] {
     const points = obj.points.filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
     if (points.length < 2) continue
     out.push({
-      id: typeof obj.id === 'string' ? obj.id : crypto.randomUUID(),
+      id: typeof obj.id === 'string' ? obj.id : uid(),
       mode: obj.mode === 'clone' || obj.mode === 'remove' ? obj.mode : 'heal',
       points: points.length % 2 === 0 ? points : points.slice(0, -1),
       size: Math.min(0.25, Math.max(0.001, num(obj.size, 0.02))),

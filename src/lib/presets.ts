@@ -7,6 +7,7 @@ import {
 } from '../types/edits'
 import { isCubeText, parseCubeLut } from './cubeLut'
 import { extractXmpPresetName, isXmpText, parseXmpToEdits } from './xmpPreset'
+import { uid } from './uid'
 
 /** Original localStorage location; kept as a backup copy, never cleared. */
 const LEGACY_STORAGE_KEY = 'lightframes.presets.v1'
@@ -159,7 +160,7 @@ export function downloadAllPresetsJson(presets: Preset[]): void {
 
 export function createPreset(name: string, edits: EditParams): Preset {
   return {
-    id: crypto.randomUUID(),
+    id: uid(),
     name: name.trim() || 'Untitled preset',
     // Spots and liquify only make sense on the photo they were painted on; a look doesn't remove backgrounds.
     edits: { ...cloneEdits(edits), heal: [], liquify: [], background: { ...DEFAULT_EDITS.background } },

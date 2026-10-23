@@ -37,6 +37,7 @@ import {
   type StudioFormat,
 } from '../hooks/useStudio'
 import { ColorSwatches, ExportStatus, FormatSwitch, PhotoTray } from './StudioShared'
+import { uid } from '../lib/uid'
 
 type CollageStudioProps = {
   photos: PhotoSession[]
@@ -252,7 +253,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
 
   const duplicateSlide = () => {
     if (doc.slides.length >= MAX_SLIDES) return
-    const copy: CollageSlide = { ...slide, id: crypto.randomUUID(), cells: slide.cells.map((c) => ({ ...c })) }
+    const copy: CollageSlide = { ...slide, id: uid(), cells: slide.cells.map((c) => ({ ...c })) }
     onChange((d) => {
       const slides = [...d.slides]
       slides.splice(slideIndex + 1, 0, copy)

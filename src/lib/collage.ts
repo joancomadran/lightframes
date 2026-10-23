@@ -1,6 +1,7 @@
 import type { EditParams, PhotoSession } from '../types/edits'
 import { prepareBase, type RenderSource } from './imageProcessing'
 import { developBase } from './renderPipeline'
+import { uid } from './uid'
 
 /** A cell of a layout, in fractions of the slide (x, y, width, height). */
 export type CellRect = [number, number, number, number]
@@ -168,7 +169,7 @@ export function emptyCell(photoId: string | null = null): CollageCell {
 export function createSlide(layoutId: string, photoIds: string[] = []): CollageSlide {
   const count = layoutById(layoutId).cells.length
   return {
-    id: crypto.randomUUID(),
+    id: uid(),
     layoutId,
     cells: Array.from({ length: count }, (_, i) => emptyCell(photoIds[i] ?? null)),
   }

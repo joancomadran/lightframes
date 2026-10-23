@@ -7,6 +7,7 @@ import {
 import { frameToSource, framedSize, sourceToFrame, type HealGeometry } from '../lib/heal'
 import type { HealMode, HealSpot } from '../types/edits'
 import type { OverlayFrame } from './CropOverlay'
+import { uid } from '../lib/uid'
 
 export type HealTool = {
   mode: HealMode
@@ -114,7 +115,7 @@ export function HealOverlay({
 
   const finishDraft = (points: number[]) => {
     const spot: HealSpot = {
-      id: crypto.randomUUID(),
+      id: uid(),
       mode: tool.mode,
       points,
       size: tool.size,

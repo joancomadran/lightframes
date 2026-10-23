@@ -7,6 +7,7 @@ import {
   type CollageAspectId,
   type CollageRenderPhoto,
 } from './collage'
+import { uid } from './uid'
 
 /**
  * A photo placed on the carousel strip. Position and size are in slides:
@@ -44,7 +45,7 @@ const CAROUSEL_ASPECT_IDS: readonly string[] = ['4:5', '1:1', '3:4']
 export const CAROUSEL_ASPECTS = COLLAGE_ASPECTS.filter((a) => CAROUSEL_ASPECT_IDS.includes(a.id))
 
 export function createFrame(photoId: string, x: number, y: number, w: number, h: number): CarouselFrame {
-  return { id: crypto.randomUUID(), photoId, x, y, w, h, fx: 0.5, fy: 0.5, zoom: 1 }
+  return { id: uid(), photoId, x, y, w, h, fx: 0.5, fy: 0.5, zoom: 1 }
 }
 
 export type CarouselTemplateId =
