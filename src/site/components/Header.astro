@@ -2,6 +2,7 @@
 import { pagePath } from '../content'
 import { EDITOR_PATH, href, sectionAlternates, ui, type Lang } from '../i18n'
 import Logo from './Logo.astro'
+import StarLink from './StarLink.astro'
 
 interface Props {
   lang: Lang
@@ -29,6 +30,9 @@ const nav = [
       <span>Lightframes</span>
     </a>
     <nav class="site-nav" aria-label={lang === 'es' ? 'Principal' : 'Main'}>
+      <span class="site-nav__star">
+        <StarLink label={t.starGithub} />
+      </span>
       {
         nav.map((item) => (
           <a href={item.path} aria-current={current.startsWith(item.path) ? 'page' : undefined}>
@@ -41,6 +45,9 @@ const nav = [
       <a class="lang-switch" href={switchTo} hreflang={other} lang={other} title={t.langSwitch}>
         {other.toUpperCase()}
       </a>
+      <span class="site-header__star">
+        <StarLink label={t.starGithub} />
+      </span>
       <a class="button button--primary button--small" href={EDITOR_PATH}>{t.openEditorShort}</a>
     </div>
   </div>

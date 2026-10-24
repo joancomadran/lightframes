@@ -221,6 +221,16 @@ button:disabled {
   text-align: left;
 }
 
+a.menu__item {
+  color: inherit;
+  text-decoration: none;
+}
+
+.menu__star {
+  flex: none;
+  color: #f5c84c;
+}
+
 .menu__item:active:not(:disabled) {
   background: var(--bg-hover);
 }

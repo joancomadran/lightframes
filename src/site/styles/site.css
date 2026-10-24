@@ -242,6 +242,69 @@ a {
   gap: 12px;
 }
 
+/* Two copies: the nav one fits the scrolling row on phones; the actions one is for wider screens. */
+.site-nav__star {
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-header__star {
+  display: none;
+}
+
+/* GitHub star: full label when the header has room, icon-only below that so ES fits. */
+.star-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text);
+  font: 600 0.875rem/1 var(--font-ui);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.star-link svg {
+  flex: none;
+}
+
+.star-link__star {
+  color: #f5c84c;
+}
+
+.star-link:hover {
+  background: var(--bg-elevated);
+}
+
+@media (max-width: 1119px) {
+  .site-header .star-link {
+    justify-content: center;
+    width: 36px;
+    padding: 0;
+  }
+
+  .site-header .star-link__star {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* One mark fits the 36px hit target. The label stays available to assistive tech. */
+  .site-header .star-link > svg:first-child,
+  .site-header .star-link__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .lang-switch {
   padding: 6px 8px;
   color: var(--text-muted);
@@ -266,6 +329,14 @@ a {
 
   .site-nav a {
     padding: 8px 10px;
+  }
+
+  .site-nav__star {
+    display: none;
+  }
+
+  .site-header__star {
+    display: inline-flex;
   }
 }
 
@@ -952,6 +1023,17 @@ a {
 
 .site-footer__brand .brand {
   min-height: 0;
+}
+
+.site-footer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-footer .star-link {
+  white-space: normal;
 }
 
 .site-footer h2 {

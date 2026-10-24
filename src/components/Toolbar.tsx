@@ -246,6 +246,19 @@ export function Toolbar({
                     Paste edits…
                     {selectionCount > 1 && <span className="menu__hint">{selectionCount}</span>}
                   </button>
+                  <a
+                    role="menuitem"
+                    className="menu__item"
+                    href="https://github.com/joancomadran/lightframes"
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Star on GitHub
+                    <svg className="menu__star" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M8 .25a.75.75 0 0 1 .67.42l1.88 3.8 4.2.61a.75.75 0 0 1 .41 1.28l-3.04 2.96.72 4.18a.75.75 0 0 1-1.09.79L8 12.31l-3.75 1.98a.75.75 0 0 1-1.09-.79l.72-4.18L.84 6.36a.75.75 0 0 1 .41-1.28l4.2-.61L7.33.67A.75.75 0 0 1 8 .25z" />
+                    </svg>
+                  </a>
                   {installState.kind === 'prompt' && (
                     <button
                       type="button"

@@ -2,58 +2,65 @@
 
 **Use your Lightroom presets, without Lightroom.**
 
-Apply your presets, XMP and `.cube` LUTs in batch and export an Instagram-ready carousel. Free, open source, in the browser. Nothing is uploaded.
+Free, open-source in-browser RAW photo editor that applies Lightroom XMP presets and `.cube` LUTs. No uploads, no account.
 
-**[Try it → lightframes.si](https://www.lightframes.si)** · [Open the editor](https://www.lightframes.si/editor) · [MIT license](./LICENSE)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
+[![Live site](https://img.shields.io/badge/live-lightframes.si-2ea44f?style=flat-square)](https://www.lightframes.si)
+[![Latest release](https://img.shields.io/github/v/release/joancomadran/lightframes?style=flat-square&label=release)](https://github.com/joancomadran/lightframes/releases/latest)
+[![GitHub stars](https://img.shields.io/github/stars/joancomadran/lightframes?style=social)](https://github.com/joancomadran/lightframes/stargazers)
+
+**[Try it](https://www.lightframes.si/editor)**
+
+[![Adjust a photo, paste the edit across the shoot, export, then apply presets](docs/demo.gif)](https://www.lightframes.si/editor)
+
+Fifteen seconds: sliders on an open photo, paste across the shoot, export, then presets (XMP and .cube LUTs). [MP4](docs/demo.mp4) if the GIF does not play.
+
+If you find it useful, a star helps others find it ⭐
 
 Lightroom and Camera Raw are trademarks of Adobe. Lightframes is an independent project and is not affiliated with or endorsed by Adobe.
 
-Your photos are opened, edited and exported in the browser. Nothing is uploaded.
-
-The editor and the [gear page](https://www.lightframes.si/gear) include links to Amazon.es. As an Amazon Associate, Lightframes earns from qualifying purchases. The cards are drawings in the page: they do not load images or scripts from Amazon. Amazon is contacted only when you click a link.
-
-## Demo
-
-[![Adjust a photo, paste the edit across the shoot, export, then apply presets](docs/demo.gif)](https://www.lightframes.si)
-
-Fifteen seconds from the promo: sliders on an open photo, paste across the shoot, export, then presets (XMP and .cube LUTs). [MP4](docs/demo.mp4) if the GIF does not play.
-
-The stills below are real screenshots.
-
 ![Lightframes editor with a RAW photo open and the presets panel](docs/screenshots/editor.jpg)
-
-| Start screen                                     | Carousel                                                                             |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| ![Empty start screen](docs/screenshots/home.jpg) | ![Carousel mode splitting a panorama across 4 slides](docs/screenshots/carousel.jpg) |
-
-Edits stay non-destructive until you export. Sessions restore from IndexedDB after a refresh. The app is an installable PWA. Editing works offline once it has loaded. The first use of object removal also downloads its model from Hugging Face.
 
 ## Features
 
-- **RAW, JPEG and PNG.** RAW formats: ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW. Decoded in the browser with LibRaw (WebAssembly). The preview is a half-size decode; export develops the file again at full resolution. If the decode fails, the embedded JPEG is the fallback. **Open** uses the file picker; Filmstrip **Folder** opens a directory (Chromium). More opens append to the filmstrip.
-- **Non-destructive edits.** Light, white balance (with a picker), texture, clarity, dehaze, HSL, effects, a master tone curve and per-channel curves, crop, straighten and rotate. Undo / redo, histogram, shadow/highlight clipping, and a before/after view of the whole image or a split.
-- **Presets.** Save and update your own, set intensity from 0–100%, import and export JSON. Built-in looks ship with the app.
-- **XMP.** `.xmp` develop presets (including Lightroom and Camera Raw) are mapped onto Lightframes sliders. What is imported: basic tone (exposure, contrast, highlights, shadows, whites, blacks), white balance (a relative temperature, or an approximation of Kelvin), tint, HSL, the tone curve (master and per channel), vibrance and saturation, texture, clarity, dehaze, colour grading (or the older split toning), vignette amount and midpoint, grain, sharpening, and luminance and colour noise reduction. What is **not** imported: camera profiles, lens corrections, local masks, crop and transform, calibration, and detail controls beyond those sliders. A preset that depends on the missing pieces will not match Lightroom.
-- **LUTs.** `.cube` 3D LUTs, applied after the parametric edits.
-- **Batch.** Copy / paste edits onto a selection (you choose which groups), or sync the active photo's edits. Several photos export as one ZIP.
-- **Spot removal.** Heal and clone in the Retouch panel, plus on-device AI object removal (MI-GAN). The inpainting model is downloaded from Hugging Face the first time you use it, checked against a SHA-256, and cached. The photo is not uploaded with that download.
-- **On-device AI.** Subject and background masks (IS-Net) for local adjustments and for background removal or replacement (transparency, a flat colour, or a blur), with a refine brush. Optional 2× / 4× upscale on export (Real-ESRGAN). The segmentation and upscale models are served from this site, not from a third party. Each model downloads once, is hash-checked, and then runs in the browser.
-- **Local adjustments.** Linear, radial, brush and AI subject masks, including brightness and colour range limits.
-- **Liquify.** A warp tool on its own panel.
-- **Collage Studio.** Up to 9 photos on a slide, several aspect ratios (including 4:5, 1:1 and 3:4) and ready-made layouts.
-- **Carousel Studio.** Seamless carousels of 2–10 slides, with ready-made layouts. The Instagram shapes (4:5, 1:1 and 3:4) export at 1080 px wide.
+- **RAW, JPEG and PNG.** RAW formats: ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW. Decoded in the browser with LibRaw (WebAssembly). The preview is a half-size decode; export develops the file again at full resolution.
+- **Non-destructive edits.** Light, white balance, texture, clarity, dehaze, HSL, effects, tone curves, crop, straighten and rotate. Undo / redo, histogram, clipping, before/after.
+- **Presets and LUTs.** Save your own, set intensity from 0–100%, import and export JSON. Built-in looks ship with the app. `.cube` 3D LUTs apply after the parametric edits.
+- **Lightroom XMP.** Develop presets map onto Lightframes sliders. See the limits below — profiles, lens corrections, masks, crop and calibration are not imported.
+- **Batch.** Copy / paste edits onto a selection, or sync the active photo. Several photos export as one ZIP.
+- **Retouch and on-device AI.** Heal and clone, object removal, subject and background masks, background replacement, optional 2× / 4× upscale on export.
+- **Collage and carousel.** Up to 9 photos on a slide, or 2–10 carousel slides. Instagram shapes (4:5, 1:1 and 3:4) export at 1080 px wide.
 - **Export.** JPEG, PNG or WebP, with quality, a long edge up to 8192 px, a filename pattern and an optional text watermark.
+- **Installable PWA.** Sessions restore from IndexedDB. Editing works offline once the app has loaded.
 
-## Quick start
+## XMP import
 
-Node.js 20+.
+`.xmp` develop presets, including Lightroom and Camera Raw, are mapped onto Lightframes sliders.
+
+What is imported: basic tone (exposure, contrast, highlights, shadows, whites, blacks), white balance (a relative temperature, or an approximation of Kelvin), tint, HSL, the tone curve (master and per channel), vibrance and saturation, texture, clarity, dehaze, colour grading (or the older split toning), vignette amount and midpoint, grain, sharpening, and luminance and colour noise reduction.
+
+What is **not** imported: camera profiles, lens corrections, local masks, crop and transform, calibration, and detail controls beyond those sliders. A preset that depends on the missing pieces will not match Lightroom.
+
+## Privacy
+
+Your photos are opened, edited and exported in the browser. Nothing is uploaded.
+
+The first use of object removal downloads its AI model (MI-GAN) from Hugging Face, checks it against a SHA-256, and caches it. The photo is not uploaded with that download. Segmentation and upscale models are served from this site, not from a third party. Each model downloads once, is hash-checked, and then runs in the browser.
+
+Page visits are counted with Vercel Web Analytics, which does not use cookies and does not receive your photos.
+
+The editor and the [gear page](https://www.lightframes.si/gear) include links to Amazon.es. As an Amazon Associate, Lightframes earns from qualifying purchases. The cards are drawings in the page: they do not load images or scripts from Amazon. Amazon is contacted only when you click a link.
+
+## Self-host
+
+Node.js 20+. The production build is a static `dist/` folder. Any static host can serve it.
 
 ```bash
 npm install
-npm run dev
+npm run build
 ```
 
-Open the URL Astro prints (usually `http://localhost:4321`). The landing page is `/`. The editor is `/editor`.
+`npm run preview` serves that build locally. `npm run dev` starts the dev server (usually `http://localhost:4321`). The landing page is `/`. The editor is `/editor`.
 
 | Script            | What it does                                    |
 | ----------------- | ----------------------------------------------- |
@@ -63,17 +70,23 @@ Open the URL Astro prints (usually `http://localhost:4321`). The landing page is
 | `npm run check`   | Type-check `.astro`, `.ts` and `.tsx` only      |
 | `npm run lint`    | Lint with oxlint                                |
 
-`dist/` is static files. Any static host can serve it. After the app has loaded, ordinary editing does not need a network. The first object removal downloads its model; see Offline use below. A Chromium browser (Chrome, Edge, Brave) is the best bet for opening a folder and for canvas performance. Large RAW files and the AI tools are slower on phones.
+A Chromium browser (Chrome, Edge, Brave) is the best bet for opening a folder and for canvas performance. Large RAW files and the AI tools are slower on phones.
 
 ## Tech stack
 
-- Astro static site (English and Spanish), React + TypeScript editor island
-- Canvas preview: CPU pixel pipeline, dual-resolution scrubbing, Web Worker pool
+- Astro static site (English and Spanish), React + TypeScript editor
 - LibRaw compiled to WebAssembly for RAW
 - ONNX Runtime Web for the AI models (WASM; WebGPU for upscale when the browser has it)
+- Installable PWA (Workbox service worker). Variable fonts are self-hosted, so page load does not request Google Fonts
 - IndexedDB for the session and presets, with a `localStorage` backup of presets
-- Workbox service worker. Variable fonts (Bricolage Grotesque and Figtree) are self-hosted with `@fontsource-variable` and bundled into the site, so page load does not request Google Fonts
 - MIT license
+
+## Offline use
+
+1. Open the production build once while online. The service worker precaches the app, including the LibRaw WASM and the self-hosted font files.
+2. After that, open, edit, presets and export work without a network. In Chromium you can install it from the address bar.
+3. The AI models and the ONNX runtime are not precached. Segmentation and upscale come from this site the first time you use them. Object removal downloads MI-GAN from Hugging Face the first time you use it. Each is cached after that.
+4. The installed app starts at `/editor`.
 
 ## Project structure
 
@@ -92,13 +105,6 @@ promo/                  promo video (Remotion), separate package
 ```
 
 Tool pages, guides, the FAQ and the legal pages are Markdown or JSON in `src/content/`. See [docs/SEO.md](docs/SEO.md) for the URL map and how to add a post.
-
-## Offline use and PWA
-
-1. Open the production build once while online. The service worker precaches the app, including the LibRaw WASM and the self-hosted font files.
-2. After that, open, edit, presets and export work without a network. In Chromium you can install it from the address bar.
-3. The AI models and the ONNX runtime are not precached. Segmentation and upscale come from this site the first time you use them. Object removal downloads MI-GAN from Hugging Face the first time you use it. Each is cached after that.
-4. The installed app starts at `/editor`.
 
 ## Shortcuts
 
@@ -136,7 +142,7 @@ npm run lint
 npm run build
 ```
 
-Bug reports are most useful with the browser, the device, and, for RAW, the camera model. Please don't add a third-party script, font host, ad network or tracker: the privacy claim is that a page load stays on this origin, apart from the cases named in the privacy policy.
+Bug reports are most useful with the browser, the device, and, for RAW, the camera model. Please don't add a third-party script, font host, ad network or tracker: a page load stays on this origin, apart from the cases named in the privacy policy.
 
 ## License
 
@@ -150,5 +156,5 @@ Sample photos in `public/samples/` (and the preset renders made from them) are �
 
 <p align="center">
   Your photos, your presets, your device.<br>
-  <strong><a href="https://www.lightframes.si">Open Lightframes →</a></strong>
+  <strong><a href="https://www.lightframes.si/editor">Try the editor →</a></strong>
 </p>
