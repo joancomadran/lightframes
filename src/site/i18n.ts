@@ -51,7 +51,7 @@ export const ui = {
     tools: 'Tools',
     blog: 'Blog',
     footer: {
-      tagline: 'A free, open-source photo editor that runs on your device.',
+      tagline: 'The open-source photo editor that stays on your device.',
       tools: 'Tools',
       resources: 'Resources',
       project: 'Project',
@@ -121,7 +121,7 @@ export const ui = {
     tools: 'Herramientas',
     blog: 'Blog',
     footer: {
-      tagline: 'Un editor de fotos gratis y de código abierto que funciona en tu dispositivo.',
+      tagline: 'El editor de fotos open source que se queda en tu dispositivo.',
       tools: 'Herramientas',
       resources: 'Recursos',
       project: 'Proyecto',
