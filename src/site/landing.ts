@@ -7,10 +7,10 @@ import type { Lang } from './i18n'
 
 export const landing = {
   en: {
-    title: 'Lightframes — Use your Lightroom presets, without Lightroom',
+    title: 'Lightframes — The open-source photo editor that stays on your device',
     description:
       'Apply your presets, Lightroom XMP and .cube LUTs in batch, then export an Instagram-ready carousel. Free, in your browser, nothing uploaded.',
-    h1: 'Use your Lightroom presets, without Lightroom',
+    h1: 'The open-source photo editor that stays on your device',
     lead: 'Apply your own presets, Lightroom XMP files and .cube LUTs across a whole shoot, then export an Instagram-ready carousel. It all runs in the browser. Nothing is uploaded.',
     secondary: 'How it works',
     facts: ['Free and open source', 'Presets, XMP and LUTs', 'Nothing uploaded'],
@@ -62,10 +62,10 @@ export const landing = {
     },
   },
   es: {
-    title: 'Lightframes — Usa tus presets de Lightroom, sin Lightroom',
+    title: 'Lightframes — El editor de fotos open source que se queda en tu dispositivo',
     description:
       'Aplica tus presets, XMP de Lightroom y LUTs .cube por lotes y exporta un carrusel listo para Instagram. Gratis, en el navegador, sin subir nada.',
-    h1: 'Usa tus presets de Lightroom, sin Lightroom',
+    h1: 'El editor de fotos open source que se queda en tu dispositivo',
     lead: 'Aplica tus presets, archivos XMP de Lightroom y LUTs .cube a toda una sesión y exporta un carrusel listo para Instagram. Todo ocurre en el navegador. No se sube nada.',
     secondary: 'Cómo funciona',
     facts: ['Gratis y de código abierto', 'Presets, XMP y LUTs', 'Sin subir nada'],

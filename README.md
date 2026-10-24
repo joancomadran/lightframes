@@ -1,6 +1,6 @@
 # Lightframes
 
-**Use your Lightroom presets, without Lightroom.**
+**The open-source photo editor that stays on your device.**
 
 Free, open-source in-browser RAW photo editor that applies Lightroom XMP presets and `.cube` LUTs. No uploads, no account.
 
