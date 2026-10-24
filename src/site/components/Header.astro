@@ -30,9 +30,6 @@ const nav = [
       <span>Lightframes</span>
     </a>
     <nav class="site-nav" aria-label={lang === 'es' ? 'Principal' : 'Main'}>
-      <span class="site-nav__star">
-        <StarLink label={t.starGithub} />
-      </span>
       {
         nav.map((item) => (
           <a href={item.path} aria-current={current.startsWith(item.path) ? 'page' : undefined}>
