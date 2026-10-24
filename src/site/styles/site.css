@@ -36,7 +36,7 @@ html {
   background: var(--bg-void);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: calc(var(--header-h) + 16px);
+  scroll-padding-top: calc(var(--header-h) + 16px + env(safe-area-inset-top, 0px));
 }
 
 body {
@@ -103,12 +103,12 @@ a {
   width: 100%;
   max-width: calc(var(--max) + 2 * var(--gutter));
   margin-inline: auto;
-  padding-inline: var(--gutter);
+  padding-inline: max(var(--gutter), env(safe-area-inset-left, 0px)) max(var(--gutter), env(safe-area-inset-right, 0px));
 }
 
 .skip {
   position: absolute;
-  left: var(--gutter);
+  left: max(var(--gutter), env(safe-area-inset-left, 0px));
   top: -100px;
   z-index: 20;
   padding: 8px 14px;
@@ -119,7 +119,7 @@ a {
 }
 
 .skip:focus {
-  top: 10px;
+  top: max(10px, env(safe-area-inset-top, 0px));
 }
 
 /* Buttons */
@@ -179,6 +179,7 @@ a {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .site-header__inner {
@@ -242,12 +243,7 @@ a {
   gap: 12px;
 }
 
-/* Two copies: the nav one fits the scrolling row on phones; the actions one is for wider screens. */
-.site-nav__star {
-  display: inline-flex;
-  align-items: center;
-}
-
+/* Header link from 820px up. Narrower screens use the fixed .star-link--fab instead. */
 .site-header__star {
   display: none;
 }
@@ -331,12 +327,61 @@ a {
     padding: 8px 10px;
   }
 
-  .site-nav__star {
-    display: none;
-  }
-
   .site-header__star {
     display: inline-flex;
+  }
+}
+
+/* Narrow screens: a corner control, clear of the header row and of the page's own bottom padding. */
+.star-link--fab {
+  display: none;
+}
+
+@media (max-width: 819px) {
+  .star-link--fab {
+    display: inline-flex;
+    position: fixed;
+    z-index: 30;
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    background: var(--bg-elevated);
+    border-color: var(--text-muted);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .star-link--fab .star-link__star {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* The localized label stays the accessible name; the control itself stays a small star pill. */
+  .star-link--fab > svg:first-child,
+  .star-link--fab .star-link__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .star-link--fab:hover {
+    background: var(--bg-hover);
+    border-color: var(--text);
+  }
+}
+
+@media print {
+  .star-link--fab {
+    display: none;
   }
 }
 
@@ -394,6 +439,25 @@ a {
   height: 9px;
   border: 2px solid var(--accent);
   border-radius: 2px;
+}
+
+/* Pull the hero up just enough that the corner control clears the video controls. */
+@media (max-width: 819px) {
+  .hero {
+    padding-top: 16px;
+  }
+
+  .hero__actions {
+    margin-top: 20px;
+  }
+
+  .facts {
+    margin-top: 16px;
+  }
+
+  .promo figcaption {
+    padding-right: 60px;
+  }
 }
 
 @media (min-width: 1000px) {
@@ -1004,7 +1068,7 @@ a {
 
 .site-footer {
   margin-top: 64px;
-  padding-block: 56px 32px;
+  padding-block: 56px calc(32px + env(safe-area-inset-bottom, 0px));
   background: var(--bg-app);
   border-top: 1px solid var(--line);
   font-size: 0.9375rem;
@@ -1087,6 +1151,17 @@ a {
 
   .site-footer__brand {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 819px) {
+  html {
+    scroll-padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Room to scroll the footer clear of the fixed star control. */
+  .site-footer {
+    padding-bottom: calc(32px + 60px + env(safe-area-inset-bottom, 0px));
   }
 }
 
