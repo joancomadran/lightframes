@@ -22,7 +22,7 @@ const path = entryPath(tool)
 const url = absoluteUrl(path)
 const { Content } = await render(tool)
 const tools = await getTools(lang)
-const related = tools.filter((other) => other.id !== tool.id).slice(0, 4)
+const related = tools.filter((other) => other.data.featured && other.id !== tool.id).slice(0, 4)
 const crumbs = [
   { name: t.home, path: href('home', lang) },
   { name: t.tools, path: href('tools', lang) },

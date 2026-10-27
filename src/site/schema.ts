@@ -157,3 +157,27 @@ export function blogPosting(opts: {
     publisher: { '@id': ORG_ID },
   }
 }
+
+export function videoObject(opts: {
+  url: string
+  name: string
+  description: string
+  lang: Lang
+  contentUrl: string
+  thumbnailUrl: string
+  uploadDate: string
+  duration: string
+}): Node {
+  return {
+    '@type': 'VideoObject',
+    '@id': `${opts.url}#video`,
+    name: opts.name,
+    description: opts.description,
+    inLanguage: opts.lang,
+    contentUrl: absoluteUrl(opts.contentUrl),
+    thumbnailUrl: absoluteUrl(opts.thumbnailUrl),
+    uploadDate: opts.uploadDate,
+    duration: opts.duration,
+    publisher: { '@id': ORG_ID },
+  }
+}

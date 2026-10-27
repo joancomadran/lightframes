@@ -76,15 +76,15 @@ CR3 es el formato RAW de las cámaras Canon que han salido desde 2018, incluida 
 
 ### ARW a JPG (Sony)
 
-Las cámaras Sony Alpha guardan los RAW como `.arw`. Ábrelos, selecciónalos y expórtalos en JPEG; la conversión usa todos los datos del sensor. Los archivos de muy alta resolución se reducen a 8192 px en el lado largo.
+Las cámaras Sony Alpha guardan los RAW como `.arw`. Ábrelos, selecciónalos y expórtalos en JPEG; la conversión usa todos los datos del sensor. Los archivos de muy alta resolución se reducen a 8192 px en el lado largo. Más detalle en [convertir ARW a JPG](/es/herramientas/convertir-arw-a-jpg).
 
 ### NEF y NRW a JPG (Nikon)
 
-Nikon usa `.nef` en sus cámaras de objetivos intercambiables y `.nrw` en algunas compactas Coolpix. Ambos se revelan a partir del sensor, como cualquier otro RAW.
+Nikon usa `.nef` en sus cámaras de objetivos intercambiables y `.nrw` en algunas compactas Coolpix. Ambos se revelan a partir del sensor, como cualquier otro RAW. Más detalle en [convertir NEF a JPG](/es/herramientas/convertir-nef-a-jpg).
 
 ### DNG a JPG
 
-DNG es un formato RAW con especificación pública que usan varios fabricantes de cámaras y muchos móviles y drones. La mayoría de DNG se revelan sin problema; si un archivo usa una compresión que el decodificador incluido no lee, Lightframes recurre a su vista previa incrustada.
+DNG es un formato RAW con especificación pública que usan varios fabricantes de cámaras y muchos móviles y drones. La mayoría de DNG se revelan sin problema; si un archivo usa una compresión que el decodificador incluido no lee, Lightframes recurre a su vista previa incrustada. Los DNG de móvil y de dron tienen su propia página: [convertir DNG a JPG](/es/herramientas/convertir-dng-a-jpg).
 
 ### RAF, ORF, RW2, PEF y SRW a JPG
 

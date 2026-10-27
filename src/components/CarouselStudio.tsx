@@ -317,11 +317,12 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
   }, [])
 
   // The whole strip when slides stay a workable size; otherwise it scrolls sideways.
+  // Phones accept narrower slides so a usual carousel (up to ~5 slides) fits the screen width.
   const pad = coarsePointer ? 12 : 24
   const availH = Math.max(0, stageSize.h - pad * 2 - LABEL_SPACE)
   const availW = Math.max(0, stageSize.w - pad * 2)
   const fitAll = Math.min(availH, availW / (n * ratio))
-  const minSlideW = Math.min(availW, coarsePointer ? 150 : 190)
+  const minSlideW = Math.min(availW, phone ? 72 : coarsePointer ? 150 : 190)
   const slideH = Math.max(fitAll, Math.min(availH, minSlideW / ratio))
   const slideW = slideH * ratio
   const stripW = slideW * n

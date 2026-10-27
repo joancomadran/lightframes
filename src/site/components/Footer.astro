@@ -11,7 +11,7 @@ interface Props {
 
 const { lang } = Astro.props
 const t = ui[lang]
-const tools = await getTools(lang)
+const tools = (await getTools(lang)).filter((tool) => tool.data.featured)
 const [about, changelog, privacy, cookies, terms] = await Promise.all(
   ['about', 'changelog', 'privacy', 'cookies', 'terms'].map((key) => pagePath(key, lang)),
 )

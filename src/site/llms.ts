@@ -6,6 +6,9 @@ import { EDITOR_PATH, href } from './i18n'
 
 const url = (path: string) => new URL(path, SITE.url).href
 
+/** Editorial <!-- TODO --> notes in the Markdown are for us, not for assistants. */
+const stripComments = (markdown = '') => markdown.replace(/[ \t]*<!--[\s\S]*?-->/g, '')
+
 const SUMMARY = `> Lightframes is a free, open-source (MIT) photo editor that runs entirely in the web browser. Photos are processed on the user's device with WebAssembly and Web Workers and are never uploaded. No account is needed. It edits camera RAW and JPEG/PNG files, supports custom presets (including XMP and .cube LUT import), copy/paste and batch edits, RAW-to-JPG conversion and batch export to JPEG/PNG/WebP, and on-device AI tools (background removal, object removal, upscaling). It is an installable PWA. Editing works offline once the app has loaded. Object removal downloads its model from Hugging Face the first time it is used; background removal, subject masks and upscaling download theirs from lightframes.si. Page visits are counted with cookieless Vercel Web Analytics. The site includes Amazon affiliate links that open Amazon only when clicked.`
 
 const FACTS = [
@@ -66,13 +69,13 @@ export async function llmsFullTxt(): Promise<string> {
         entryPath(tool),
         tool.data.lead,
         [
-          tool.body ?? '',
+          stripComments(tool.body),
           tool.data.steps.length ? `### Steps\n\n${tool.data.steps.map((s, i) => `${i + 1}. **${s.name}.** ${s.text}`).join('\n')}` : '',
           tool.data.faq.length ? `### Questions\n\n${tool.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : '',
         ].join('\n\n'),
       ),
     ),
-    ...posts.map((post) => section(post.data.h1 ?? post.data.title, entryPath(post), post.data.description, post.body)),
+    ...posts.map((post) => section(post.data.h1 ?? post.data.title, entryPath(post), post.data.description, stripComments(post.body))),
     section('Frequently asked questions', href('faq', 'en'), '', faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')),
   ].join('\n')
 }

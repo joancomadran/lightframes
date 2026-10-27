@@ -39,6 +39,8 @@ const tools = defineCollection({
     /** Card text on the landing and the tools index. */
     summary: z.string(),
     order: z.number(),
+    /** Listed on the landing, in the footer and under "More tools". Narrow variants (one RAW format) set false. */
+    featured: z.boolean().default(true),
     /** Target queries, for the SEO team's reference only (never rendered). */
     keywords: z.array(z.string()).default([]),
     steps: z.array(z.object({ name: z.string(), text: z.string() })).default([]),

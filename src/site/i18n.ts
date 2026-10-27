@@ -42,6 +42,7 @@ export function formatDate(date: Date, lang: Lang): string {
 export const ui = {
   en: {
     langName: 'English',
+    ogImageAlt: 'Lightframes, the free photo editor that runs in your browser',
     skip: 'Skip to content',
     nav: { tools: 'Tools', blog: 'Blog', faq: 'FAQ', gear: 'Gear', about: 'About' },
     openEditor: 'Open the editor',
@@ -112,6 +113,7 @@ export const ui = {
   },
   es: {
     langName: 'Español',
+    ogImageAlt: 'Lightframes, el editor de fotos gratis que funciona en el navegador',
     skip: 'Saltar al contenido',
     nav: { tools: 'Herramientas', blog: 'Blog', faq: 'Preguntas', gear: 'Equipo', about: 'Sobre' },
     openEditor: 'Abrir el editor',

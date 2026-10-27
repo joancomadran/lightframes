@@ -35,6 +35,8 @@ El esquema completo está en `src/content.config.ts`; si falta un campo obligato
 - `keywords`: referencia interna, no se publica.
 - `ogImage`: ruta en `/public` de una imagen de 1200×630 para esa página. Si no se indica, se usa `/og-image.png`.
 - `noindex`, y `draft` en el blog: los borradores no se publican en producción.
+- `featured: false` (herramientas): la página existe y sale en `/tools`, el sitemap y `llms.txt`, pero no en la home, el pie ni "Más herramientas". Es para variantes estrechas como los conversores por formato (NEF, ARW, DNG).
+- Los comentarios `<!-- TODO … -->` del Markdown se quitan del HTML publicado y de `llms-full.txt`; sirven solo como notas internas.
 
 Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par en `es/` con el mismo `key`. Las herramientas que lista en `tools:` aparecen al final como enlaces.
 
@@ -42,8 +44,9 @@ Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par 
 
 - Dominio canónico: `https://www.lightframes.si` (`SITE.url` en `src/site/config.ts` y `site` en `astro.config.mjs`). El apex redirige a www, así que canonical, `hreflang`, sitemap, `og:url`, JSON-LD y `llms.txt` usan siempre www.
 - HTML estático con canonical, `hreflang` (en, es, x-default), Open Graph y Twitter, y `og:locale` en cada página.
-- JSON-LD en un `@graph`: `Organization`, `WebSite`, `WebApplication` (gratis, MIT), `WebPage`/`AboutPage`/`CollectionPage`, `BreadcrumbList`, `FAQPage`, `HowTo`, `BlogPosting` + `Person` (autor) e `ItemList`.
-- Un sitemap que excluye la 404 y un `robots.txt` que permite explícitamente GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended y CCBot.
+- JSON-LD en un `@graph`: `Organization`, `WebSite`, `WebApplication` (gratis, MIT), `WebPage`/`AboutPage`/`CollectionPage`, `BreadcrumbList`, `FAQPage`, `HowTo`, `BlogPosting` + `Person` (autor), `ItemList` y `VideoObject` (vídeo de la home).
+- `twitter:site`/`twitter:creator` (@dev_coma) y `og:image:alt` en todas las páginas.
+- Un sitemap con `hreflang` (`xhtml:link`) y `lastmod`, sacados del `<head>` y del `dateModified` de cada página ya generada, que excluye la 404 y un `robots.txt` que permite explícitamente GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended y CCBot.
 - `llms.txt` y `llms-full.txt` (todo el texto de las herramientas, las guías y la FAQ en Markdown), que se regeneran solos a partir del contenido.
 - Migas, enlazado interno (pie, herramientas relacionadas, "Pruébalo" en los posts) y una 404 propia.
 - Si alguien abre la PWA instalada en `/`, se le redirige a `/editor`.
@@ -51,9 +54,9 @@ Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par 
 ## Pendiente: decisiones para SEO
 
 1. **Dominio `.si`.** Google trata `.si` como un dominio geolocalizado en Eslovenia (no está entre sus dominios de país "genéricos"), y Search Console no permite cambiar la segmentación de un dominio de país. Hay que valorar si conviene migrar a un `.com`, `.app` o similar antes de acumular autoridad.
-2. **Imágenes OG por página.** Ahora todas usan `/og-image.png`.
-3. **`hreflang` en el sitemap.** Por ahora solo está en el `<head>`. Como las URLs están localizadas, el plugin del sitemap no puede emparejarlas solo; habría que hacerlo con `serialize` a partir de `key`.
-4. **Search Console y Bing Webmaster.** Verificar el dominio y enviar `sitemap-index.xml`.
+2. **Imágenes OG por página.** Ahora todas usan `/og-image.png`. Tampoco hay capturas dentro de las páginas de herramientas ni de los posts: añadirlas (con `alt` descriptivo) ayuda en Google Imágenes y da imagen propia al `BlogPosting`.
+3. ~~**`hreflang` en el sitemap.**~~ Hecho con `serialize` en `astro.config.mjs`.
+4. **Search Console y Bing Webmaster.** Verificar el dominio y enviar `sitemap-index.xml`. IndexNow ya está montado: `npm run indexnow` envía todas las URLs del sitemap en producción, y `.github/workflows/indexnow.yml` lo lanza solo tras cada deploy de producción de Vercel (si Vercel está conectado al repo de GitHub y publica los `deployment_status`).
 5. ~~**Google Fonts.**~~ Hecho: las fuentes se sirven desde el propio dominio con `@fontsource-variable` (`font-display: swap`).
 6. **Banner de consentimiento (CMP)** antes de activar AdSense o cualquier red de anuncios. Ahora mismo no hay cookies propias que no sean técnicas.
 7. ~~**Textos legales.**~~ Hecho: titular Joan Comadran (persona física, España), contacto por X (https://x.com/dev_coma). Quedan comentarios `<!-- TODO legal review … -->` en el Markdown, que salen en el HTML publicado: revisarlos o quitarlos.

@@ -11,6 +11,7 @@ export const SITE = {
     url: 'https://www.joancomadran.dev',
     github: 'https://github.com/joancomadran',
     x: 'https://x.com/dev_coma',
+    xHandle: '@dev_coma',
   },
   themeColor: '#171e1a',
 } as const

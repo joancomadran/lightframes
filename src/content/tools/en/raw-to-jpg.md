@@ -75,15 +75,15 @@ CR3 is the RAW format of Canon cameras released since 2018, including the EOS R 
 
 ### ARW to JPG (Sony)
 
-Sony Alpha cameras save RAW as `.arw`. Open the files, select them and export as JPEG; the conversion uses the full sensor data. Very high-resolution files are scaled to 8192 px on the long edge.
+Sony Alpha cameras save RAW as `.arw`. Open the files, select them and export as JPEG; the conversion uses the full sensor data. Very high-resolution files are scaled to 8192 px on the long edge. More detail: [convert ARW to JPG](/tools/arw-to-jpg).
 
 ### NEF and NRW to JPG (Nikon)
 
-Nikon writes `.nef` on its interchangeable-lens cameras and `.nrw` on some Coolpix compacts. Both are converted from the sensor data like any other RAW.
+Nikon writes `.nef` on its interchangeable-lens cameras and `.nrw` on some Coolpix compacts. Both are converted from the sensor data like any other RAW. More detail: [convert NEF to JPG](/tools/nef-to-jpg).
 
 ### DNG to JPG
 
-DNG is an openly documented RAW format used by several camera makers and by many phones and drones. Most DNG files develop normally; if a file uses a compression the bundled decoder can't read, Lightframes falls back to its embedded preview.
+DNG is an openly documented RAW format used by several camera makers and by many phones and drones. Most DNG files develop normally; if a file uses a compression the bundled decoder can't read, Lightframes falls back to its embedded preview. Phone and drone DNGs have their own page: [convert DNG to JPG](/tools/dng-to-jpg).
 
 ### RAF, ORF, RW2, PEF and SRW to JPG
 

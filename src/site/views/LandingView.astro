@@ -6,7 +6,7 @@ import { entryPath, getFaq, getPosts, getTools } from '../content'
 import { EDITOR_PATH, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
 import { landing } from '../landing'
 import Base from '../layouts/Base.astro'
-import { faqPage, webApplication, webPage } from '../schema'
+import { faqPage, videoObject, webApplication, webPage } from '../schema'
 
 interface Props {
   lang: Lang
@@ -17,7 +17,8 @@ const t = ui[lang]
 const c = landing[lang]
 const path = href('home', lang)
 const url = absoluteUrl(path)
-const tools = await getTools(lang)
+const allTools = await getTools(lang)
+const tools = allTools.filter((tool) => tool.data.featured)
 const faq = (await getFaq(lang)).slice(0, 6)
 const posts = (await getPosts(lang)).slice(0, 3)
 ---
@@ -31,7 +32,17 @@ const posts = (await getPosts(lang)).slice(0, 3)
   alternates={sectionAlternates('home')}
   schema={[
     webPage({ url, name: c.h1, description: c.description, lang }),
-    webApplication(lang, tools.map((tool) => tool.data.label)),
+    webApplication(lang, allTools.map((tool) => tool.data.label)),
+    videoObject({
+      url,
+      name: c.video.label,
+      description: c.video.caption,
+      lang,
+      contentUrl: '/video/promo.mp4',
+      thumbnailUrl: '/video/promo-poster.jpg',
+      uploadDate: '2026-10-20T14:51:00+02:00',
+      duration: 'PT51S',
+    }),
     ...(faq.length ? [faqPage(url, faq)] : []),
   ]}
 >
