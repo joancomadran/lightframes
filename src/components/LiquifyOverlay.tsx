@@ -139,7 +139,10 @@ export function LiquifyOverlay({
       onPointerDown={(e) => {
         if (e.button !== 0 || strokeRef.current) return
         e.stopPropagation()
-        e.currentTarget.setPointerCapture(e.pointerId)
+        // iOS Safari can throw NotFoundError here; touch pointers are captured implicitly anyway.
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId)
+        } catch {}
         // Touch has no hover: show the brush under the finger from the start.
         const rect = e.currentTarget.getBoundingClientRect()
         setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top })
