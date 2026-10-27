@@ -1127,7 +1127,7 @@ a.github-star {
 }
 
 /* Sidebar ad: medium rectangle on tall screens, a banner on shorter ones. */
-.sidebar > .ad-slot {
+.sidebar > .pick-slot {
   margin: 0;
   border: none;
   border-top: 1px solid var(--line);
@@ -1135,7 +1135,7 @@ a.github-star {
 }
 
 @media (max-height: 960px) {
-  .sidebar > .ad-slot {
+  .sidebar > .pick-slot {
     height: 100px;
   }
 }
@@ -2460,7 +2460,7 @@ a.github-star {
 
 /* ——— Ad slots ——— */
 
-.ad-slot {
+.pick-slot {
   height: var(--ad-height, 120px);
   margin: 0.55rem;
   margin-top: auto;
@@ -2476,18 +2476,18 @@ a.github-star {
   color: var(--text-muted);
 }
 
-.ad-slot__label {
+.pick-slot__label {
   font-size: 0.65rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.ad-slot__hint {
+.pick-slot__hint {
   font-size: 0.75rem;
   opacity: 0.7;
 }
 
-.ad-slot--affiliate {
+.pick-slot--affiliate {
   container-type: size;
   border: 1px solid rgba(200, 245, 96, 0.35);
   background: linear-gradient(160deg, rgba(200, 245, 96, 0.1), rgba(200, 245, 96, 0.02) 60%);
@@ -2495,13 +2495,13 @@ a.github-star {
 }
 
 /* The sidebar slot is normally flush; the affiliate card floats so it reads as an ad, not a panel. */
-.sidebar > .ad-slot--affiliate {
+.sidebar > .pick-slot--affiliate {
   margin: auto 0.55rem 0.55rem;
   border: 1px solid rgba(200, 245, 96, 0.35);
   border-radius: var(--radius);
 }
 
-.ad-card {
+.pick-card {
   position: relative;
   width: 100%;
   height: 100%;
@@ -2517,7 +2517,7 @@ a.github-star {
   transition: background 0.15s ease;
 }
 
-.ad-card__badge {
+.pick-card__badge {
   position: absolute;
   top: 0.4rem;
   left: 0.4rem;
@@ -2531,7 +2531,7 @@ a.github-star {
   text-transform: uppercase;
 }
 
-.ad-card__media {
+.pick-card__media {
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -2541,14 +2541,14 @@ a.github-star {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.ad-card__media svg,
-.ad-card__media img {
+.pick-card__media svg,
+.pick-card__media img {
   width: 80%;
   height: 80%;
   object-fit: contain;
 }
 
-.ad-card__body {
+.pick-card__body {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2556,19 +2556,19 @@ a.github-star {
   min-width: 0;
 }
 
-.ad-card__title {
+.pick-card__title {
   font-size: 0.85rem;
   font-weight: 600;
   line-height: 1.2;
 }
 
-.ad-card__detail {
+.pick-card__detail {
   font-size: 0.75rem;
   line-height: 1.35;
   color: var(--text-muted);
 }
 
-.ad-card__cta {
+.pick-card__cta {
   margin-top: 0.3rem;
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
@@ -2579,18 +2579,18 @@ a.github-star {
 }
 
 @media (hover: hover) {
-  .ad-card:hover {
+  .pick-card:hover {
     background: rgba(200, 245, 96, 0.06);
   }
 
-  .ad-card:hover .ad-card__cta {
+  .pick-card:hover .pick-card__cta {
     background: #d4fa7a;
   }
 }
 
 /* Banner-height slots (filmstrip, short sidebars): picture left, text right. */
 @container (max-height: 140px) {
-  .ad-card {
+  .pick-card {
     flex-direction: row;
     justify-content: flex-start;
     gap: 0.6rem;
@@ -2598,31 +2598,31 @@ a.github-star {
     text-align: left;
   }
 
-  .ad-card__media {
+  .pick-card__media {
     width: 56px;
     height: 56px;
   }
 
-  .ad-card__body {
+  .pick-card__body {
     align-items: flex-start;
     gap: 0.1rem;
   }
 
-  .ad-card__title {
+  .pick-card__title {
     font-size: 0.78rem;
   }
 
-  .ad-card__detail {
+  .pick-card__detail {
     display: none;
   }
 
-  .ad-card__cta {
+  .pick-card__cta {
     margin-top: 0.2rem;
     padding: 0.15rem 0.55rem;
     font-size: 0.68rem;
   }
 
-  .ad-card__badge {
+  .pick-card__badge {
     top: 0.3rem;
     left: 0.3rem;
     font-size: 0.55rem;
@@ -4460,7 +4460,7 @@ kbd {
       'film side';
   }
 
-  .sidebar > .ad-slot {
+  .sidebar > .pick-slot {
     height: 100px;
   }
 
@@ -4474,7 +4474,7 @@ kbd {
 
   .filmstrip--sparse,
   .filmstrip__header,
-  .filmstrip > .ad-slot,
+  .filmstrip > .pick-slot,
   .filmstrip__name {
     display: none;
   }
@@ -4583,7 +4583,7 @@ kbd {
   }
 
   .histogram-panel,
-  .sidebar > .ad-slot,
+  .sidebar > .pick-slot,
   .preview__ctl--secondary {
     display: none;
   }
@@ -4822,7 +4822,7 @@ kbd {
     padding: 0.5rem 1rem 1rem;
   }
 
-  .sheet-extras > .ad-slot {
+  .sheet-extras > .pick-slot {
     margin: 0;
   }
 
@@ -4849,7 +4849,7 @@ kbd {
     -webkit-overflow-scrolling: touch;
   }
 
-  .sidebar > .ad-slot,
+  .sidebar > .pick-slot,
   .sidebar__github {
     display: none;
   }

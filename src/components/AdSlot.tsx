@@ -17,22 +17,22 @@ export function AdSlot({ id, height, label = 'Sponsored' }: AdSlotProps) {
 
   if (ad) {
     return (
-      <aside className="ad-slot ad-slot--affiliate" data-ad-slot={id} style={style} aria-label={label}>
+      <aside className="pick-slot pick-slot--affiliate" data-pick={id} style={style} aria-label={label}>
         <a
-          className="ad-card"
+          className="pick-card"
           href={amazonUrl(ad)}
           target="_blank"
           rel="sponsored noopener noreferrer"
           title={AMAZON_DISCLOSURE}
         >
-          <span className="ad-card__badge">Ad</span>
-          <span className="ad-card__media">
+          <span className="pick-card__badge">Ad</span>
+          <span className="pick-card__media">
             {ad.image ? <img src={ad.image} alt="" loading="lazy" /> : <ProductArt art={ad.art} />}
           </span>
-          <span className="ad-card__body">
-            <span className="ad-card__title">{ad.title}</span>
-            <span className="ad-card__detail">{ad.detail}</span>
-            <span className="ad-card__cta">{ad.cta} ↗</span>
+          <span className="pick-card__body">
+            <span className="pick-card__title">{ad.title}</span>
+            <span className="pick-card__detail">{ad.detail}</span>
+            <span className="pick-card__cta">{ad.cta} ↗</span>
           </span>
         </a>
       </aside>
@@ -41,9 +41,9 @@ export function AdSlot({ id, height, label = 'Sponsored' }: AdSlotProps) {
 
   if (!placeholdersEnabled) return null
   return (
-    <aside className="ad-slot" data-ad-slot={id} style={style} aria-label={label}>
-      <span className="ad-slot__label">{label}</span>
-      <span className="ad-slot__hint">Ad slot reserved</span>
+    <aside className="pick-slot" data-pick={id} style={style} aria-label={label}>
+      <span className="pick-slot__label">{label}</span>
+      <span className="pick-slot__hint">Ad slot reserved</span>
     </aside>
   )
 }
@@ -54,18 +54,18 @@ function ProductArt({ art }: { art: SlotAd['art'] }) {
     return (
       <svg viewBox="0 0 80 100" aria-hidden="true">
         <defs>
-          <linearGradient id="ad-ssd-body" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="pick-ssd-body" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#6d7c93" />
             <stop offset="1" stopColor="#2b3442" />
           </linearGradient>
-          <linearGradient id="ad-ssd-band" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="pick-ssd-band" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#c3ccd9" />
             <stop offset="0.5" stopColor="#8e9bb0" />
             <stop offset="1" stopColor="#6f7c92" />
           </linearGradient>
         </defs>
-        <rect x="8" y="22" width="64" height="56" rx="9" fill="url(#ad-ssd-body)" />
-        <rect x="26" y="22" width="28" height="56" fill="url(#ad-ssd-band)" />
+        <rect x="8" y="22" width="64" height="56" rx="9" fill="url(#pick-ssd-body)" />
+        <rect x="26" y="22" width="28" height="56" fill="url(#pick-ssd-band)" />
         <rect x="8" y="22" width="64" height="56" rx="9" fill="none" stroke="rgba(255,255,255,0.18)" />
         <rect x="72" y="44" width="3" height="12" rx="1.5" fill="#151a21" />
         <circle cx="16" cy="30" r="1.6" fill="#c8f560" />
@@ -75,7 +75,7 @@ function ProductArt({ art }: { art: SlotAd['art'] }) {
   return (
     <svg viewBox="0 0 80 100" aria-hidden="true">
       <defs>
-        <linearGradient id="ad-sd-label" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="pick-sd-label" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#e7b84a" />
           <stop offset="1" stopColor="#c0392b" />
         </linearGradient>
@@ -85,7 +85,7 @@ function ProductArt({ art }: { art: SlotAd['art'] }) {
         <rect key={x} x={x} y="10" width="3.5" height="11" rx="1" fill="#d9b25a" />
       ))}
       <rect x="15" y="30" width="3" height="12" rx="1" fill="#9aa0a6" />
-      <rect x="18" y="44" width="46" height="34" fill="url(#ad-sd-label)" />
+      <rect x="18" y="44" width="46" height="34" fill="url(#pick-sd-label)" />
       <text x="41" y="63" textAnchor="middle" fontSize="11" fontWeight="700" fill="#fff" fontFamily="system-ui, sans-serif">
         128GB
       </text>
