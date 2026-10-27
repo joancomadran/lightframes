@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
+import { COARSE_QUERY, PHONE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
+import { useSheetSwipe } from '../hooks/useSheetSwipe'
 import {
   CAROUSEL_ASPECTS,
   CAROUSEL_TEMPLATES,
@@ -17,6 +18,7 @@ import { MAX_ZOOM, MIN_ZOOM, aspectById, coverWindow } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
+import { PhoneDock, PhoneSheetHead, SettingsIcon } from './PhoneDock'
 import { Slider } from './Slider'
 import {
   createExportLoader,
@@ -276,6 +278,10 @@ function SwipePreview({
 
 export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, onNotify, apiRef }: CarouselStudioProps) {
   const coarsePointer = useMediaQuery(COARSE_QUERY)
+  // Phones give the canvas the whole screen; photos and settings open from floating buttons.
+  const phone = useMediaQuery(PHONE_QUERY)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const settingsSwipe = useSheetSwipe(true, (collapsed) => setSettingsOpen(!collapsed))
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [reframe, setReframe] = useState(false)
   const [guides, setGuides] = useState<Guides>({ x: [], y: [] })
@@ -577,15 +583,19 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
 
   const corners: Corner[] = ['nw', 'ne', 'sw', 'se']
 
+  const tray = (
+    <PhotoTray
+      photos={photos}
+      usedIds={usedSet}
+      onPick={(id) => addFrame(id)}
+      onOpen={onOpen}
+      pickTitle="Add to the slide in view"
+    />
+  )
+
   return (
     <div className="workspace collage">
-      <PhotoTray
-        photos={photos}
-        usedIds={usedSet}
-        onPick={(id) => addFrame(id)}
-        onOpen={onOpen}
-        pickTitle="Add to the slide in view"
-      />
+      {!phone && tray}
 
       <main className="stage collage-main carousel-main">
         <div
@@ -694,9 +704,35 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
         </div>
 
         <ExportStatus progress={progress} ready={ready} onSave={save} onShare={() => void share()} />
+
+        {phone && (
+          <PhoneDock
+            photoCount={photos.length}
+            filmstrip={tray}
+            action={{
+              kind: 'toggle',
+              label: settingsOpen ? 'Close settings' : 'Carousel settings',
+              open: settingsOpen,
+              onToggle: () => setSettingsOpen((v) => !v),
+            }}
+          />
+        )}
       </main>
 
-      <aside className="sidebar" aria-label="Carousel settings">
+      {(!phone || settingsOpen) && (
+      <aside
+        className={settingsSwipe.offset !== 0 ? 'sidebar sidebar--dragging' : 'sidebar'}
+        style={settingsSwipe.offset ? { transform: `translateY(${settingsSwipe.offset}px)` } : undefined}
+        aria-label="Carousel settings"
+      >
+        {phone && (
+          <PhoneSheetHead
+            icon={<SettingsIcon />}
+            title="Carousel"
+            onClose={() => setSettingsOpen(false)}
+            {...settingsSwipe.handlers}
+          />
+        )}
         <div className="sidebar__scroll">
           <section className="panel" aria-label="Carousel settings">
             <FormatSwitch format="carousel" onChange={onFormatChange} />
@@ -850,6 +886,7 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
 
         <AdSlot id="sidebar" height={250} />
       </aside>
+      )}
 
       {previewOpen && (
         <SwipePreview

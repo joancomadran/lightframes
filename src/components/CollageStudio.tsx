@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
+import { COARSE_QUERY, PHONE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
+import { useSheetSwipe } from '../hooks/useSheetSwipe'
 import {
   COLLAGE_ASPECTS,
   COLLAGE_LAYOUTS,
@@ -24,6 +25,7 @@ import {
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
+import { PhoneDock, PhoneSheetHead, SettingsIcon } from './PhoneDock'
 import { Slider } from './Slider'
 import {
   createExportLoader,
@@ -123,6 +125,10 @@ type Drag = {
 
 export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, onNotify, apiRef }: CollageStudioProps) {
   const coarsePointer = useMediaQuery(COARSE_QUERY)
+  // Phones give the canvas the whole screen; photos and settings open from floating buttons.
+  const phone = useMediaQuery(PHONE_QUERY)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const settingsSwipe = useSheetSwipe(true, (collapsed) => setSettingsOpen(!collapsed))
   const [activeSlideId, setActiveSlideId] = useState(doc.slides[0]?.id ?? '')
   const [selectedCell, setSelectedCell] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
@@ -355,15 +361,19 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
   const count = layout.cells.length
   const borderPct = Math.round(doc.border.size * 1000) / 10
 
+  const tray = (
+    <PhotoTray
+      photos={photos}
+      usedIds={usedSet}
+      onPick={(id) => placePhoto(id)}
+      onOpen={onOpen}
+      pickTitle={selectedCell !== null ? `Place in cell ${selectedCell + 1}` : 'Add to the next empty cell'}
+    />
+  )
+
   return (
     <div className="workspace collage">
-      <PhotoTray
-        photos={photos}
-        usedIds={usedSet}
-        onPick={(id) => placePhoto(id)}
-        onOpen={onOpen}
-        pickTitle={selectedCell !== null ? `Place in cell ${selectedCell + 1}` : 'Add to the next empty cell'}
-      />
+      {!phone && tray}
 
       <main className="stage collage-main">
         <div ref={stageRef} className="collage-stage">
@@ -571,9 +581,35 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
         </div>
 
         <ExportStatus progress={progress} ready={ready} onSave={save} onShare={() => void share()} />
+
+        {phone && (
+          <PhoneDock
+            photoCount={photos.length}
+            filmstrip={tray}
+            action={{
+              kind: 'toggle',
+              label: settingsOpen ? 'Close settings' : 'Collage settings',
+              open: settingsOpen,
+              onToggle: () => setSettingsOpen((v) => !v),
+            }}
+          />
+        )}
       </main>
 
-      <aside className="sidebar" aria-label="Collage settings">
+      {(!phone || settingsOpen) && (
+      <aside
+        className={settingsSwipe.offset !== 0 ? 'sidebar sidebar--dragging' : 'sidebar'}
+        style={settingsSwipe.offset ? { transform: `translateY(${settingsSwipe.offset}px)` } : undefined}
+        aria-label="Collage settings"
+      >
+        {phone && (
+          <PhoneSheetHead
+            icon={<SettingsIcon />}
+            title="Collage"
+            onClose={() => setSettingsOpen(false)}
+            {...settingsSwipe.handlers}
+          />
+        )}
         <div className="sidebar__scroll">
           <section className="panel" aria-label="Collage settings">
             <FormatSwitch format="collage" onChange={onFormatChange} />
@@ -766,6 +802,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
 
         <AdSlot id="sidebar" height={250} />
       </aside>
+      )}
     </div>
   )
 }

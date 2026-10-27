@@ -4700,6 +4700,9 @@ kbd {
 
   .filmstrip {
     padding-bottom: 0;
+  }
+
+  .phone-dock__tray .filmstrip {
     border-top: none;
     background: transparent;
   }
@@ -5014,6 +5017,13 @@ kbd {
     pointer-events: auto;
   }
 
+  /* Studios: over the canvas, above the slides row. */
+  .collage-main > .phone-dock,
+  .collage-main > .collage-stage,
+  .collage-main > .carousel-scroll {
+    grid-area: 1 / 1;
+  }
+
   .phone-dock__scrim {
     position: absolute;
     inset: 0;
@@ -5080,6 +5090,63 @@ kbd {
     font-weight: 700;
     line-height: 1.15rem;
     text-align: center;
+  }
+
+  /* Histogram: a compact card pinned top-right on the photo. */
+  .histogram-panel--floating {
+    position: absolute;
+    top: var(--fab-inset);
+    right: var(--fab-inset);
+    width: 10.5rem;
+    padding: 0.3rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: rgba(18, 24, 22, 0.88);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    animation: dock-fade 0.18s ease;
+  }
+
+  .histogram-panel--floating .histogram-canvas {
+    height: 56px;
+    border: none;
+  }
+
+  .histogram-hide {
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: rgba(18, 24, 22, 0.75);
+    color: var(--text-muted);
+  }
+
+  /* A wider tap target than the chip itself. */
+  .histogram-hide::after {
+    content: '';
+    position: absolute;
+    inset: -0.45rem;
+  }
+
+  .histogram-panel--floating .histogram-clip {
+    top: 0.2rem;
+    right: 0.2rem;
+  }
+
+  .histogram-panel--floating .histogram-clip__tip {
+    right: 0;
+  }
+
+  /* Set apart from the tools above it. */
+  .phone-dock__menu-extra {
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--line-strong);
   }
 
   /* Tool list: stacks up from the brush button, scrolling when the photo area is short. */

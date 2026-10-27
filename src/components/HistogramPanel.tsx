@@ -6,6 +6,8 @@ type HistogramPanelProps = {
   clipping: ClippingStats | null
   showClipping: boolean
   onToggleClipping: () => void
+  /** Floating on the photo (phones): shows a button that hides it. */
+  onHide?: () => void
 }
 
 export function HistogramPanel({
@@ -13,6 +15,7 @@ export function HistogramPanel({
   clipping,
   showClipping,
   onToggleClipping,
+  onHide,
 }: HistogramPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -30,8 +33,18 @@ export function HistogramPanel({
     : '0.0'
 
   return (
-    <section className="panel histogram-panel" aria-label="Histogram">
+    <section
+      className={onHide ? 'panel histogram-panel histogram-panel--floating' : 'panel histogram-panel'}
+      aria-label="Histogram"
+    >
       <div className="histogram-frame">
+        {onHide && (
+          <button type="button" className="histogram-hide" onClick={onHide} aria-label="Hide histogram" title="Hide histogram">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
         <canvas ref={canvasRef} className="histogram-canvas" aria-hidden="true" />
         <span className="histogram-stat histogram-stat--shadows" title="Pixels clipped to black">
           ◀ {shadowPct}%

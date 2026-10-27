@@ -22,7 +22,7 @@ import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import type { BrushSettings } from './components/MaskOverlay'
 import { PanelIcon } from './components/PanelIcon'
 import { PasteDialog } from './components/PasteDialog'
-import { PhoneDock } from './components/PhoneDock'
+import { HistogramIcon, PhoneDock, PhoneSheetHead } from './components/PhoneDock'
 import { PresetsPanel } from './components/PresetsPanel'
 import { PreviewCanvas, type PreviewApi, type Size } from './components/PreviewCanvas'
 import { ShortcutsDialog } from './components/ShortcutsDialog'
@@ -41,6 +41,16 @@ import { isRawFile } from './lib/rawDecode'
 import { DEFAULT_EDITS, type HealSpot, type LiquifyStroke } from './types/edits'
 
 export type AppMode = 'edit' | 'collage'
+
+const HISTOGRAM_KEY = 'lightframes:phone-histogram'
+
+function loadHistogramHidden(): boolean {
+  try {
+    return localStorage.getItem(HISTOGRAM_KEY) === 'hidden'
+  } catch {
+    return false
+  }
+}
 
 export default function App() {
   const [mode, setMode] = useState<AppMode>('edit')
@@ -101,6 +111,16 @@ export default function App() {
     setSheetCollapsed(false)
   }
   const sheetSwipe = useSheetSwipe(sheetOpen, setSheetCollapsed)
+  // Phones float the histogram over the photo; hidden, it waits in the tools menu.
+  const [histogramHidden, setHistogramHidden] = useState(loadHistogramHidden)
+  const changeHistogramHidden = (hidden: boolean) => {
+    setHistogramHidden(hidden)
+    try {
+      localStorage.setItem(HISTOGRAM_KEY, hidden ? 'hidden' : 'shown')
+    } catch {
+      // Storage unavailable — keep the choice for this session only.
+    }
+  }
   const swipe = phone ? sheetSwipe.handlers : undefined
   const tabsRef = useRef<HTMLDivElement>(null)
 
@@ -247,6 +267,16 @@ export default function App() {
     setScrubbing(false)
     session.commitEdit()
   }
+
+  const histogramPanel = (
+    <HistogramPanel
+      bins={histogram?.bins ?? null}
+      clipping={histogram?.clipping ?? null}
+      showClipping={session.showClipping}
+      onToggleClipping={() => session.setShowClipping(!session.showClipping)}
+      onHide={phone ? () => changeHistogramHidden(true) : undefined}
+    />
+  )
 
   // Phones show it in the photos tray of the floating dock instead of a column.
   const filmstrip = (
@@ -426,11 +456,33 @@ export default function App() {
 
           {phone && canEdit && (
             <PhoneDock
-              activePanel={session.panelFocus}
-              sheetOpen={sheetOpen}
               photoCount={session.photos.length}
               filmstrip={filmstrip}
-              onSelectPanel={selectPanel}
+              overlay={histogramHidden ? null : histogramPanel}
+              action={{
+                kind: 'menu',
+                items: [
+                  ...PANELS.map(({ id, label }) => ({
+                    id,
+                    label,
+                    icon: <PanelIcon id={id} size={18} />,
+                    active: sheetOpen && id === session.panelFocus,
+                    onSelect: () => selectPanel(id),
+                  })),
+                  // A hidden histogram comes back from the tools menu.
+                  ...(histogramHidden
+                    ? [
+                        {
+                          id: 'histogram',
+                          label: 'Histogram',
+                          icon: <HistogramIcon />,
+                          extra: true,
+                          onSelect: () => changeHistogramHidden(false),
+                        },
+                      ]
+                    : []),
+                ],
+              }}
             />
           )}
 
@@ -442,31 +494,12 @@ export default function App() {
             aria-label="Editor panels"
           >
             {phone && (
-              <div className="sheet-head" {...swipe}>
-                <button
-                  type="button"
-                  className="sheet-handle"
-                  aria-label="Hide tools"
-                  onClick={() => setSheetCollapsed(true)}
-                />
-                <div className="sheet-head__row">
-                  <span className="sheet-head__title">
-                    <PanelIcon id={session.panelFocus} />
-                    {PANELS.find((p) => p.id === session.panelFocus)?.label}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn--ghost btn--sm btn--icon sheet-head__close"
-                    aria-label="Close tools"
-                    title="Close"
-                    onClick={() => setSheetCollapsed(true)}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                      <path d="M18 6 6 18M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              <PhoneSheetHead
+                icon={<PanelIcon id={session.panelFocus} />}
+                title={PANELS.find((p) => p.id === session.panelFocus)?.label}
+                onClose={() => setSheetCollapsed(true)}
+                {...swipe}
+              />
             )}
             {!phone && (
             <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
@@ -490,12 +523,7 @@ export default function App() {
             )}
 
             <div className="sidebar__scroll">
-              <HistogramPanel
-                bins={histogram?.bins ?? null}
-                clipping={histogram?.clipping ?? null}
-                showClipping={session.showClipping}
-                onToggleClipping={() => session.setShowClipping(!session.showClipping)}
-              />
+              {!phone && histogramPanel}
 
               {session.panelFocus === 'adjust' && (
                 <AdjustmentsPanel
