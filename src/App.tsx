@@ -22,6 +22,7 @@ import { LocalAdjustPanel } from './components/LocalAdjustPanel'
 import type { BrushSettings } from './components/MaskOverlay'
 import { PanelIcon } from './components/PanelIcon'
 import { PasteDialog } from './components/PasteDialog'
+import { PhoneDock } from './components/PhoneDock'
 import { PresetsPanel } from './components/PresetsPanel'
 import { PreviewCanvas, type PreviewApi, type Size } from './components/PreviewCanvas'
 import { ShortcutsDialog } from './components/ShortcutsDialog'
@@ -89,8 +90,9 @@ export default function App() {
   }, [])
   const previewApi = useRef<PreviewApi | null>(null)
   const phone = useMediaQuery(PHONE_QUERY)
-  // Phones show the panels as a bottom sheet that can fold away to reveal the whole photo.
-  const [sheetCollapsed, setSheetCollapsed] = useState(false)
+  // Phones keep the photo full-size until a tool is picked from the floating menu; its panel then
+  // opens as a sheet under the photo and can be closed again.
+  const [sheetCollapsed, setSheetCollapsed] = useState(true)
   const sheetOpen = !phone || !sheetCollapsed
   // Any panel change (tab, shortcut, mask added…) unfolds the sheet again.
   const [sheetPanel, setSheetPanel] = useState(session.panelFocus)
@@ -109,10 +111,7 @@ export default function App() {
   }, [session.panelFocus, phone])
 
   const selectPanel = (id: PanelId) => {
-    if (phone && id === session.panelFocus) {
-      setSheetCollapsed((v) => !v)
-      return
-    }
+    if (phone) setSheetCollapsed(false)
     session.setPanelFocus(id)
     if (id === 'crop') session.setCropMode(true)
   }
@@ -249,6 +248,22 @@ export default function App() {
     session.commitEdit()
   }
 
+  // Phones show it in the photos tray of the floating dock instead of a column.
+  const filmstrip = (
+    <Filmstrip
+      photos={session.visiblePhotos}
+      totalCount={session.photos.length}
+      activeId={session.activeId}
+      selectedIds={session.selectedIds}
+      visible={phone || session.filmstripVisible}
+      filter={session.filmstripFilter}
+      onFilterChange={session.setFilmstripFilter}
+      onSelect={session.selectPhoto}
+      onOpen={session.handleOpen}
+      onClear={() => setClearOpen(true)}
+    />
+  )
+
   return (
     <div className="app">
       <Toolbar
@@ -301,18 +316,7 @@ export default function App() {
               : 'workspace workspace--no-filmstrip'
           }
         >
-          <Filmstrip
-            photos={session.visiblePhotos}
-            totalCount={session.photos.length}
-            activeId={session.activeId}
-            selectedIds={session.selectedIds}
-            visible={session.filmstripVisible}
-            filter={session.filmstripFilter}
-            onFilterChange={session.setFilmstripFilter}
-            onSelect={session.selectPhoto}
-            onOpen={session.handleOpen}
-            onClear={() => setClearOpen(true)}
-          />
+          {!phone && filmstrip}
 
           <main className="stage">
             <PreviewCanvas
@@ -420,28 +424,52 @@ export default function App() {
             />
           </main>
 
-          {/* Phones skip the tool sheet until there is a photo: disabled sliders only crowd the welcome screen. */}
-          {(!phone || canEdit) && (
+          {phone && canEdit && (
+            <PhoneDock
+              activePanel={session.panelFocus}
+              sheetOpen={sheetOpen}
+              photoCount={session.photos.length}
+              filmstrip={filmstrip}
+              onSelectPanel={selectPanel}
+            />
+          )}
+
+          {/* Phones show the tool sheet only once a tool is picked: until then the photo gets the whole screen. */}
+          {(!phone || (canEdit && sheetOpen)) && (
           <aside
-            className={[
-              'sidebar',
-              !sheetOpen && 'sidebar--collapsed',
-              sheetSwipe.offset !== 0 && 'sidebar--dragging',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+            className={sheetSwipe.offset !== 0 ? 'sidebar sidebar--dragging' : 'sidebar'}
             style={sheetSwipe.offset ? { transform: `translateY(${sheetSwipe.offset}px)` } : undefined}
             aria-label="Editor panels"
           >
-            <button
-              type="button"
-              className="sheet-handle"
-              aria-label={sheetOpen ? 'Hide tools' : 'Show tools'}
-              aria-expanded={sheetOpen}
-              onClick={() => setSheetCollapsed((v) => !v)}
-              {...swipe}
-            />
-            <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef} {...swipe}>
+            {phone && (
+              <div className="sheet-head" {...swipe}>
+                <button
+                  type="button"
+                  className="sheet-handle"
+                  aria-label="Hide tools"
+                  onClick={() => setSheetCollapsed(true)}
+                />
+                <div className="sheet-head__row">
+                  <span className="sheet-head__title">
+                    <PanelIcon id={session.panelFocus} />
+                    {PANELS.find((p) => p.id === session.panelFocus)?.label}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm btn--icon sheet-head__close"
+                    aria-label="Close tools"
+                    title="Close"
+                    onClick={() => setSheetCollapsed(true)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+            {!phone && (
+            <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
               {PANELS.map(({ id, label }, index) => (
                 <button
                   key={id}
@@ -459,8 +487,9 @@ export default function App() {
                 </button>
               ))}
             </div>
+            )}
 
-            <div className="sidebar__scroll" hidden={!sheetOpen}>
+            <div className="sidebar__scroll">
               <HistogramPanel
                 bins={histogram?.bins ?? null}
                 clipping={histogram?.clipping ?? null}

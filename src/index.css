@@ -4688,18 +4688,20 @@ kbd {
     white-space: normal;
   }
 
+  /* The photo takes the whole screen; the tool sheet joins under it once a tool is picked. */
   .workspace,
   .workspace--no-filmstrip {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-rows: minmax(0, 1fr) auto;
     grid-template-areas:
       'stage'
-      'film'
       'side';
   }
 
   .filmstrip {
     padding-bottom: 0;
+    border-top: none;
+    background: transparent;
   }
 
   .filmstrip__filter {
@@ -4716,7 +4718,7 @@ kbd {
   }
 
   .filmstrip__item {
-    width: 3.5rem;
+    width: 3.75rem;
   }
 
   .filmstrip__meta {
@@ -4766,10 +4768,13 @@ kbd {
     margin-top: 1.25rem;
   }
 
+  /* Centred between the two floating buttons, on their line. */
   .preview__controls {
-    right: 0.5rem;
-    bottom: 0.5rem;
+    right: auto;
+    left: 50%;
+    bottom: calc(var(--fab-inset) + (var(--fab-size) - 2.4rem) / 2);
     border-radius: 999px;
+    transform: translateX(-50%);
   }
 
   .preview__ctl--secondary {
@@ -4782,31 +4787,60 @@ kbd {
     text-align: center;
   }
 
-  /* Bottom sheet: grabber · panel content · tab bar in the thumb zone. */
+  /* Bottom sheet for the picked tool: grabber and title, then the panel content. */
   .sidebar {
     position: relative;
-    padding-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
     border-left: none;
     border-top: 1px solid var(--line-strong);
     border-radius: 14px 14px 0 0;
     margin-top: -6px;
     box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
+    animation: sheet-up 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .sheet-head {
+    flex-shrink: 0;
+    touch-action: none;
+    border-bottom: 1px solid var(--line);
   }
 
   .sheet-handle {
-    order: 0;
     display: grid;
     place-items: center;
-    flex-shrink: 0;
     width: 100%;
-    height: 1.75rem;
+    height: 1.1rem;
     padding: 0;
     border: none;
     background: transparent;
-    touch-action: none;
   }
 
-  /* Swipes on the grabber and tab bar fold the sheet; it springs back unless the swipe commits. */
+  .sheet-head__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0 0.5rem 0.35rem 1rem;
+  }
+
+  .sheet-head__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .sheet-head__title svg {
+    color: var(--accent);
+  }
+
+  .sheet-head__close {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Swiping the header down closes the sheet; it springs back unless the swipe commits. */
   .sidebar {
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -4842,7 +4876,6 @@ kbd {
   }
 
   .sidebar__scroll {
-    order: 1;
     flex: none;
     height: clamp(10rem, 36dvh, 22rem);
     overscroll-behavior: contain;
@@ -4852,45 +4885,6 @@ kbd {
   .sidebar > .pick-slot,
   .sidebar__github {
     display: none;
-  }
-
-  .panel-tabs {
-    order: 2;
-    touch-action: pan-x;
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    padding-bottom: env(safe-area-inset-bottom);
-    border-top: 1px solid var(--line);
-    border-bottom: none;
-    background: var(--bg-panel);
-  }
-
-  .panel-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sidebar--collapsed .panel-tabs {
-    border-top-color: transparent;
-  }
-
-  .panel-tab {
-    flex: 1 0 auto;
-    min-width: 2.75rem;
-    min-height: 3.25rem;
-    justify-content: center;
-    gap: 0.2rem;
-    padding: 0 0.35rem;
-    border-bottom: none;
-    border-top: 2px solid transparent;
-    font-size: 0.74rem;
-    scroll-snap-align: center;
-  }
-
-  .panel-tab--active {
-    border-top-color: var(--accent);
   }
 
   .panel {
@@ -4994,6 +4988,204 @@ kbd {
   }
 }
 
+/* ——— Phone dock: floating photos and tools buttons over the photo ——— */
+
+.phone-dock {
+  display: none;
+}
+
+@media (max-width: 767px) and (min-height: 501px) {
+  .workspace {
+    --fab-size: 3.25rem;
+    --fab-inset: 0.75rem;
+  }
+
+  /* Shares the stage's grid cell, so it rides the bottom edge of the photo as the sheet comes and goes. */
+  .phone-dock {
+    grid-area: stage;
+    position: relative;
+    z-index: 6;
+    display: block;
+    min-height: 0;
+    pointer-events: none;
+  }
+
+  .phone-dock > * {
+    pointer-events: auto;
+  }
+
+  .phone-dock__scrim {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border: none;
+    background: linear-gradient(to left, rgba(12, 16, 14, 0.7), rgba(12, 16, 14, 0.15) 70%);
+    animation: dock-fade 0.18s ease;
+  }
+
+  .phone-fab {
+    position: absolute;
+    bottom: var(--fab-inset);
+    display: grid;
+    place-items: center;
+    width: var(--fab-size);
+    height: var(--fab-size);
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    color: var(--text);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+
+  .phone-fab:active {
+    transform: scale(0.94);
+  }
+
+  .phone-fab--photos {
+    left: var(--fab-inset);
+  }
+
+  /* The tools button is the main action: accent, like Export. */
+  .phone-fab--tools {
+    right: var(--fab-inset);
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .phone-fab--photos.phone-fab--on {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .phone-fab--tools.phone-fab--on {
+    background: var(--bg-elevated);
+    border-color: var(--line-strong);
+    color: var(--text);
+  }
+
+  .phone-fab__count {
+    position: absolute;
+    top: -0.2rem;
+    right: -0.2rem;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.15rem;
+    text-align: center;
+  }
+
+  /* Tool list: stacks up from the brush button, scrolling when the photo area is short. */
+  .phone-dock__menu {
+    position: absolute;
+    right: var(--fab-inset);
+    bottom: calc(var(--fab-inset) + var(--fab-size) + 0.6rem);
+    max-height: calc(100% - var(--fab-size) - var(--fab-inset) * 2 - 0.6rem);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .phone-dock__menu::-webkit-scrollbar {
+    display: none;
+  }
+
+  .phone-dock__menu > li {
+    animation: dock-rise 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .phone-dock__tool {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    padding: 0 0.3rem 0 0.9rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  }
+
+  .phone-dock__tool-icon {
+    display: grid;
+    place-items: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
+    background: var(--bg-hover);
+    color: var(--accent);
+  }
+
+  .phone-dock__tool--active {
+    border-color: var(--accent);
+  }
+
+  .phone-dock__tool--active .phone-dock__tool-icon {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* Photos tray: unfolds from the photos button into a strip above the button row. */
+  .phone-dock__tray {
+    position: absolute;
+    left: var(--fab-inset);
+    right: var(--fab-inset);
+    bottom: calc(var(--fab-inset) + var(--fab-size) + 0.6rem);
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background: var(--bg-panel);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+    transform-origin: bottom left;
+    animation: dock-unfold 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+@keyframes dock-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dock-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@keyframes dock-unfold {
+  from {
+    opacity: 0;
+    transform: scale(0.2, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-dock__scrim,
+  .phone-dock__menu > li,
+  .phone-dock__tray {
+    animation: none;
+  }
+}
+
 /* Small phones (iPhone SE 1st gen, 360px Androids): tighten the toolbar to one row. */
 @media (max-width: 374px) and (min-height: 501px) {
   .toolbar {
@@ -5014,6 +5206,14 @@ kbd {
   .toolbar .btn--accent:not(.btn--labelled) {
     height: 2.125rem;
     padding-inline: 0.75rem;
+  }
+}
+
+/* Small phones: the view controls must fit between the two floating buttons. */
+@media (max-width: 374px) and (min-height: 501px) {
+  .preview__controls .privacy,
+  .preview__controls-sep:has(+ .privacy) {
+    display: none;
   }
 }
 
