@@ -1,5 +1,6 @@
-import { aspectRatioFor, type Size } from '../lib/crop'
-import { ASPECT_PRESETS, createDefaultCrop, stepRotate, type EditParams } from '../types/edits'
+import { useRef } from 'react'
+import { aspectRatioFor, fitCropInImage, restraightenCrop, rotatedBounds, type FrameSize, type Size } from '../lib/crop'
+import { ASPECT_PRESETS, createDefaultCrop, stepRotate, type CropRect, type EditParams } from '../types/edits'
 import { Slider } from './Slider'
 
 type CropPanelProps = {
@@ -11,27 +12,31 @@ type CropPanelProps = {
   aspectFlipped: boolean
   onAspectChange: (id: string, flipped: boolean) => void
   /** Full-resolution size of the uncropped frame, once known. */
-  frameSize: Size | null
+  frameSize: FrameSize | null
   onChange: (patch: Partial<EditParams>, opts?: { commit?: boolean }) => void
   onBegin?: () => void
   onCommit?: () => void
 }
 
-/** Largest crop with the given pixel aspect, centred on the current crop. */
-function fitAspect(edits: EditParams, ratio: number, frameSize: Size): EditParams['crop'] {
+/** Largest crop with the given pixel aspect, centred on the current crop and inside the image. */
+function fitAspect(edits: EditParams, ratio: number, image: Size): EditParams['crop'] {
   const crop = edits.crop
-  const normalized = ratio / (frameSize.w / frameSize.h)
+  const frame = rotatedBounds(image, crop.straighten)
+  const normalized = ratio / (frame.w / frame.h)
   const width = normalized >= 1 ? 1 : normalized
   const height = normalized >= 1 ? 1 / normalized : 1
   const cx = crop.x + crop.width / 2
   const cy = crop.y + crop.height / 2
-  return {
-    ...crop,
-    width,
-    height,
-    x: Math.min(1 - width, Math.max(0, cx - width / 2)),
-    y: Math.min(1 - height, Math.max(0, cy - height / 2)),
-  }
+  return fitCropInImage(
+    {
+      ...crop,
+      width,
+      height,
+      x: Math.min(1 - width, Math.max(0, cx - width / 2)),
+      y: Math.min(1 - height, Math.max(0, cy - height / 2)),
+    },
+    image,
+  )
 }
 
 const ASPECT_LABELS: Record<string, string> = { original: 'Original' }
@@ -50,18 +55,34 @@ export function CropPanel({
   onCommit,
 }: CropPanelProps) {
   const crop = edits.crop
+  const image = frameSize?.image ?? null
   const canFlip = aspectId !== 'free' && aspectId !== '1:1'
+  // Crop as it was when the straighten drag began, so dragging back restores it.
+  const straightenBase = useRef<CropRect | null>(null)
 
   const selectAspect = (id: string, flipped: boolean) => {
     onAspectChange(id, flipped)
-    const ratio = aspectRatioFor(id, flipped, frameSize)
-    if (ratio != null && frameSize) {
-      onChange({ crop: fitAspect(edits, ratio, frameSize) }, { commit: true })
+    const ratio = aspectRatioFor(id, flipped, image)
+    if (ratio != null && image) {
+      onChange({ crop: fitAspect(edits, ratio, image) }, { commit: true })
     }
   }
 
-  const outW = frameSize ? Math.round(crop.width * frameSize.w) : null
-  const outH = frameSize ? Math.round(crop.height * frameSize.h) : null
+  const straighten = (value: number, opts?: { commit?: boolean }) => {
+    const base = straightenBase.current ?? crop
+    if (opts?.commit) straightenBase.current = null
+    onChange({ crop: image ? restraightenCrop(base, value, image) : { ...crop, straighten: value } }, opts)
+  }
+
+  const rotate = (delta: 90 | -90) => {
+    // A quarter turn swaps the image's sides inside the straightened frame.
+    const turned = image ? fitCropInImage(crop, { w: image.h, h: image.w }) : crop
+    onChange({ rotate: stepRotate(edits.rotate, delta), crop: turned }, { commit: true })
+  }
+
+  const frame = image ? rotatedBounds(image, crop.straighten) : null
+  const outW = frame ? Math.round(crop.width * frame.w) : null
+  const outH = frame ? Math.round(crop.height * frame.h) : null
 
   return (
     <section className="panel" aria-label="Crop and rotate">
@@ -145,7 +166,7 @@ export function CropPanel({
               type="button"
               className="btn btn--ghost btn--sm btn--icon"
               disabled={disabled}
-              onClick={() => onChange({ rotate: stepRotate(edits.rotate, -90) }, { commit: true })}
+              onClick={() => rotate(-90)}
               title="Rotate left"
               aria-label="Rotate left"
             >
@@ -164,7 +185,7 @@ export function CropPanel({
               type="button"
               className="btn btn--ghost btn--sm btn--icon"
               disabled={disabled}
-              onClick={() => onChange({ rotate: stepRotate(edits.rotate, 90) }, { commit: true })}
+              onClick={() => rotate(90)}
               title="Rotate right"
               aria-label="Rotate right"
             >
@@ -191,9 +212,15 @@ export function CropPanel({
           defaultValue={0}
           disabled={disabled}
           format={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}°`}
-          onChange={(straighten, opts) => onChange({ crop: { ...crop, straighten } }, opts)}
-          onBegin={onBegin}
-          onCommit={onCommit}
+          onChange={straighten}
+          onBegin={() => {
+            straightenBase.current = crop
+            onBegin?.()
+          }}
+          onCommit={() => {
+            straightenBase.current = null
+            onCommit?.()
+          }}
         />
       </div>
 
