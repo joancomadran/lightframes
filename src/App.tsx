@@ -24,7 +24,7 @@ import { PanelIcon } from './components/PanelIcon'
 import { PasteDialog } from './components/PasteDialog'
 import { HistogramIcon, PhoneDock, PhoneSheetHead } from './components/PhoneDock'
 import { PresetsPanel } from './components/PresetsPanel'
-import { PreviewCanvas, type PreviewApi, type Size } from './components/PreviewCanvas'
+import { PreviewCanvas, type PreviewApi } from './components/PreviewCanvas'
 import { ShortcutsDialog } from './components/ShortcutsDialog'
 import { Toast } from './components/Toast'
 import { ToneCurvePanel } from './components/ToneCurvePanel'
@@ -35,7 +35,7 @@ import { useSheetSwipe } from './hooks/useSheetSwipe'
 import type { StudioApi, StudioFormat } from './hooks/useStudio'
 import { createCarouselDoc, type CarouselDoc } from './lib/carousel'
 import { createCollageDoc, type CollageDoc } from './lib/collage'
-import { aspectRatioFor } from './lib/crop'
+import { aspectRatioFor, fitCropInImage, type FrameSize } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
 import { DEFAULT_EDITS, type HealSpot, type LiquifyStroke } from './types/edits'
@@ -71,7 +71,7 @@ export default function App() {
   } | null>(null)
   const [scrubbing, setScrubbing] = useState(false)
   const [cropAspect, setCropAspect] = useState({ id: 'free', flipped: false })
-  const [frameSize, setFrameSize] = useState<Size | null>(null)
+  const [frameSize, setFrameSize] = useState<FrameSize | null>(null)
   const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null)
   const [pickingWhiteBalance, setPickingWhiteBalance] = useState(false)
   const [showMaskTint, setShowMaskTint] = useState(false)
@@ -365,7 +365,13 @@ export default function App() {
               scrubbing={scrubbing}
               onRotate={
                 canEdit
-                  ? (rotate) => session.updateEdits({ rotate }, { commit: true })
+                  ? (rotate) => {
+                      // A quarter turn swaps the image's sides inside the straightened frame.
+                      const turned = (rotate - edits.rotate) % 180 !== 0
+                      const image = frameSize && (turned ? { w: frameSize.image.h, h: frameSize.image.w } : frameSize.image)
+                      const crop = image ? fitCropInImage(edits.crop, image) : edits.crop
+                      session.updateEdits({ rotate, crop }, { commit: true })
+                    }
                   : undefined
               }
               onHistogram={onHistogram}
@@ -376,7 +382,8 @@ export default function App() {
                 canEdit && session.panelFocus === 'crop' && session.cropMode
                   ? {
                       crop: edits.crop,
-                      aspect: aspectRatioFor(cropAspect.id, cropAspect.flipped, frameSize),
+                      aspect: aspectRatioFor(cropAspect.id, cropAspect.flipped, frameSize?.image ?? null),
+                      image: frameSize?.image ?? null,
                       onChange: (crop) => session.updateEdits({ crop }),
                       onBegin: begin,
                       onCommit: commit,

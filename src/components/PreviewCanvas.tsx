@@ -26,6 +26,7 @@ import {
   type BaseImage,
   type RenderSource,
 } from '../lib/imageProcessing'
+import { rotatedBounds, type FrameSize } from '../lib/crop'
 import { healKey, rankHealSources } from '../lib/heal'
 import { liquifyField, liquifyKey } from '../lib/liquify'
 import { getAiVersion, subscribeAi } from '../lib/ai'
@@ -98,7 +99,7 @@ type PreviewCanvasProps = {
   onPickWhiteBalance?: ((wb: WhiteBalance) => void) | null
   apiRef?: { current: PreviewApi | null }
   /** Full-resolution size of the uncropped (rotated + straightened) frame. */
-  onFrameSize?: (size: Size) => void
+  onFrameSize?: (size: FrameSize) => void
   /** Shown as the primary action of the empty state. */
   onOpen?: () => void
   /** Secondary empty-state action: load the demo photos. */
@@ -273,7 +274,7 @@ export function PreviewCanvas({
         : edits,
     [edits, cropActive],
   )
-  const frameSizeRef = useRef<Size>({ w: 0, h: 0 })
+  const frameSizeRef = useRef<FrameSize>({ w: 0, h: 0, image: { w: 0, h: 0 } })
   const splitActive = split && !compareMode && !cropActive
   // Everything the async render loop reads, refreshed every render.
   const latestRef = useRef({ renderEdits, edits, maxEdge, compareMode, showClipping, splitActive, onHistogram })
@@ -344,12 +345,10 @@ export function PreviewCanvas({
     const size = sourceSize(source)
     const ow = quarter ? size.h : size.w
     const oh = quarter ? size.w : size.h
-    const rad = (edits.crop.straighten * Math.PI) / 180
-    const cos = Math.abs(Math.cos(rad))
-    const sin = Math.abs(Math.sin(rad))
-    const next = { w: Math.round(ow * cos + oh * sin), h: Math.round(ow * sin + oh * cos) }
+    const bounds = rotatedBounds({ w: ow, h: oh }, edits.crop.straighten)
+    const next = { w: Math.round(bounds.w), h: Math.round(bounds.h), image: { w: ow, h: oh } }
     const prev = frameSizeRef.current
-    if (prev.w === next.w && prev.h === next.h) return
+    if (prev.w === next.w && prev.h === next.h && prev.image.w === ow && prev.image.h === oh) return
     frameSizeRef.current = next
     onFrameSize(next)
   }, [])

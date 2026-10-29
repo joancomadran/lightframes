@@ -1,4 +1,5 @@
 import { useRef, type PointerEvent as ReactPointerEvent } from 'react'
+import { cropFitsImage, fitCropInImage, type Size } from '../lib/crop'
 import type { CropRect } from '../types/edits'
 
 /** On-screen rectangle (viewport px) the uncropped frame occupies. */
@@ -8,6 +9,8 @@ export type CropOverlayConfig = {
   crop: CropRect
   /** Locked pixel aspect (w / h), or null for free. */
   aspect: number | null
+  /** Oriented image size, used to keep the box off the straighten corners. */
+  image: Size | null
   onChange: (crop: CropRect) => void
   onBegin?: () => void
   onCommit?: () => void
@@ -74,8 +77,47 @@ function resizeCrop(
   return { ...start, x, y, width: w, height: h }
 }
 
+function lerpCrop(from: CropRect, to: CropRect, t: number): CropRect {
+  return {
+    ...from,
+    x: from.x + (to.x - from.x) * t,
+    y: from.y + (to.y - from.y) * t,
+    width: from.width + (to.width - from.width) * t,
+    height: from.height + (to.height - from.height) * t,
+  }
+}
+
+/** Furthest step from `from` (which fits) towards `to` that still fits the image. */
+function reachCrop(from: CropRect, to: CropRect, image: Size): CropRect {
+  if (cropFitsImage(to, image)) return to
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < 20; i++) {
+    const mid = (lo + hi) / 2
+    if (cropFitsImage(lerpCrop(from, to, mid), image)) lo = mid
+    else hi = mid
+  }
+  return lerpCrop(from, to, lo)
+}
+
+/** Resize, stopping where the box would cross the straightened image's edge. */
+function resizeWithinImage(
+  start: CropRect,
+  wanted: CropRect,
+  ratio: number | null,
+  image: Size | null,
+): CropRect {
+  if (!image) return wanted
+  const from = fitCropInImage(start, image)
+  const reached = reachCrop(from, wanted, image)
+  if (ratio != null) return reached
+  // Free aspect: let each axis keep sliding once the other is blocked.
+  const alongX = reachCrop(reached, { ...reached, x: wanted.x, width: wanted.width }, image)
+  return reachCrop(alongX, { ...alongX, y: wanted.y, height: wanted.height }, image)
+}
+
 export function CropOverlay({ frame, config }: { frame: OverlayFrame; config: CropOverlayConfig }) {
-  const { crop, aspect, onChange, onBegin, onCommit } = config
+  const { crop, aspect, image, onChange, onBegin, onCommit } = config
   const dragRef = useRef<{
     handle: Handle
     pointerId: number
@@ -107,13 +149,14 @@ export function CropOverlay({ frame, config }: { frame: OverlayFrame; config: Cr
     const dy = (e.clientY - drag.startY) / frame.height
     const { start } = drag
     if (drag.handle === 'move') {
-      onChange({
+      const moved = {
         ...start,
         x: clamp(start.x + dx, 0, 1 - start.width),
         y: clamp(start.y + dy, 0, 1 - start.height),
-      })
+      }
+      onChange(image ? fitCropInImage(moved, image) : moved)
     } else {
-      onChange(resizeCrop(start, drag.handle, dx, dy, ratio))
+      onChange(resizeWithinImage(start, resizeCrop(start, drag.handle, dx, dy, ratio), ratio, image))
     }
   }
 
