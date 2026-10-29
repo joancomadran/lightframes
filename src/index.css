@@ -5065,6 +5065,17 @@ kbd {
     color: var(--accent-ink);
   }
 
+  /* Leaves the open tool: a smaller button stacked over the tools one. */
+  .phone-fab--exit {
+    --exit-size: 2.5rem;
+    right: calc(var(--fab-inset) + (var(--fab-size) - var(--exit-size)) / 2);
+    bottom: calc(var(--fab-inset) + var(--fab-size) + 0.6rem);
+    width: var(--exit-size);
+    height: var(--exit-size);
+    background: rgba(18, 24, 22, 0.88);
+    animation: dock-fade 0.18s ease;
+  }
+
   .phone-fab--photos.phone-fab--on {
     border-color: var(--accent);
     color: var(--accent);
@@ -5247,6 +5258,7 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   .phone-dock__scrim,
+  .phone-fab--exit,
   .phone-dock__menu > li,
   .phone-dock__tray {
     animation: none;

@@ -130,6 +130,22 @@ export default function App() {
       ?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
   }, [session.panelFocus, phone])
 
+  // Tools that take over touches on the photo: closing their sheet alone would leave them armed.
+  const photoTool =
+    session.panelFocus === 'heal' ||
+    session.panelFocus === 'liquify' ||
+    session.panelFocus === 'local' ||
+    (session.panelFocus === 'crop' && session.cropMode)
+  const exitTool = () => {
+    if (photoTool) {
+      session.setCropMode(false)
+      session.setPanelFocus('adjust')
+      // Keep the sheet folded: the panel change would otherwise unfold it again.
+      setSheetPanel('adjust')
+    }
+    setSheetCollapsed(true)
+  }
+
   const selectPanel = (id: PanelId) => {
     if (phone) setSheetCollapsed(false)
     session.setPanelFocus(id)
@@ -459,6 +475,11 @@ export default function App() {
               photoCount={session.photos.length}
               filmstrip={filmstrip}
               overlay={histogramHidden ? null : histogramPanel}
+              exit={
+                sheetOpen || photoTool
+                  ? { label: `Close ${PANELS.find((p) => p.id === session.panelFocus)?.label ?? 'tool'}`, onExit: exitTool }
+                  : null
+              }
               action={{
                 kind: 'menu',
                 items: [

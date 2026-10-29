@@ -20,6 +20,8 @@ type PhoneDockProps = {
   action:
     | { kind: 'menu'; items: DockItem[] }
     | { kind: 'toggle'; label: string; open: boolean; onToggle: () => void }
+  /** While a tool is open, a small button over the action one that leaves it. */
+  exit?: { label: string; onExit: () => void } | null
 }
 
 const CLOSE_PATH = <path d="M18 6 6 18M6 6l12 12" />
@@ -53,7 +55,7 @@ function DockIcon({ size = 22, children }: { size?: number; children: ReactNode 
  * Phone controls floating over the stage: a photos button bottom-left that unfolds the photo list,
  * and an action button bottom-right — the editor's list of tools, or a studio's settings sheet.
  */
-export function PhoneDock({ photoCount, filmstrip, overlay, action }: PhoneDockProps) {
+export function PhoneDock({ photoCount, filmstrip, overlay, action, exit }: PhoneDockProps) {
   const [open, setOpen] = useState<'menu' | 'photos' | null>(null)
 
   useEffect(() => {
@@ -119,6 +121,22 @@ export function PhoneDock({ photoCount, filmstrip, overlay, action }: PhoneDockP
         </DockIcon>
         {photoCount > 1 && <span className="phone-fab__count">{photoCount}</span>}
       </button>
+
+      {/* The tool list unfolds from the same spot, so the exit button steps aside while it is open. */}
+      {exit && open !== 'menu' && (
+        <button
+          type="button"
+          className="phone-fab phone-fab--exit"
+          aria-label={exit.label}
+          title={exit.label}
+          onClick={() => {
+            setOpen(null)
+            exit.onExit()
+          }}
+        >
+          <DockIcon size={18}>{CLOSE_PATH}</DockIcon>
+        </button>
+      )}
 
       <button
         type="button"
