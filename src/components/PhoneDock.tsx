@@ -173,7 +173,7 @@ export function SettingsIcon() {
   return <DockIcon size={16}>{SLIDERS_ICON}</DockIcon>
 }
 
-/** Top of a phone sheet: grabber, title and close button. Swipe handlers apply to the whole head. */
+/** Top of a phone sheet: title and close button. Swiping the head down also closes it. */
 export function PhoneSheetHead({
   icon,
   title,
@@ -182,10 +182,9 @@ export function PhoneSheetHead({
 }: { icon: ReactNode; title: ReactNode; onClose: () => void } & HTMLAttributes<HTMLDivElement>) {
   return (
     <div className="sheet-head" {...swipe}>
-      <button type="button" className="sheet-handle" aria-label="Hide tools" onClick={onClose} />
       <div className="sheet-head__row">
         <span className="sheet-head__title">
-          {icon}
+          <span className="sheet-head__icon">{icon}</span>
           {title}
         </span>
         <button
