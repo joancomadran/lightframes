@@ -136,13 +136,12 @@ export default function App() {
     session.panelFocus === 'liquify' ||
     session.panelFocus === 'local' ||
     (session.panelFocus === 'crop' && session.cropMode)
+  // Plain panels close from their sheet; these also need a way out once it is folded.
   const exitTool = () => {
-    if (photoTool) {
-      session.setCropMode(false)
-      session.setPanelFocus('adjust')
-      // Keep the sheet folded: the panel change would otherwise unfold it again.
-      setSheetPanel('adjust')
-    }
+    session.setCropMode(false)
+    session.setPanelFocus('adjust')
+    // Keep the sheet folded: the panel change would otherwise unfold it again.
+    setSheetPanel('adjust')
     setSheetCollapsed(true)
   }
 
@@ -483,7 +482,7 @@ export default function App() {
               filmstrip={filmstrip}
               overlay={histogramHidden ? null : histogramPanel}
               exit={
-                sheetOpen || photoTool
+                photoTool
                   ? { label: `Close ${PANELS.find((p) => p.id === session.panelFocus)?.label ?? 'tool'}`, onExit: exitTool }
                   : null
               }
