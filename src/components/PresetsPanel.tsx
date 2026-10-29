@@ -46,6 +46,7 @@ function PresetTile({
       {selected && (
         <div className="preset-grid__intensity">
           <label className="preset-grid__intensity-bar" title="Intensity · double-click to reset">
+            <span className="preset-grid__intensity-value">{intensity}%</span>
             <input
               type="range"
               min={0}
@@ -57,7 +58,6 @@ function PresetTile({
               onChange={(e) => onIntensityChange(Number(e.target.value))}
               onDoubleClick={() => onIntensityChange(100)}
             />
-            <span className="preset-grid__intensity-value">{intensity}%</span>
           </label>
         </div>
       )}
