@@ -2,19 +2,31 @@ import { useRef, useState, type ReactNode } from 'react'
 import { usePresetThumbnails, type ThumbGeometry } from '../hooks/usePresetThumbnails'
 import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
 import type { Preset } from '../types/edits'
-import { Slider } from './Slider'
 
 type PresetTileProps = {
   preset: Preset
   thumb: string | undefined
   selected: boolean
+  /** Strength of the selected preset (0–100), set from a slider on its tile. */
+  intensity: number
   disabled?: boolean
   onApply: (preset: Preset) => void
   onRemove: () => void
+  onIntensityChange: (intensity: number) => void
   actions?: ReactNode
 }
 
-function PresetTile({ preset, thumb, selected, disabled, onApply, onRemove, actions }: PresetTileProps) {
+function PresetTile({
+  preset,
+  thumb,
+  selected,
+  intensity,
+  disabled,
+  onApply,
+  onRemove,
+  onIntensityChange,
+  actions,
+}: PresetTileProps) {
   return (
     <li className={selected ? 'preset-grid__item preset-grid__item--active' : 'preset-grid__item'}>
       <button
@@ -30,6 +42,25 @@ function PresetTile({ preset, thumb, selected, disabled, onApply, onRemove, acti
         </span>
         <span className="preset-grid__name">{preset.name}</span>
       </button>
+      {/* Sits over the thumbnail, outside the button, so dragging it doesn't toggle the preset. */}
+      {selected && (
+        <div className="preset-grid__intensity">
+          <label className="preset-grid__intensity-bar" title="Intensity · double-click to reset">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={intensity}
+              disabled={disabled}
+              aria-label={`${preset.name} intensity`}
+              onChange={(e) => onIntensityChange(Number(e.target.value))}
+              onDoubleClick={() => onIntensityChange(100)}
+            />
+            <span className="preset-grid__intensity-value">{intensity}%</span>
+          </label>
+        </div>
+      )}
       {actions && <div className="preset-grid__actions">{actions}</div>}
     </li>
   )
@@ -116,46 +147,6 @@ export function PresetsPanel({
         />
       </div>
 
-      {selected && (
-        <div className="preset-applied">
-          <div className="preset-applied__head">
-            <span className="preset-applied__label">Applied</span>
-            <span className="preset-applied__name">{selected.name}</span>
-            <button
-              type="button"
-              className="link-btn preset-applied__remove"
-              disabled={disabled}
-              title={`Remove “${selected.name}” and restore the previous edits`}
-              onClick={onRemove}
-            >
-              Remove
-            </button>
-          </div>
-          <Slider
-            label="Intensity"
-            value={intensity}
-            min={0}
-            max={100}
-            step={1}
-            defaultValue={100}
-            disabled={disabled}
-            format={(v) => `${v}%`}
-            onChange={(value) => onIntensityChange(value)}
-          />
-          {!selectedIsBuiltin && (
-            <button
-              type="button"
-              className="link-btn preset-applied__update"
-              disabled={!canUpdate}
-              title={`Overwrite “${selected.name}” with current adjustments`}
-              onClick={onUpdateSelected}
-            >
-              Update preset with current edits
-            </button>
-          )}
-        </div>
-      )}
-
       <div className="field-row">
         <span>Filters</span>
         <span className="field-row__count">{BUILTIN_PRESETS.length}</span>
@@ -167,9 +158,11 @@ export function PresetsPanel({
             preset={preset}
             thumb={builtinThumbs[preset.id]}
             selected={preset.id === selectedPresetId}
+            intensity={intensity}
             disabled={disabled}
             onApply={onApply}
             onRemove={onRemove}
+            onIntensityChange={onIntensityChange}
           />
         ))}
       </ul>
@@ -216,11 +209,33 @@ export function PresetsPanel({
                 preset={preset}
                 thumb={customThumbs[preset.id]}
                 selected={preset.id === selectedPresetId}
+                intensity={intensity}
                 disabled={disabled}
                 onApply={onApply}
                 onRemove={onRemove}
+                onIntensityChange={onIntensityChange}
                 actions={
                   <>
+                    {preset.id === selectedPresetId && (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm btn--icon"
+                        disabled={!canUpdate}
+                        onClick={onUpdateSelected}
+                        title="Update with current edits"
+                        aria-label={`Update ${preset.name} with current edits`}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path
+                            d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="btn btn--ghost btn--sm btn--icon"

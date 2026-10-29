@@ -1445,50 +1445,6 @@ a.github-star {
   height: 0.35rem;
 }
 
-.preset-applied {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 0.35rem;
-  padding: 0.55rem 0.6rem;
-  border: 1px solid rgba(200, 245, 96, 0.3);
-  border-radius: var(--radius);
-  background: rgba(200, 245, 96, 0.05);
-}
-
-.preset-applied__head {
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  min-width: 0;
-}
-
-.preset-applied__label {
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.preset-applied__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.preset-applied__remove {
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.preset-applied__update {
-  align-self: flex-start;
-  font-size: 0.72rem;
-}
-
 .preset-save {
   display: flex;
   gap: 0.4rem;
@@ -1615,6 +1571,48 @@ a.github-star {
   .preset-grid__actions {
     opacity: 1;
   }
+}
+
+/* Intensity of the applied preset, laid over the bottom of its thumbnail. */
+.preset-grid__intensity {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.preset-grid__intensity-bar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 2px;
+  padding: 0.6rem 0.35rem 0.3rem;
+  border-radius: 0 0 calc(var(--radius) - 2px) calc(var(--radius) - 2px);
+  background: linear-gradient(to top, rgba(12, 16, 14, 0.85), rgba(12, 16, 14, 0));
+  pointer-events: auto;
+  animation: preset-thumb-in 0.2s ease;
+}
+
+.preset-grid__intensity-bar input[type='range'] {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  height: 0.9rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.preset-grid__intensity-value {
+  min-width: 2.1em;
+  font-size: 0.66rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: #fff;
 }
 
 /* ——— Panel tabs / histogram / crop / curve / local / modal ——— */
