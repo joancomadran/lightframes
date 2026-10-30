@@ -232,7 +232,7 @@ export function coverWindow(imageW: number, imageH: number, boxW: number, boxH: 
 }
 
 /** Size of the photo after rotate, straighten and crop, at full resolution. */
-function croppedSize(source: RenderSource, edits: EditParams): { w: number; h: number; long: number } {
+export function croppedSize(source: RenderSource, edits: EditParams): { w: number; h: number; long: number } {
   const srcW = 'kind' in source ? (source.fullWidth ?? source.width) : source.width
   const srcH = 'kind' in source ? (source.fullHeight ?? source.height) : source.height
   const quarter = edits.rotate === 90 || edits.rotate === 270
@@ -273,19 +273,26 @@ export type CollageRenderOptions = {
   doc: CollageDoc
   slide: CollageSlide
   getPhoto: (photoId: string) => Promise<CollageRenderPhoto | null>
+  /** Output size in pixels; defaults to the aspect preset (1×). */
+  width?: number
+  height?: number
   mime?: string
   quality?: number
 }
 
-/** Render one slide at the aspect's full Instagram size. */
+/** Render one slide from source photos at the requested pixel size. */
 export async function renderCollageSlide({
   doc,
   slide,
   getPhoto,
+  width: outW,
+  height: outH,
   mime = 'image/jpeg',
   quality = 0.92,
 }: CollageRenderOptions): Promise<Blob> {
-  const { width, height } = aspectById(doc.aspect)
+  const base = aspectById(doc.aspect)
+  const width = outW ?? base.width
+  const height = outH ?? base.height
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
