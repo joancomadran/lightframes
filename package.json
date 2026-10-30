@@ -8,6 +8,7 @@
     "build": "astro check && astro build",
     "check": "astro check",
     "lint": "oxlint",
+    "test:collage-export": "node --test scripts/collage-export-size.test.mjs",
     "preview": "astro preview",
     "indexnow": "node scripts/indexnow.mjs"
   },

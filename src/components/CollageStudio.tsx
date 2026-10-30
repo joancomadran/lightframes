@@ -25,8 +25,15 @@ import {
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
+import { CollageExportControls } from './CollageExportControls'
+import {
+  loadCollageExportSettings,
+  resolveCollageOutputSize,
+  type CollageExportSettings,
+} from '../lib/collageExport'
 import { PhoneDock, PhoneSheetHead, SettingsIcon } from './PhoneDock'
 import { Slider } from './Slider'
+import { useEditorLang } from '../hooks/useEditorLang'
 import {
   createExportLoader,
   PHOTO_MIME,
@@ -133,6 +140,8 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
   const [selectedCell, setSelectedCell] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
   const { progress, ready, run, share, save } = useSlideExport(onNotify, coarsePointer)
+  const { strings: tx } = useEditorLang()
+  const [exportSettings, setExportSettings] = useState<CollageExportSettings>(loadCollageExportSettings)
   const stageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
@@ -330,27 +339,60 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
     return () => el.removeEventListener('wheel', onWheel)
   }, [])
 
-  const exportSlides = useCallback(() => {
-    const slides = doc.slides.filter((s) => visibleCells(s).some((c) => c.photoId && photoById.has(c.photoId)))
-    if (slides.length === 0) {
-      onNotify('Add photos to the collage first', 'error')
-      return
-    }
-    void run(async (onProgress) => {
-      const files: File[] = []
+  const slideHasPhotos = visibleCells(slide).some((c) => c.photoId && photoById.has(c.photoId))
+
+  const renderExportFiles = useCallback(
+    async (slides: CollageSlide[], onProgress: (done: number, total: number) => void) => {
       const getPhoto = createExportLoader(photoById)
+      const size = await resolveCollageOutputSize(doc, slides, exportSettings.preset, getPhoto)
+      if (size.clamped) onNotify(tx.canvasLimited)
+      const files: File[] = []
       for (let i = 0; i < slides.length; i++) {
         onProgress(i, slides.length)
-        const blob = await renderCollageSlide({ doc, slide: slides[i]!, getPhoto })
+        const blob = await renderCollageSlide({
+          doc,
+          slide: slides[i]!,
+          getPhoto,
+          width: size.width,
+          height: size.height,
+          quality: exportSettings.quality,
+        })
         files.push(new File([blob], slideFileName('collage', i, slides.length), { type: 'image/jpeg' }))
       }
       return files
-    })
-  }, [doc, photoById, onNotify, run])
+    },
+    [doc, exportSettings, onNotify, photoById, tx.canvasLimited],
+  )
+
+  const exportSlides = useCallback(
+    (onlyCurrent = false) => {
+      if (onlyCurrent) {
+        if (!slideHasPhotos) {
+          onNotify(tx.slideEmpty, 'error')
+          return
+        }
+        void run((onProgress) => renderExportFiles([slide], onProgress), {
+          onSuccess: (files) => onNotify(files.length > 1 ? tx.exportedZip(files.length) : tx.exportedOne),
+        })
+        return
+      }
+      const slides = doc.slides.filter((s) =>
+        visibleCells(s).some((c) => c.photoId && photoById.has(c.photoId)),
+      )
+      if (slides.length === 0) {
+        onNotify(tx.addPhotosFirst, 'error')
+        return
+      }
+      void run((onProgress) => renderExportFiles(slides, onProgress), {
+        onSuccess: (files) => onNotify(files.length > 1 ? tx.exportedZip(files.length) : tx.exportedOne),
+      })
+    },
+    [doc, onNotify, photoById, renderExportFiles, run, slide, slideHasPhotos, tx],
+  )
 
   useEffect(() => {
     if (!apiRef) return
-    apiRef.current = { exportSlides }
+    apiRef.current = { exportSlides: () => exportSlides(false) }
     return () => {
       apiRef.current = null
     }
@@ -780,22 +822,39 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
               </p>
             </div>
 
+            <CollageExportControls
+              doc={doc}
+              settings={exportSettings}
+              onChange={setExportSettings}
+              strings={tx}
+              disabled={Boolean(progress)}
+            />
+
             <div className="adjust-group">
-              <button
-                type="button"
-                className="btn btn--accent"
-                onClick={exportSlides}
-                disabled={Boolean(progress) || filledCount === 0}
-              >
-                {progress
-                  ? 'Rendering…'
-                  : exportableCount > 1
-                    ? `Export ${exportableCount} slides`
-                    : 'Export collage'}
-              </button>
-              <p className="field-hint">
-                JPEG, {aspect.width} × {aspect.height} px per slide.
-              </p>
+              <div className="btn-group" style={{ flexWrap: 'wrap' }}>
+                {exportableCount > 1 && (
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => exportSlides(true)}
+                    disabled={Boolean(progress) || !slideHasPhotos}
+                  >
+                    {progress ? tx.rendering : tx.exportThis}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn btn--accent"
+                  onClick={() => exportSlides(false)}
+                  disabled={Boolean(progress) || filledCount === 0}
+                >
+                  {progress
+                    ? tx.rendering
+                    : exportableCount > 1
+                      ? tx.exportAll
+                      : tx.exportCollage}
+                </button>
+              </div>
             </div>
           </section>
         </div>

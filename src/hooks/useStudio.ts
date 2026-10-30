@@ -144,7 +144,10 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
   const busyRef = useRef(false)
 
   const run = useCallback(
-    async (render: (onProgress: (done: number, total: number) => void) => Promise<File[]>) => {
+    async (
+      render: (onProgress: (done: number, total: number) => void) => Promise<File[]>,
+      options?: { onSuccess?: (files: File[]) => void },
+    ) => {
       if (busyRef.current) return
       busyRef.current = true
       setReady(null)
@@ -155,7 +158,8 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
           setReady(files)
         } else {
           await downloadFiles(files)
-          onNotify(files.length > 1 ? `Exported ${files.length} slides as a ZIP` : 'Exported 1 image')
+          if (options?.onSuccess) options.onSuccess(files)
+          else onNotify(files.length > 1 ? `Exported ${files.length} slides as a ZIP` : 'Exported 1 image')
         }
       } catch {
         onNotify('Export failed', 'error')
