@@ -45,9 +45,10 @@ export function website(lang: Lang): Node {
   }
 }
 
-export function webApplication(lang: Lang, featureList: string[]): Node {
+/** Structured data for the editor app (home, tool pages, key landings). */
+export function softwareApplication(lang: Lang, featureList: string[]): Node {
   return {
-    '@type': 'WebApplication',
+    '@type': 'SoftwareApplication',
     '@id': APP_ID,
     name: SITE.name,
     url: absoluteUrl('/editor'),
@@ -57,7 +58,7 @@ export function webApplication(lang: Lang, featureList: string[]): Node {
         : 'Apply your Lightroom presets, XMP and .cube LUTs in batch and export an Instagram-ready carousel. Free, in the browser, nothing uploaded.',
     applicationCategory: 'MultimediaApplication',
     applicationSubCategory: 'Photo editor',
-    operatingSystem: 'Any (modern web browser)',
+    operatingSystem: 'Web browser',
     browserRequirements: 'Requires JavaScript, WebAssembly and Web Workers',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
@@ -70,6 +71,9 @@ export function webApplication(lang: Lang, featureList: string[]): Node {
     publisher: { '@id': ORG_ID },
   }
 }
+
+/** Same as softwareApplication; name kept for existing call sites. */
+export const webApplication = softwareApplication
 
 export function webPage(opts: {
   url: string

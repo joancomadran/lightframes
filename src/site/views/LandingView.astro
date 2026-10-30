@@ -5,6 +5,7 @@ import { SITE, absoluteUrl } from '../config'
 import { entryPath, getFaq, getPosts, getTools } from '../content'
 import { EDITOR_PATH, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
 import { landing } from '../landing'
+import { xmpLandingPath } from '../xmpLanding'
 import Base from '../layouts/Base.astro'
 import { faqPage, videoObject, webApplication, webPage } from '../schema'
 
@@ -62,6 +63,9 @@ const posts = (await getPosts(lang)).slice(0, 3)
       <ul class="facts">
         {c.facts.map((fact) => <li>{fact}</li>)}
       </ul>
+      <p class="hero__aside">
+        <a href={xmpLandingPath[lang]}>{lang === 'es' ? 'Usar presets .xmp sin Lightroom →' : 'Use .xmp presets without Lightroom →'}</a>
+      </p>
     </div>
 
     <figure class="promo">

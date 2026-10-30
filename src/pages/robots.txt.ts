@@ -8,6 +8,7 @@ const AI_BOTS = [
   'GPTBot',
   'OAI-SearchBot',
   'ChatGPT-User',
+  'Bingbot',
   'ClaudeBot',
   'Claude-SearchBot',
   'Claude-User',

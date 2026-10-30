@@ -18,7 +18,7 @@ keywords:
   - photopea raw online
 ---
 
-**En resumen:** si quieres **aplicar presets `.xmp` o LUTs `.cube` de Lightroom sin instalar nada** y que tus **RAW no se suban a un servidor**, abre [Lightframes](/editor) en el navegador de un ordenador. Para un **catálogo RAW de escritorio con ajustes locales modulares**, **darktable** y **RawTherapee** (gratis, GPLv3) van más lejos, pero **no leen presets de revelado de Lightroom**. **Photopea** edita por **capas** en el navegador y abre muchos RAW con ajustes básicos, pero **no sustituye un flujo de presets XMP**. La app **gratis de Lightroom para móvil** cubre captura y edición básica; el **revelado RAW, los ajustes selectivos, el lote y los presets sincronizados** están en planes de pago, según la [FAQ de Lightroom móvil de Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
+**En resumen:** si quieres **aplicar presets `.xmp` o LUTs `.cube` de Lightroom sin instalar nada** y que tus **RAW no se suban a un servidor**, abre [Lightframes](/editor) en el navegador de un ordenador — o la guía [usar presets XMP sin Lightroom](/es/presets-xmp-sin-lightroom). Para un **catálogo RAW de escritorio con ajustes locales modulares**, **darktable** y **RawTherapee** (gratis, GPLv3) van más lejos, pero **no leen presets de revelado de Lightroom**. **Photopea** edita por **capas** en el navegador y abre muchos RAW con ajustes básicos, pero **no sustituye un flujo de presets XMP**. La app **gratis de Lightroom para móvil** cubre captura y edición básica; el **revelado RAW, los ajustes selectivos, el lote y los presets sincronizados** están en planes de pago, según la [FAQ de Lightroom móvil de Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
 
 ## Comparativa rápida
 
@@ -45,7 +45,7 @@ Lightframes es un editor de fotos de código abierto que funciona en la pestaña
 Lo que encaja con un flujo tipo Lightroom (comprobado en este proyecto):
 
 - **RAW, JPEG y PNG**, exportación a JPEG, PNG o WebP a partir del RAW a resolución completa ([editor RAW](/es/herramientas/editor-fotos-raw), [RAW a JPG](/es/herramientas/convertir-raw-a-jpg)).
-- **Importar presets `.xmp` de Lightroom / Camera Raw**, JSON y **LUTs `.cube`**, con control de **intensidad** ([presets](/es/herramientas/presets-fotos)).
+- **Importar presets `.xmp` de Lightroom / Camera Raw**, JSON y **LUTs `.cube`**, con control de **intensidad** ([presets](/es/herramientas/presets-fotos), [XMP sin Lightroom](/es/presets-xmp-sin-lightroom)).
 - **Copiar y pegar ajustes** en la tira de miniaturas y **exportar por lotes** en ZIP ([editar por lotes](/es/herramientas/editar-fotos-por-lotes)).
 - **Ajustes locales** radiales, lineales, pincel y máscara de **sujeto con IA** en el dispositivo.
 - **Collage** y **carrusel de Instagram** en la misma sesión ([collage](/es/herramientas/collage-fotos), [carrusel](/es/herramientas/carrusel-instagram)).

@@ -19,7 +19,7 @@ keywords:
   - online photo editor raw
 ---
 
-**Short answer:** if you want to **apply Lightroom `.xmp` presets or `.cube` LUTs without installing anything**, and keep **RAW files on your device**, use [Lightframes](/editor) in a desktop browser. For a **full desktop RAW catalogue and module-based local edits**, **darktable** or **RawTherapee** (both free, GPLv3) are stronger, but they do not read Lightroom develop presets. **Photopea** is a capable **browser** editor for layers and JPEG workflows; it opens many RAWs with basic develop sliders, but it is not a Lightroom preset replacement. Adobe’s **free Lightroom mobile app** covers capture and basic edits on a phone; **RAW develop, selective adjustments, batch editing and synced presets** sit behind paid plans, per [Adobe’s Lightroom mobile FAQ](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
+**Short answer:** if you want to **apply Lightroom `.xmp` presets or `.cube` LUTs without installing anything**, and keep **RAW files on your device**, use [Lightframes](/editor) in a desktop browser — or read the dedicated guide on [using XMP presets without Lightroom](/xmp-presets-without-lightroom). For a **full desktop RAW catalogue and module-based local edits**, **darktable** or **RawTherapee** (both free, GPLv3) are stronger, but they do not read Lightroom develop presets. **Photopea** is a capable **browser** editor for layers and JPEG workflows; it opens many RAWs with basic develop sliders, but it is not a Lightroom preset replacement. Adobe’s **free Lightroom mobile app** covers capture and basic edits on a phone; **RAW develop, selective adjustments, batch editing and synced presets** sit behind paid plans, per [Adobe’s Lightroom mobile FAQ](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
 
 ## Quick comparison
 
@@ -46,7 +46,7 @@ Lightframes is an open-source photo editor that runs entirely in the browser tab
 What matches a Lightroom-style workflow in this repo:
 
 - **RAW and JPEG/PNG** editing, export to JPEG, PNG or WebP developed from the full-resolution RAW ([RAW editor](/tools/raw-photo-editor), [RAW to JPG](/tools/raw-to-jpg)).
-- **Import Lightroom / Camera Raw `.xmp` presets**, plus JSON and **`.cube` LUTs**, with an **intensity** slider ([photo presets](/tools/photo-presets)).
+- **Import Lightroom / Camera Raw `.xmp` presets**, plus JSON and **`.cube` LUTs**, with an **intensity** slider ([photo presets](/tools/photo-presets), [XMP without Lightroom](/xmp-presets-without-lightroom)).
 - **Copy/paste edits** across a filmstrip selection and **batch export** as a ZIP ([batch photo editor](/tools/batch-photo-editor)).
 - **Local adjustments** with radial, linear, brush and **AI subject** masks (on-device).
 - **Collage** and **Instagram carousel** export from the same session ([collage maker](/tools/photo-collage-maker), [carousel maker](/tools/instagram-carousel-maker)).

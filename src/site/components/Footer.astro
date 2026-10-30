@@ -2,6 +2,7 @@
 import { SITE } from '../config'
 import { entryPath, getTools, pagePath } from '../content'
 import { EDITOR_PATH, href, ui, type Lang } from '../i18n'
+import { xmpLandingPath } from '../xmpLanding'
 import Logo from './Logo.astro'
 import StarLink from './StarLink.astro'
 
@@ -41,6 +42,7 @@ const year = new Date().getFullYear()
       <h2>{t.footer.resources}</h2>
       <ul>
         <li><a href={href('blog', lang)}>{t.nav.blog}</a></li>
+        <li><a href={xmpLandingPath[lang]}>{lang === 'es' ? 'Presets XMP sin Lightroom' : 'XMP presets without Lightroom'}</a></li>
         <li><a href={href('faq', lang)}>{t.nav.faq}</a></li>
         <li><a href={href('gear', lang)}>{t.nav.gear}</a></li>
         <li><a href={changelog}>{t.footer.changelog}</a></li>

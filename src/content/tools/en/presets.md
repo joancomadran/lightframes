@@ -48,7 +48,7 @@ updated: 2026-10-20
 
 ## What presets in Lightframes are and who they're for
 
-A preset in Lightframes is a saved set of edit settings that you can apply to any photo with one click. It is for photographers who want a consistent look across a shoot or an Instagram feed, people who have bought or downloaded Lightroom presets (.xmp) and want to use them without installing Lightroom or any other software, and anyone who just wants a quick filter on a phone photo. The editor is free and open source and runs in your browser, which makes it a free Lightroom alternative for applying the looks you already own.
+A preset in Lightframes is a saved set of edit settings that you can apply to any photo with one click. It is for photographers who want a consistent look across a shoot or an Instagram feed, people who have bought or downloaded Lightroom presets (.xmp) and want to use them without installing Lightroom or any other software, and anyone who just wants a quick filter on a phone photo. The editor is free and open source and runs in your browser, which makes it a free Lightroom alternative for applying the looks you already own. See also [using XMP presets without Lightroom](/xmp-presets-without-lightroom) for a step-by-step guide and an honest list of which XMP settings import.
 
 ## How presets work, and why your files stay private
 
