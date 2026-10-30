@@ -1,0 +1,130 @@
+---
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import EditorCta from '../components/EditorCta.astro'
+import FaqList from '../components/FaqList.astro'
+import { absoluteUrl } from '../config'
+import { formatDate, href, ui, type Lang } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, faqPage, howTo, softwareApplication, webPage } from '../schema'
+import { getTools } from '../content'
+import { xmpLanding, xmpLandingAlternates, xmpLandingPath, xmpLandingUpdated } from '../xmpLanding'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const c = xmpLanding[lang]
+const path = xmpLandingPath[lang]
+const url = absoluteUrl(path)
+const tools = await getTools(lang)
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: c.h1, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={c.title}
+  description={c.description}
+  path={path}
+  alternates={xmpLandingAlternates}
+  schema={[
+    webPage({ url, name: c.h1, description: c.description, lang, updated: xmpLandingUpdated }),
+    breadcrumbs(crumbs),
+    softwareApplication(lang, tools.map((tool) => tool.data.label)),
+    howTo(url, c.stepsTitle, c.steps),
+    faqPage(url, c.faq),
+  ]}
+>
+  <article class="wrap page">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{c.h1}</h1>
+      <p class="lead">{c.lead}</p>
+      <EditorCta lang={lang} />
+      <p class="fineprint">{c.trademark}</p>
+    </header>
+
+    <section class="steps" aria-labelledby="steps-title">
+      <h2 id="steps-title">{c.stepsTitle}</h2>
+      <ol>
+        {
+          c.steps.map((step, i) => (
+            <li id={`step-${i + 1}`}>
+              <h3>{step.name}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="section-block" aria-labelledby="also-title">
+      <h2 id="also-title">{c.alsoTitle}</h2>
+      <ul class="points">
+        {
+          c.also.map((item) => (
+            <li>
+              <h3>{item.h3}</h3>
+              <p>{item.p}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="section-block" aria-labelledby="table-title">
+      <h2 id="table-title">{c.tableTitle}</h2>
+      <p>{c.tableLead}</p>
+      <div class="prose">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{c.tableSetting}</th>
+              <th scope="col">{c.tableSupported}</th>
+              <th scope="col">{c.tableUnsupported}</th>
+              <th scope="col">{c.tableNotes}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              c.supportedRows.map((row) => (
+                <tr>
+                  <td>{row.setting}</td>
+                  <td>{row.supported ? '✓' : '—'}</td>
+                  <td>{row.supported ? '—' : '✓'}</td>
+                  <td>{row.notes ?? '—'}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section-block" aria-labelledby="limits-title">
+      <h2 id="limits-title">{c.limitsTitle}</h2>
+      <ul>
+        {c.limits.map((line) => <li>{line}</li>)}
+      </ul>
+    </section>
+
+    <section class="section-block" aria-labelledby="faq-title">
+      <h2 id="faq-title">{t.tool.faq}</h2>
+      <FaqList items={c.faq} />
+    </section>
+
+    <section class="section-block" aria-labelledby="related-title">
+      <h2 id="related-title">{c.relatedTitle}</h2>
+      <ul>
+        {c.related.map((link) => <li><a href={link.path}>{link.label}</a></li>)}
+      </ul>
+      <p class="fineprint">
+        {t.tool.updated}: <time datetime={xmpLandingUpdated.toISOString()}>{formatDate(xmpLandingUpdated, lang)}</time>
+      </p>
+    </section>
+  </article>
+</Base>

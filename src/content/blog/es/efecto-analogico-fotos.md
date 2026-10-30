@@ -88,7 +88,7 @@ El efecto analógico luce de verdad cuando una serie o tu feed parecen hechos co
 Lightframes no tiene un control específico de halation ni de bloom. El resto del efecto (lavado, color, grano y viñeta) lo consigues con los pasos de arriba.
 
 **¿Puedo usar los presets de película que ya tengo?**
-Si son presets `.xmp` de Lightroom o Camera Raw, sí: impórtalos en la pestaña Presets y Lightframes traslada sus ajustes de revelado a sus propios controles, incluidas las curvas, la gradación de color y el grano. Los perfiles de cámara, las correcciones de objetivo y las máscaras no se importan, así que algunos estilos cambiarán un poco. Lightroom y Camera Raw son marcas de Adobe; Lightframes es un proyecto independiente sin relación con Adobe. Tienes los detalles en [presets para fotos](/es/herramientas/presets-fotos).
+Si son presets `.xmp` de Lightroom o Camera Raw, sí: impórtalos en la pestaña Presets y Lightframes traslada sus ajustes de revelado a sus propios controles, incluidas las curvas, la gradación de color y el grano. Los perfiles de cámara, las correcciones de objetivo y las máscaras no se importan, así que algunos estilos cambiarán un poco. Lightroom y Camera Raw son marcas de Adobe; Lightframes es un proyecto independiente sin relación con Adobe. Detalles en [presets para fotos](/es/herramientas/presets-fotos) y [presets XMP sin Lightroom](/es/presets-xmp-sin-lightroom).
 
 **¿Funciona en el móvil?**
 Sí, el editor funciona en móviles y tabletas, y los filtros de película y el grano van igual. Con RAW grandes se trabaja más cómodo en un portátil.

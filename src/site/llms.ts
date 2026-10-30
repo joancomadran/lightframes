@@ -1,6 +1,7 @@
 import { SITE } from './config'
 import { entryPath, getFaq, getPages, getPosts, getTools } from './content'
 import { EDITOR_PATH, href } from './i18n'
+import { xmpLanding, xmpLandingPath } from './xmpLanding'
 
 /** llms.txt (https://llmstxt.org): a plain summary of the site for AI assistants, built from the collections. */
 
@@ -28,6 +29,13 @@ export async function llmsTxt(): Promise<string> {
     SUMMARY,
     '',
     ...FACTS,
+    '',
+    '## Key pages',
+    '',
+    `- [${xmpLanding.en.h1}](${url(xmpLandingPath.en)}): ${xmpLanding.en.lead}`,
+    `- [${xmpLanding.es.h1}](${url(xmpLandingPath.es)}): ${xmpLanding.es.lead}`,
+    `- [Home](${url(href('home', 'en'))}) / [Inicio](${url(href('home', 'es'))})`,
+    `- [Editor](${url(EDITOR_PATH)})`,
     '',
     '## Tools',
     '',
@@ -76,6 +84,17 @@ export async function llmsFullTxt(): Promise<string> {
       ),
     ),
     ...posts.map((post) => section(post.data.h1 ?? post.data.title, entryPath(post), post.data.description, stripComments(post.body))),
+    section(
+      xmpLanding.en.h1,
+      xmpLandingPath.en,
+      xmpLanding.en.lead,
+      [
+        xmpLanding.en.trademark,
+        `### ${xmpLanding.en.stepsTitle}\n\n${xmpLanding.en.steps.map((s, i) => `${i + 1}. **${s.name}.** ${s.text}`).join('\n')}`,
+        `### ${xmpLanding.en.tableTitle}\n\n${xmpLanding.en.supportedRows.map((r) => `- ${r.setting}: ${r.supported ? 'imported' : 'not imported'}${r.notes ? ` (${r.notes})` : ''}`).join('\n')}`,
+        `### Questions\n\n${xmpLanding.en.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
+      ].join('\n\n'),
+    ),
     section('Frequently asked questions', href('faq', 'en'), '', faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')),
   ].join('\n')
 }

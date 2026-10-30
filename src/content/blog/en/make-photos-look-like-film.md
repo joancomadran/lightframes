@@ -88,7 +88,7 @@ A film look matters most when a series or a feed looks like it was shot on the s
 Lightframes has no dedicated halation or bloom control. You can get the rest of the look (fade, colour, grain, vignette) with the steps above.
 
 **Can I use film presets I already own?**
-If they're `.xmp` presets from Lightroom or Camera Raw, yes: import them in the Presets tab and Lightframes maps their develop settings, including tone curves, colour grading and grain, onto its own sliders. Camera profiles, lens corrections and masks aren't imported, so some looks will differ. Lightroom and Camera Raw are trademarks of Adobe; Lightframes is independent and not affiliated with Adobe. Details in [photo presets](/tools/photo-presets).
+If they're `.xmp` presets from Lightroom or Camera Raw, yes: import them in the Presets tab and Lightframes maps their develop settings, including tone curves, colour grading and grain, onto its own sliders. Camera profiles, lens corrections and masks aren't imported, so some looks will differ. Lightroom and Camera Raw are trademarks of Adobe; Lightframes is independent and not affiliated with Adobe. Details in [photo presets](/tools/photo-presets) and [using XMP without Lightroom](/xmp-presets-without-lightroom).
 
 **Does it work on a phone?**
 Yes, the editor works on phones and tablets, and the film filters and grain work the same way. Large RAW files are more comfortable on a laptop.
