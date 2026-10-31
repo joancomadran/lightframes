@@ -173,8 +173,29 @@ export function useEditorSession({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [presetsLoaded, setPresetsLoaded] = useState(false);
-  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
-  const [presetIntensity, setPresetIntensityState] = useState(100);
+  /** The preset each photo wears and at what intensity; the panel shows the active photo's. */
+  const [appliedPresets, setAppliedPresets] = useState<
+    Record<string, { presetId: string; intensity: number }>
+  >({});
+  const selectedPresetId = activeId
+    ? (appliedPresets[activeId]?.presetId ?? null)
+    : null;
+  const presetIntensity = activeId
+    ? (appliedPresets[activeId]?.intensity ?? 100)
+    : 100;
+  const setAppliedPreset = useCallback(
+    (ids: string[], presetId: string | null, intensity = 100) => {
+      setAppliedPresets((prev) => {
+        const next = { ...prev };
+        for (const id of ids) {
+          if (presetId) next[id] = { presetId, intensity };
+          else delete next[id];
+        }
+        return next;
+      });
+    },
+    [],
+  );
   /** Per-photo edits from before the current preset was applied, restored on remove. */
   const presetBaseRef = useRef(new Map<string, EditParams>());
   const [clipboard, setClipboard] = useState<{
@@ -548,8 +569,7 @@ export function useEditorSession({
     futureRef.current = [];
     syncHistoryFlags();
     presetBaseRef.current.clear();
-    setSelectedPresetId(null);
-    setPresetIntensityState(100);
+    setAppliedPresets({});
     setStatus(
       `Cleared ${count} photo${count === 1 ? "" : "s"} from the workspace`,
     );
@@ -618,9 +638,10 @@ export function useEditorSession({
         };
       }),
     );
-    setSelectedPresetId(null);
+    presetBaseRef.current.delete(id);
+    setAppliedPreset([id], null);
     setStatus("Edits reset");
-  }, [pushHistory]);
+  }, [pushHistory, setAppliedPreset]);
 
   const applyPresetAtIntensity = useCallback(
     (preset: Preset, intensity: number, targetIds?: string[]) => {
@@ -728,11 +749,10 @@ export function useEditorSession({
     const preset = createPreset(name, photo.edits);
     setPresets((prev) => [preset, ...prev]);
     // The saved preset is the photo's own look, so there is nothing to revert to
-    presetBaseRef.current.clear();
-    setSelectedPresetId(preset.id);
-    setPresetIntensityState(100);
+    presetBaseRef.current.delete(photo.id);
+    setAppliedPreset([photo.id], preset.id);
     setStatus(`Saved custom preset “${preset.name}”`);
-  }, []);
+  }, [setAppliedPreset]);
 
   const updateSelectedPreset = useCallback(() => {
     if (
@@ -759,13 +779,13 @@ export function useEditorSession({
         };
       }),
     );
-    setPresetIntensityState(100);
+    setAppliedPreset([photo.id], selectedPresetId);
     setStatus(
       updatedName
         ? `Updated “${updatedName}” with current edits`
         : "Preset updated",
     );
-  }, [selectedPresetId]);
+  }, [selectedPresetId, setAppliedPreset]);
 
   const applyPreset = useCallback(
     (preset: Preset) => {
@@ -783,11 +803,11 @@ export function useEditorSession({
         if (!presetBaseRef.current.has(id))
           presetBaseRef.current.set(id, cloneEdits(photo.edits));
       }
-      setSelectedPresetId(preset.id);
+      setAppliedPreset(targets, preset.id, intensityRef.current);
       applyPresetAtIntensity(preset, intensityRef.current, targets);
       setStatus(`Applied “${preset.name}” to ${targets.length}`);
     },
-    [applyPresetAtIntensity, pushHistory],
+    [applyPresetAtIntensity, pushHistory, setAppliedPreset],
   );
 
   const removePreset = useCallback(() => {
@@ -821,34 +841,33 @@ export function useEditorSession({
         }),
       );
     }
-    setSelectedPresetId(null);
-    setPresetIntensityState(100);
+    setAppliedPreset(targets, null);
     setStatus(preset ? `Removed “${preset.name}”` : "Preset removed");
-  }, [selectedPresetId, pushHistory]);
+  }, [selectedPresetId, pushHistory, setAppliedPreset]);
 
   const setPresetIntensity = useCallback(
     (intensity: number) => {
       const next = Math.min(100, Math.max(0, Math.round(intensity)));
-      setPresetIntensityState(next);
       const preset = [...BUILTIN_PRESETS, ...presetsRef.current].find(
         (p) => p.id === selectedPresetId,
       );
-      if (!preset) return;
-      const targets =
-        selectedIdsRef.current.length > 0
-          ? selectedIdsRef.current
-          : activeIdRef.current
-            ? [activeIdRef.current]
-            : [];
-      applyPresetAtIntensity(preset, next, targets);
+      const id = activeIdRef.current;
+      if (!preset || !id) return;
+      // Each photo keeps its own intensity: only the one on screen changes.
+      setAppliedPreset([id], preset.id, next);
+      applyPresetAtIntensity(preset, next, [id]);
       setStatus(`“${preset.name}” intensity ${next}%`);
     },
-    [selectedPresetId, applyPresetAtIntensity],
+    [selectedPresetId, applyPresetAtIntensity, setAppliedPreset],
   );
 
   const deletePreset = useCallback((id: string) => {
     setPresets((prev) => prev.filter((p) => p.id !== id));
-    setSelectedPresetId((prev) => (prev === id ? null : prev));
+    setAppliedPresets((prev) =>
+      Object.fromEntries(
+        Object.entries(prev).filter(([, applied]) => applied.presetId !== id),
+      ),
+    );
     setStatus("Preset removed");
   }, []);
 
@@ -873,7 +892,8 @@ export function useEditorSession({
       const fresh = imported.filter((p) => !existing.has(p.id));
       setPresets((prev) => [...fresh, ...prev]);
       if (imported.length === 1) {
-        setSelectedPresetId(imported[0]!.id);
+        if (activeIdRef.current)
+          setAppliedPreset([activeIdRef.current], imported[0]!.id);
         setStatus(`Imported “${imported[0]!.name}”`);
       } else {
         setStatus(
@@ -883,7 +903,7 @@ export function useEditorSession({
     } catch {
       setStatus("Could not import preset (JSON, XMP, or CUBE)");
     }
-  }, []);
+  }, [setAppliedPreset]);
 
   const runExport = useCallback(
     async (options: ExportOptions) => {
