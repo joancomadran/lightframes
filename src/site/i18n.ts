@@ -81,7 +81,13 @@ export const ui = {
       empty: 'The first guides are on their way.',
       rss: 'RSS feed',
     },
-    post: { by: 'By', published: 'Published', updated: 'Updated', tryIt: 'Try it in Lightframes' },
+    post: {
+      by: 'By',
+      published: 'Published',
+      updated: 'Updated',
+      tryIt: 'Try it in Lightframes',
+      faq: 'Common questions',
+    },
     toolsIndex: {
       title: 'Free online photo editing tools',
       description:
@@ -177,7 +183,13 @@ export const ui = {
       empty: 'Las primeras guías están en camino.',
       rss: 'Feed RSS',
     },
-    post: { by: 'Por', published: 'Publicado', updated: 'Actualizado', tryIt: 'Pruébalo en Lightframes' },
+    post: {
+      by: 'Por',
+      published: 'Publicado',
+      updated: 'Actualizado',
+      tryIt: 'Pruébalo en Lightframes',
+      faq: 'Preguntas frecuentes',
+    },
     toolsIndex: {
       title: 'Herramientas gratis para editar fotos online',
       description:

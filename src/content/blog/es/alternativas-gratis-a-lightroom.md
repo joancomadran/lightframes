@@ -26,10 +26,10 @@ keywords:
 | --- | --- | --- | --- | --- | --- |
 | **Precio / licencia** | Gratis, [MIT](https://github.com/joancomadran/lightframes) | Gratis, [GPL-3.0](https://www.darktable.org) | Gratis, [GPL-3.0](https://rawtherapee.com/) | Web gratis ([photopea.com](https://www.photopea.com/)) | Gratis + de pago ([Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)) |
 | **Dónde corre** | Navegador (PWA instalable) | Linux, macOS, Windows, BSD | Linux, macOS, Windows | Navegador | iOS, Android, Chromebook |
-| **Revelado RAW** | Sí, [LibRaw en WebAssembly](/es/herramientas/editor-fotos-raw) | Sí ([formatos](https://docs.darktable.org/usermanual/en/overview/supported-file-formats/)) | Sí | Sí, panel limitado al importar ([tutorial](https://www.photopea.com/tuts/open-raw-photos-online/)) | RAW en móvil/tablet = **premium** ([Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)) |
+| **Revelado RAW** | Sí, [LibRaw en WebAssembly](/es/herramientas/editor-fotos-raw) | Sí ([formatos](https://www.darktable.org/about/features/)) | Sí | Sí, panel limitado al importar ([tutorial](https://www.photopea.com/tuts/open-raw-photos-online/)) | RAW en móvil/tablet = **premium** ([Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)) |
 | **Presets `.xmp` de Lightroom** | **Importación** en Presets ([guía](/es/herramientas/presets-fotos)) | **No** — estilos propios ([FAQ](https://www.darktable.org/about/faq/)) | **No** — perfiles `.pp3` | No como presets LR; el diálogo RAW puede abrir/exportar XMP propio ([issue #5658](https://github.com/photopea/photopea/issues/5658)) | Presets sincronizados = **de pago** ([Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)) |
 | **LUT `.cube`** | Importar como preset ([LUT](/es/herramientas/aplicar-lut-foto)) | Varios formatos LUT ([FAQ](https://www.darktable.org/about/faq/)) | Hald CLUT (PNG/TIFF); `.cube` suele convertirse | Edición general, no flujo preset RAW | Presets integrados en la app móvil |
-| **Lotes / series** | Copiar/pegar, presets en selección, ZIP ([lotes](/es/herramientas/editar-fotos-por-lotes)) | Cola de exportación, Lua ([features](https://www.darktable.org/about/features/)) | **Cola** de procesado ([RawPedia](https://rawpedia.rawtherapee.com/Queue)) | Acciones sobre archivos abiertos | Edición por lotes = **premium** ([Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)) |
+| **Lotes / series** | Copiar/pegar, presets en selección, ZIP ([lotes](/es/herramientas/editar-fotos-por-lotes)) | Cola de exportación, Lua ([features](https://www.darktable.org/about/features/)) | **Cola** de procesado ([RawPedia](https://rawpedia.rawtherapee.com/)) | Acciones sobre archivos abiertos | Edición por lotes = **premium** ([Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)) |
 | **Catálogo** | Sesión en el navegador (IndexedDB) | Base de datos + mesa de luz | Explorador de archivos | Sin archivo fotográfico | Nube con plan de pago |
 | **¿Se suben las fotos?** | **No** — se procesan en tu navegador; modelos IA al primer uso | **No** — app de escritorio | **No** — app de escritorio | **No** — en tu dispositivo ([Photopea](https://www.photopea.com/)) | Sincronización en nube con planes de pago |
 | **IA** | ONNX en el dispositivo: fondo, máscara de sujeto, borrado de objetos (modelo desde Hugging Face la primera vez), ampliación al exportar | Sin IA generativa en el núcleo | Sin IA generativa en el núcleo | Sin relleno generativo tipo Adobe | Más funciones IA en **premium** |
@@ -58,7 +58,7 @@ Lo que encaja con un flujo tipo Lightroom (comprobado en este proyecto):
 
 **Para quién:** quieres un **flujo RAW local completo** con **catálogo**, tethering y módulos profundos, y **no** necesitas cargar presets de revelado de Lightroom tal cual.
 
-darktable combina mesa de luz, revelado no destructivo y exportación. Es **GPL-3.0** en **Linux, macOS, Windows y BSD** ([features](https://www.darktable.org/about/features/)). Lee muchos RAW vía RawSpeed ([formatos](https://docs.darktable.org/usermanual/en/overview/supported-file-formats/)), guarda ajustes en base de datos y **sidecars XMP**, usa **OpenCL** y permite scripting en **Lua**.
+darktable combina mesa de luz, revelado no destructivo y exportación. Es **GPL-3.0** en **Linux, macOS, Windows y BSD** ([features](https://www.darktable.org/about/features/)). Lee muchos RAW vía RawSpeed ([formatos](https://www.darktable.org/about/features/)), guarda ajustes en base de datos y **sidecars XMP**, usa **OpenCL** y permite scripting en **Lua**.
 
 **Donde gana:** **biblioteca y filtros**, muchos **módulos de ajuste local**, pipeline flotante de 32 bits y **exportación** madura.
 
@@ -68,7 +68,7 @@ darktable combina mesa de luz, revelado no destructivo y exportación. Es **GPL-
 
 **Para quién:** te importa el **ajuste fino del RAW**, exportas mucho con la **cola** y trabajas con **perfiles `.pp3`**, no con presets XMP de Lightroom.
 
-RawTherapee es **software libre (GPLv3)** multiplataforma ([rawtherapee.com](https://rawtherapee.com/)). Tiene explorador, editor detallado y **cola de procesado** para exportar mientras sigues editando ([RawPedia Queue](https://rawpedia.rawtherapee.com/Queue)). Los ajustes van en **`.pp3`**; la sincronización **XMP** cubre sobre todo **metadatos**, no volcar el revelado completo a un XMP compatible con Lightroom ([issue #7315](https://github.com/RawTherapee/RawTherapee/issues/7315)).
+RawTherapee es **software libre (GPLv3)** multiplataforma ([rawtherapee.com](https://rawtherapee.com/)). Tiene explorador, editor detallado y **cola de procesado** para exportar mientras sigues editando ([RawPedia Queue](https://rawpedia.rawtherapee.com/)). Los ajustes van en **`.pp3`**; la sincronización **XMP** cubre sobre todo **metadatos**, no volcar el revelado completo a un XMP compatible con Lightroom ([issue #7315](https://github.com/RawTherapee/RawTherapee/issues/7315)).
 
 **Donde gana:** control RAW muy detallado, **pegado parcial** de perfiles y **cola** para exportaciones largas.
 

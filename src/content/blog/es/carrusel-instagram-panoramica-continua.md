@@ -1,9 +1,16 @@
 ---
 key: seamless-carousel
 slug: carrusel-instagram-panoramica-continua
-title: "Carrusel continuo de Instagram con una panorámica"
-description: "Divide una panorámica en un carrusel de Instagram que se desliza como una sola imagen. Elige 4:5, 3:4 o 1:1 y exporta cada diapositiva a 1080 px de ancho."
+title: "Carrusel continuo de Instagram: guía gratis"
+description: "Haz un carrusel continuo de Instagram desde una panorámica: gratis, en el navegador y sin subir tus fotos. Diapositivas 4:5, 3:4 o 1:1 exportadas a 1080 px de ancho."
 h1: "Cómo hacer un carrusel continuo de Instagram a partir de una panorámica"
+faq:
+  - q: "¿Instagram me va a bajar la calidad?"
+    a: "Instagram recomprime todo lo que recibe. Exportar justo a 1080 px de ancho, el ancho al que lo muestra el feed, evita además un redimensionado extra."
+  - q: "¿Puedo hacer el carrusel desde el móvil?"
+    a: "Sí. El carrusel funciona con el dedo y, cuando la exportación está lista, el botón Share pasa las diapositivas al menú de compartir, desde donde las abres en Instagram."
+  - q: "Mi panorámica sale cortada por arriba y por abajo. ¿Qué cambio?"
+    a: "La tira es más ancha que tu foto. Usa menos diapositivas o cambia a un formato más alto (1:1 → 4:5 → 3:4) hasta que la proporción de la tira se parezca a la de la panorámica. Luego afina con Zoom y Reframe."
 published: 2026-10-20
 author: Joan Comadran
 tags: ["instagram", "guias"]
@@ -18,7 +25,7 @@ keywords:
   - plantilla carrusel instagram
 ---
 
-**En resumen:** un carrusel continuo es una imagen ancha cortada en diapositivas iguales, de modo que al deslizar parece que recorres una sola foto. En [Lightframes](/editor) abres la panorámica, pasas a **Collage → Carousel**, eliges el formato de diapositiva (4:5, 3:4 o 1:1) y cuántas quieres, seleccionas la plantilla **Panorama** y exportas. Obtienes un JPEG por diapositiva, de 1080 px de ancho y numerado en el orden de publicación.
+**Sí: puedes hacer un carrusel continuo de Instagram** (carrusel panorámico) partiendo de una imagen ancha en diapositivas que encajan al deslizar. **[Abre el creador de carruseles de Instagram](/es/herramientas/carrusel-instagram)** en Lightframes — gratis y sin subir tus fotos — o sigue esta guía: en el editor cargas la panorámica, pasas a **Collage → Carousel**, eliges 4:5, 3:4 o 1:1, seleccionas **Panorama** y exportas un JPEG numerado por diapositiva a 1080 px de ancho.
 
 ## ¿Qué es un carrusel continuo de Instagram?
 
@@ -78,16 +85,5 @@ La exportación ya hace lo difícil: todas las diapositivas miden lo mismo y sal
 ## Más allá de las panorámicas: otras plantillas
 
 Si quieres combinar varias fotos, Lightframes trae plantillas de carrusel listas: **Bridges** (una foto sobre cada corte), **Staggered**, **Row**, **Columns**, **Grid**, **Hero**, **Cover**, **Scattered** y **Per slide**. Al arrastrar, los bordes se ajustan solos a los cortes, y puedes traer fotos al frente o mandarlas al fondo. Para cuadrículas de una o varias diapositivas sin efecto continuo, usa el [creador de collages](/es/herramientas/collage-fotos).
-
-## Preguntas frecuentes
-
-**¿Instagram me va a bajar la calidad?**
-Instagram recomprime todo lo que recibe. Exportar justo a 1080 px de ancho, el ancho al que lo muestra el feed, evita además un redimensionado extra.
-
-**¿Puedo hacer el carrusel desde el móvil?**
-Sí. El carrusel funciona con el dedo y, cuando la exportación está lista, el botón **Share** pasa las diapositivas al menú de compartir, desde donde las abres en Instagram.
-
-**Mi panorámica sale cortada por arriba y por abajo. ¿Qué cambio?**
-La tira es más ancha que tu foto. Usa menos diapositivas o cambia a un formato más alto (1:1 → 4:5 → 3:4) hasta que la proporción de la tira se parezca a la de la panorámica. Luego afina con **Zoom** y **Reframe**.
 
 ¿Lo pruebas? [Abre el editor](/editor) y carga tu foto más ancha.

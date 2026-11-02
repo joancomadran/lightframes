@@ -44,6 +44,8 @@ faq:
 updated: 2026-10-20
 ---
 
+Step-by-step guide: [make a seamless Instagram carousel from a panorama](/blog/seamless-instagram-carousel-panorama).
+
 ## What a seamless carousel is, and who it's for
 
 A seamless carousel is an Instagram post with several slides where one image runs across all of them, so each swipe reveals the next part of the picture. It's a way to show a wide landscape without shrinking it into a thin strip, or to tell a story with several photos that overlap the cuts between slides and pull people along.
