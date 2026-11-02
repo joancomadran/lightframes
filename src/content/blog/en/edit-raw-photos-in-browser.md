@@ -1,9 +1,16 @@
 ---
 key: raw-in-browser
 slug: edit-raw-photos-in-browser
-title: "How to Edit RAW Photos in Your Browser"
-description: "Edit camera RAW files (ARW, CR3, NEF, DNG, RAF and more) right in your browser. No uploads, no account: the file is developed on your own device."
-h1: "How to edit RAW photos in your browser without uploading them"
+title: "Can You Edit RAW Photos in a Browser? Yes"
+description: "Yes — edit camera RAW files (ARW, CR3, NEF, DNG, RAF and more) in your browser with Lightframes. Free, open source; nothing is uploaded, decoding stays on your device."
+h1: "Can you edit RAW photos in a browser without uploading them?"
+faq:
+  - q: "Is it really free, and do I need an account?"
+    a: "Yes, it's free and there's no account. Lightframes is open source under the MIT licence; you can read the code on GitHub. See About for how the project is funded."
+  - q: "Does it work on a phone?"
+    a: "The editor works on phones and tablets, including touch zoom and pan. RAW files are large and phones have less memory, so a desktop or laptop is more comfortable for big RAW batches."
+  - q: "My camera's RAW opens, but it looks just like the JPEG. Why?"
+    a: "If LibRaw can't develop that file, Lightframes edits the embedded JPEG instead. Converting the file to DNG usually helps. If it doesn't, please open an issue with the camera model."
 published: 2026-10-20
 author: Joan Comadran
 tags: ["raw", "guides"]
@@ -19,7 +26,7 @@ keywords:
   - private photo editor
 ---
 
-**Short answer:** open [Lightframes](/editor) in a desktop browser, click **Open** and pick your RAW files. The app decodes the sensor data on your own computer with LibRaw compiled to WebAssembly, so the photo is never uploaded. Edit with the sliders, then export a JPEG, PNG or WebP developed from the full-resolution RAW.
+**Yes, you can edit RAW photos in a web browser** — ARW, CR3, NEF, DNG, RAF and more — with [Lightframes](/editor). Nothing is uploaded: LibRaw decodes the sensor data on your own computer in WebAssembly. Open your files, edit with the sliders, then export a JPEG, PNG or WebP developed from the full-resolution RAW.
 
 ## What is a RAW file, and why edit it at all?
 
@@ -106,16 +113,5 @@ Open the export dialog with **Ctrl/Cmd+E**. You can pick:
 - **Optional extras:** a text watermark, and AI upscaling at 2× or 4×, which also runs on your device (see the [AI image upscaler](/tools/ai-image-upscaler)).
 
 Select several photos in the filmstrip before exporting and each one is developed with its own edits; they download together as a single ZIP.
-
-## Common questions
-
-**Is it really free, and do I need an account?**
-Yes, it's free and there's no account. Lightframes is open source under the MIT licence; you can read the code on [GitHub](https://github.com/joancomadran/lightframes). See [About](/about) for how the project is funded.
-
-**Does it work on a phone?**
-The editor works on phones and tablets, including touch zoom and pan. RAW files are large and phones have less memory, so a desktop or laptop is more comfortable for big RAW batches.
-
-**My camera's RAW opens, but it looks just like the JPEG. Why?**
-If LibRaw can't develop that file, Lightframes edits the embedded JPEG instead. Converting the file to DNG usually helps. If it doesn't, please [open an issue](https://github.com/joancomadran/lightframes/issues) with the camera model.
 
 Ready to try it? [Open the RAW photo editor](/tools/raw-photo-editor) or go straight to [the editor](/editor).

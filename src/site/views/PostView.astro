@@ -1,12 +1,13 @@
 ---
 import { getCollection, render } from 'astro:content'
 import Breadcrumbs from '../components/Breadcrumbs.astro'
+import FaqList from '../components/FaqList.astro'
 import ToolList from '../components/ToolList.astro'
 import { SITE, absoluteUrl } from '../config'
 import { entryAlternates, entryPath, pagePath, type Post } from '../content'
 import { formatDate, href, langOf, ui } from '../i18n'
 import Base from '../layouts/Base.astro'
-import { blogPosting, breadcrumbs } from '../schema'
+import { blogPosting, breadcrumbs, faqPage } from '../schema'
 
 interface Props {
   post: Post
@@ -26,6 +27,7 @@ const crumbs = [
   { name: headline, path },
 ]
 const aboutPath = await pagePath('about', lang)
+const url = absoluteUrl(path)
 ---
 
 <Base
@@ -49,6 +51,7 @@ const aboutPath = await pagePath('about', lang)
       keywords: data.keywords,
     }),
     breadcrumbs(crumbs),
+    ...(data.faq.length ? [faqPage(url, data.faq)] : []),
   ]}
 >
   <article class="wrap page page--narrow">
@@ -73,6 +76,14 @@ const aboutPath = await pagePath('about', lang)
     <div class="prose">
       <Content />
     </div>
+    {
+      data.faq.length > 0 && (
+        <section class="section-block" aria-labelledby="faq-title">
+          <h2 id="faq-title">{t.post.faq}</h2>
+          <FaqList items={data.faq} />
+        </section>
+      )
+    }
     {
       tools.length > 0 && (
         <aside class="section-block" aria-labelledby="try-title">

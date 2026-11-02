@@ -1,9 +1,9 @@
 ---
 key: carousel
 slug: carrusel-instagram
-title: "Carrusel continuo para Instagram, gratis"
-description: "Divide una foto o panorámica en un carrusel continuo de Instagram: de 2 a 10 diapositivas en 4:5, 3:4 o 1:1, a 1080 px. Gratis y sin subir nada."
-h1: "Carrusel continuo para Instagram: divide tu foto en diapositivas"
+title: "Carrusel continuo de Instagram: gratis, sin subir"
+description: "Crea un carrusel continuo o panorámico de Instagram: divide tu foto en 2–10 diapositivas 4:5, 3:4 o 1:1 a 1080 px. Gratis en el navegador; tus fotos no se suben."
+h1: "Carrusel continuo de Instagram: divide tu foto en diapositivas"
 lead: "Lightframes reparte una panorámica o varias fotos entre 2 y 10 diapositivas de Instagram para que la imagen continúe al deslizar, y exporta cada una a 1080 px de ancho en 4:5, 3:4 o 1:1. Es gratis, funciona en el navegador y no sube tus fotos."
 label: "Carrusel Instagram"
 summary: "Reparte una panorámica o varias fotos en diapositivas continuas en 4:5, 3:4 o 1:1, exportadas a 1080 px de ancho."
@@ -44,6 +44,8 @@ faq:
     a: "Sí. El carrusel funciona con el dedo: arrastra para mover, tira de las esquinas para redimensionar y toca las fotos de la lista para colocarlas. Si el navegador del móvil lo permite, al exportar aparecen los botones Save y Share para mandar las diapositivas directamente al menú de compartir."
 updated: 2026-10-20
 ---
+
+Guía paso a paso: [cómo hacer un carrusel continuo de Instagram a partir de una panorámica](/es/blog/carrusel-instagram-panoramica-continua).
 
 ## Qué es un carrusel continuo y para quién es
 

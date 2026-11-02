@@ -61,6 +61,8 @@ const blog = defineCollection({
     /** Tool keys this post links to; rendered as "Try it" cards. */
     tools: z.array(z.string()).default([]),
     keywords: z.array(z.string()).default([]),
+    /** Rendered as a FAQ block and FAQPage JSON-LD (same as tool pages). */
+    faq: z.array(faqItem).default([]),
     draft: z.boolean().default(false),
   }),
 })
