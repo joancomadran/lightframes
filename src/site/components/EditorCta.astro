@@ -3,13 +3,16 @@ import { EDITOR_PATH, ui, type Lang } from '../i18n'
 
 interface Props {
   lang: Lang
+  /** Optional query string (e.g. `?intent=raw`) appended to the editor link. */
+  editorQuery?: string
 }
 
-const { lang } = Astro.props
+const { lang, editorQuery } = Astro.props
 const t = ui[lang]
+const editorHref = editorQuery ? `${EDITOR_PATH}${editorQuery}` : EDITOR_PATH
 ---
 
 <div class="editor-cta">
-  <a class="button button--primary" href={EDITOR_PATH}>{t.openEditor}</a>
+  <a class="button button--primary" href={editorHref}>{t.openEditor}</a>
   <p>{t.tool.free}</p>
 </div>

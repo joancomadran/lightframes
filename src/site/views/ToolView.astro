@@ -23,6 +23,8 @@ const url = absoluteUrl(path)
 const { Content } = await render(tool)
 const tools = await getTools(lang)
 const related = tools.filter((other) => other.data.featured && other.id !== tool.id).slice(0, 4)
+const editorQuery =
+  data.key === 'raw-to-jpg' || data.key.endsWith('-to-jpg') ? '?intent=raw' : undefined
 const crumbs = [
   { name: t.home, path: href('home', lang) },
   { name: t.tools, path: href('tools', lang) },
@@ -51,7 +53,7 @@ const crumbs = [
     <header class="page-head">
       <h1>{data.h1}</h1>
       <p class="lead">{data.lead}</p>
-      <EditorCta lang={lang} />
+      <EditorCta lang={lang} editorQuery={editorQuery} />
     </header>
 
     {

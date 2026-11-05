@@ -103,4 +103,5 @@ Lightroom and Camera Raw are trademarks of Adobe. Lightframes is an independent 
 - You import one file at a time. To move many presets at once, use a JSON backup.
 - Presets live in one browser. Clearing site data, or a private window, can remove them unless you have a JSON backup.
 - Presets are exported only as Lightframes JSON, not as XMP or `.cube`.
+- Download eight ready-made looks (each as `.xmp` and `.cube`) from the [free presets & LUTs pack](/free-presets-luts), released under CC0.
 - The editor interface is in English. More questions are answered in the [FAQ](/faq).

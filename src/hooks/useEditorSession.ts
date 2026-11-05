@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  trackExportCompleted,
+  trackPhotoLoaded,
+  trackPresetApplied,
+} from "../lib/analytics";
+import {
   downloadBlob,
   fetchSampleImages,
   makeThumbnail,
@@ -7,6 +12,11 @@ import {
 } from "../lib/files";
 import { zipFiles } from "../lib/zip";
 import { BUILTIN_PRESETS, isBuiltinPreset } from "../lib/builtinPresets";
+import {
+  FREE_PACK_PRESETS,
+  freePackPresetBySlug,
+  isFreePackPreset,
+} from "../lib/freePackPresets";
 import { setSourceKey } from "../lib/cutout";
 import { type RenderSource } from "../lib/imageProcessing";
 import {
@@ -53,6 +63,23 @@ import {
   type Preset,
 } from "../types/edits";
 import { uid } from "../lib/uid";
+
+const ALL_SHIPPED_PRESETS = [...BUILTIN_PRESETS, ...FREE_PACK_PRESETS];
+
+function coarseFileType(file: File): "raw" | "jpeg" | "png" | "other" {
+  if (isRawFile(file)) return "raw";
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "jpeg";
+  if (name.endsWith(".png")) return "png";
+  return "other";
+}
+
+function presetAnalyticsKind(id: string): "builtin" | "saved" | "imported" | "free_pack" {
+  if (isBuiltinPreset(id)) return "builtin";
+  if (isFreePackPreset(id)) return "free_pack";
+  if (id.startsWith("import:")) return "imported";
+  return "saved";
+}
 
 export type PanelId =
   | "adjust"
@@ -521,6 +548,8 @@ export function useEditorSession({
             ? `Added ${next.length} image${next.length === 1 ? "" : "s"}`
             : `Loaded ${next.length} image${next.length === 1 ? "" : "s"}`,
         );
+        const types = new Set(files.map(coarseFileType));
+        trackPhotoLoaded(types.size === 1 ? [...types][0]! : "other");
         return next;
       } catch (err) {
         revokeAll(next);
@@ -806,12 +835,13 @@ export function useEditorSession({
       setAppliedPreset(targets, preset.id, intensityRef.current);
       applyPresetAtIntensity(preset, intensityRef.current, targets);
       setStatus(`Applied “${preset.name}” to ${targets.length}`);
+      trackPresetApplied(presetAnalyticsKind(preset.id));
     },
     [applyPresetAtIntensity, pushHistory, setAppliedPreset],
   );
 
   const removePreset = useCallback(() => {
-    const preset = [...BUILTIN_PRESETS, ...presetsRef.current].find(
+    const preset = [...ALL_SHIPPED_PRESETS, ...presetsRef.current].find(
       (p) => p.id === selectedPresetId,
     );
     const targets =
@@ -848,7 +878,7 @@ export function useEditorSession({
   const setPresetIntensity = useCallback(
     (intensity: number) => {
       const next = Math.min(100, Math.max(0, Math.round(intensity)));
-      const preset = [...BUILTIN_PRESETS, ...presetsRef.current].find(
+      const preset = [...ALL_SHIPPED_PRESETS, ...presetsRef.current].find(
         (p) => p.id === selectedPresetId,
       );
       const id = activeIdRef.current;
@@ -895,6 +925,7 @@ export function useEditorSession({
         if (activeIdRef.current)
           setAppliedPreset([activeIdRef.current], imported[0]!.id);
         setStatus(`Imported “${imported[0]!.name}”`);
+        trackPresetApplied("imported");
       } else {
         setStatus(
           `Imported ${fresh.length} of ${imported.length} presets (rest already present)`,
@@ -966,6 +997,7 @@ export function useEditorSession({
             : `${exported} — not upscaled: ${skipped === targets.length ? "already" : `${skipped} were already`} at the size limit`;
         setStatus(message);
         showToast(message);
+        trackExportCompleted(written.length, options.format);
       } catch {
         setStatus("Export failed");
         showToast("Export failed", "error");
@@ -1250,6 +1282,31 @@ export function useEditorSession({
     setFlag,
     addLocal,
   ]);
+
+  const deepLinkDone = useRef(false);
+  useEffect(() => {
+    if (deepLinkDone.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const intent = params.get("intent");
+    const look = params.get("look");
+    if (!intent && !look) return;
+    deepLinkDone.current = true;
+
+    if (intent === "raw") void handleOpen();
+
+    if (look) {
+      const preset = freePackPresetBySlug(look);
+      if (preset) {
+        void (async () => {
+          if (photosRef.current.length === 0) await openSamples();
+          applyPreset(preset);
+          setPanelFocus("presets");
+        })();
+      }
+    }
+
+    window.history.replaceState({}, "", "/editor");
+  }, [handleOpen, openSamples, applyPreset]);
 
   return {
     photos,

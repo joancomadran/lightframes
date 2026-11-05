@@ -4,7 +4,7 @@ slug: privacidad
 title: "Política de privacidad"
 description: "Cómo trata Lightframes tus datos: tus fotos se editan en tu navegador y nunca se suben. Qué implican el alojamiento, las fuentes y las descargas de IA."
 h1: "Política de privacidad"
-updated: 2026-10-22
+updated: 2026-11-05
 schemaType: WebPage
 ---
 
@@ -60,6 +60,7 @@ Las funciones de IA (eliminación de fondo, máscaras de sujeto, ampliación y b
 - **Datos:** páginas visitadas, página de procedencia, país aproximado, navegador, sistema operativo y tipo de dispositivo.
 - **Finalidad:** conocer, de forma agregada, cuántas personas usan la web y qué páginas resultan útiles.
 - **Funcionamiento:** según Vercel, Web Analytics no utiliza cookies, no elabora perfiles entre sitios y cuenta las visitas mediante un identificador efímero derivado de la propia petición, que no se conserva más allá de un periodo breve. Nosotros solo vemos estadísticas agregadas y no podemos identificar a ningún visitante.
+- **Eventos personalizados:** el editor también envía nombres de evento anónimos como `editor_opened`, `photo_loaded`, `export_completed`, `preset_applied` y `free_pack_download`, con propiedades generales como el formato de exportación o el tipo de archivo (por ejemplo «raw» o «jpeg»). Esos eventos nunca incluyen nombres de archivo, datos de imagen, EXIF, tamaños en bytes ni nada que te identifique.
 - **Base jurídica:** nuestro interés legítimo en conocer de forma agregada el uso del sitio (art. 6.1.f RGPD).
 - **Destinatario:** Vercel Inc., como encargado del tratamiento.
 

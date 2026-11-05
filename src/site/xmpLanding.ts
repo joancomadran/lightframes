@@ -118,6 +118,7 @@ export const xmpLanding = {
     relatedTitle: 'Related guides',
     related: [
       { label: 'Photo presets tool page', path: '/tools/photo-presets' },
+      { label: 'Free presets & LUTs pack', path: '/free-presets-luts' },
       { label: 'Free Lightroom alternatives', path: '/blog/free-lightroom-alternatives' },
       { label: 'Apply .cube LUTs', path: '/tools/apply-lut-to-photo' },
       { label: 'Batch photo editor', path: '/tools/batch-photo-editor' },
@@ -225,6 +226,7 @@ export const xmpLanding = {
     relatedTitle: 'Guías relacionadas',
     related: [
       { label: 'Presets de fotos', path: '/es/herramientas/presets-fotos' },
+      { label: 'Pack gratis de presets y LUTs', path: '/es/presets-luts-gratis' },
       { label: 'Alternativas gratis a Lightroom', path: '/es/blog/alternativas-gratis-a-lightroom' },
       { label: 'Aplicar LUT .cube', path: '/es/herramientas/aplicar-lut-foto' },
       { label: 'Editor por lotes', path: '/es/herramientas/editar-fotos-por-lotes' },

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+      xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
+      crs:PresetType="Normal"
+      crs:Version="15.4"
+      crs:ProcessVersion="11.0"
+      crs:WhiteBalance="As Shot"
+      crs:Exposure2012="3.7500"
+      crs:Contrast2012="-12"
+      crs:Highlights2012="-28"
+      crs:Shadows2012="22"
+      crs:Whites2012="-8"
+      crs:Blacks2012="18"
+      crs:Temperature="4510"
+      crs:Tint="-6"
+      crs:Vibrance="-5"
+      crs:Saturation="-18"
+      crs:Clarity2012="-8"
+      crs:Dehaze="6"
+      crs:Texture="0"
+      crs:Sharpness="0"
+      crs:LuminanceSmoothing="0"
+      crs:PostCropVignetteAmount="0"
+      crs:GrainAmount="0"
+      crs:ColorGradeShadowHue="0"
+      crs:ColorGradeShadowSat="0"
+      crs:ColorGradeHighlightHue="0"
+      crs:ColorGradeHighlightSat="0"
+      crs:ColorGradeBlending="50"
+      crs:SplitToningBalance="0"
+      crs:HasSettings="True">
+      <crs:Name>Coastal Mist</crs:Name>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
