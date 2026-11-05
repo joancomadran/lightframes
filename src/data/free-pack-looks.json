@@ -1,0 +1,174 @@
+{
+  "license": "CC0-1.0",
+  "looks": [
+    {
+      "id": "coastal-mist",
+      "name": "Coastal Mist",
+      "nameEs": "Bruma costera",
+      "description": "Cool, lifted shadows and soft blue highlights for overcast seaside light.",
+      "descriptionEs": "Sombras claras y luces azuladas suaves, como un día nublado junto al mar.",
+      "edits": {
+        "exposure": 0.15,
+        "contrast": -12,
+        "highlights": -28,
+        "shadows": 22,
+        "whites": -8,
+        "blacks": 18,
+        "temperature": -14,
+        "tint": -6,
+        "vibrance": -5,
+        "saturation": -18,
+        "clarity": -8,
+        "dehaze": 6
+      }
+    },
+    {
+      "id": "golden-hour-glow",
+      "name": "Golden Hour Glow",
+      "nameEs": "Resplandor dorado",
+      "description": "Warm amber mids with gentle rolloff in the highlights.",
+      "descriptionEs": "Medios ámbar cálidos con luces suaves.",
+      "edits": {
+        "exposure": 0.2,
+        "contrast": 8,
+        "highlights": -22,
+        "shadows": 18,
+        "whites": -12,
+        "blacks": 8,
+        "temperature": 22,
+        "tint": 8,
+        "vibrance": 12,
+        "saturation": -4,
+        "grain": 12
+      }
+    },
+    {
+      "id": "ink-stone",
+      "name": "Ink Stone",
+      "nameEs": "Piedra de tinta",
+      "description": "High-contrast monochrome with deep blacks and crisp edges.",
+      "descriptionEs": "Blanco y negro con negros profundos y mucho contraste.",
+      "edits": {
+        "saturation": -100,
+        "exposure": -0.1,
+        "contrast": 38,
+        "highlights": -18,
+        "shadows": -20,
+        "whites": 20,
+        "blacks": -28,
+        "clarity": 22,
+        "vignette": -20,
+        "grain": 16
+      }
+    },
+    {
+      "id": "sage-garden",
+      "name": "Sage Garden",
+      "nameEs": "Jardín de salvia",
+      "description": "Muted greens and soft contrast for botanical scenes.",
+      "descriptionEs": "Verdes apagados y contraste suave para naturaleza.",
+      "edits": {
+        "contrast": -6,
+        "highlights": -20,
+        "shadows": 12,
+        "temperature": -8,
+        "vibrance": -12,
+        "saturation": -10,
+        "hsl": {
+          "greens": { "hue": 25, "saturation": -35, "luminance": -8 },
+          "yellows": { "hue": 15, "saturation": -25, "luminance": -5 }
+        },
+        "texture": 10,
+        "dehaze": 10
+      }
+    },
+    {
+      "id": "rose-fade",
+      "name": "Rose Fade",
+      "nameEs": "Rosa desvanecido",
+      "description": "Faded film with pink shadows and creamy skin tones.",
+      "descriptionEs": "Película desvaída con sombras rosadas y piel cremosa.",
+      "edits": {
+        "exposure": 0.12,
+        "contrast": -18,
+        "highlights": -30,
+        "shadows": 16,
+        "blacks": 14,
+        "temperature": 6,
+        "tint": 12,
+        "vibrance": 8,
+        "saturation": -12,
+        "colorGrading": {
+          "shadows": { "hue": 340, "saturation": 14, "luminance": 0 },
+          "highlights": { "hue": 35, "saturation": 10, "luminance": 0 }
+        },
+        "grain": 18
+      }
+    },
+    {
+      "id": "midnight-city",
+      "name": "Midnight City",
+      "nameEs": "Ciudad de medianoche",
+      "description": "Teal shadows and amber streetlights for night urban scenes.",
+      "descriptionEs": "Sombras verde azuladas y luces ámbar para fotos nocturnas urbanas.",
+      "edits": {
+        "exposure": -0.15,
+        "contrast": 18,
+        "highlights": -35,
+        "shadows": 20,
+        "blacks": -12,
+        "vibrance": 10,
+        "saturation": -6,
+        "colorGrading": {
+          "shadows": { "hue": 195, "saturation": 28, "luminance": 0 },
+          "highlights": { "hue": 38, "saturation": 18, "luminance": 0 },
+          "balance": -12
+        },
+        "clarity": 10,
+        "vignette": -14
+      }
+    },
+    {
+      "id": "ember-portrait",
+      "name": "Ember Portrait",
+      "nameEs": "Retrato brasa",
+      "description": "Warm portrait grade with protected highlights and rich reds.",
+      "descriptionEs": "Retrato cálido con luces contenidas y rojos intensos.",
+      "edits": {
+        "contrast": 12,
+        "highlights": -32,
+        "shadows": 14,
+        "temperature": 16,
+        "tint": 4,
+        "vibrance": 14,
+        "hsl": {
+          "reds": { "hue": 4, "saturation": 8, "luminance": 4 },
+          "oranges": { "hue": -6, "saturation": 10, "luminance": 6 }
+        },
+        "sharpening": 40,
+        "noiseReduction": 8
+      }
+    },
+    {
+      "id": "silver-rain",
+      "name": "Silver Rain",
+      "nameEs": "Lluvia plateada",
+      "description": "Cool, desaturated high-key look for rainy or snowy days.",
+      "descriptionEs": "Look frío y desaturado, alto en luces, para días de lluvia o nieve.",
+      "edits": {
+        "exposure": 0.35,
+        "contrast": -15,
+        "highlights": -25,
+        "shadows": 30,
+        "whites": 12,
+        "blacks": 22,
+        "temperature": -20,
+        "tint": -4,
+        "vibrance": -15,
+        "saturation": -22,
+        "dehaze": -5,
+        "clarity": -6
+      }
+    }
+  ]
+}

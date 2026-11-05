@@ -1,6 +1,7 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import App from './App'
+import { trackEditorOpened } from './lib/analytics'
 import './index.css'
 
 // iOS Safari only hands touches to the page where it sees a listener, and React listens on the
@@ -9,6 +10,10 @@ window.addEventListener('pointerdown', () => {}, { passive: true })
 
 /** The editor island mounted by src/pages/editor.astro. */
 export default function EditorRoot() {
+  useEffect(() => {
+    trackEditorOpened()
+  }, [])
+
   return (
     <StrictMode>
       <App />

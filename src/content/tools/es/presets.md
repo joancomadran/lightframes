@@ -105,5 +105,6 @@ Lightroom y Camera Raw son marcas de Adobe. Lightframes es un proyecto independi
 - Se importa un archivo cada vez. Para pasar muchos presets de golpe, usa una copia JSON.
 - Los presets viven en un navegador concreto. Si borras los datos del sitio o usas una ventana privada puedes perderlos si no tienes copia.
 - Solo se exportan en el formato JSON de Lightframes, no en XMP ni en `.cube`.
+- Descarga ocho looks listos (cada uno en `.xmp` y `.cube`) en el [pack gratis de presets y LUTs](/es/presets-luts-gratis), publicado bajo CC0.
 
 Tienes más dudas resueltas en las [preguntas frecuentes](/es/preguntas-frecuentes).

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+      xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/"
+      crs:PresetType="Normal"
+      crs:Version="15.4"
+      crs:ProcessVersion="11.0"
+      crs:WhiteBalance="As Shot"
+      crs:Exposure2012="0.0000"
+      crs:Contrast2012="12"
+      crs:Highlights2012="-32"
+      crs:Shadows2012="14"
+      crs:Whites2012="0"
+      crs:Blacks2012="0"
+      crs:Temperature="5560"
+      crs:Tint="4"
+      crs:Vibrance="14"
+      crs:Saturation="0"
+      crs:Clarity2012="0"
+      crs:Dehaze="0"
+      crs:Texture="0"
+      crs:Sharpness="40"
+      crs:LuminanceSmoothing="8"
+      crs:PostCropVignetteAmount="0"
+      crs:GrainAmount="0"
+      crs:ColorGradeShadowHue="0"
+      crs:ColorGradeShadowSat="0"
+      crs:ColorGradeHighlightHue="0"
+      crs:ColorGradeHighlightSat="0"
+      crs:ColorGradeBlending="50"
+      crs:SplitToningBalance="0"
+      crs:HasSettings="True">
+      <crs:Name>Ember Portrait</crs:Name>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>

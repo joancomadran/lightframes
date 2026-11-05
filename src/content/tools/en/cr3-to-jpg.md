@@ -8,6 +8,7 @@ lead: "To convert a CR3 file to JPG, open it in the Lightframes editor, click Ex
 label: "CR3 to JPG"
 summary: "Turn Canon CR3 (and CR2) RAW files into full-resolution JPGs in your browser, one by one or as a ZIP."
 order: 1.6
+featured: false
 keywords:
   - "cr3 to jpg"
   - "convert cr3 to jpg online free"

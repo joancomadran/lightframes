@@ -2,6 +2,7 @@ import { SITE } from './config'
 import { entryPath, getFaq, getPages, getPosts, getTools } from './content'
 import { EDITOR_PATH, href } from './i18n'
 import { xmpLanding, xmpLandingPath } from './xmpLanding'
+import { freePresetsPack, freePresetsPackPath } from './freePresetsPack'
 
 /** llms.txt (https://llmstxt.org): a plain summary of the site for AI assistants, built from the collections. */
 
@@ -34,6 +35,8 @@ export async function llmsTxt(): Promise<string> {
     '',
     `- [${xmpLanding.en.h1}](${url(xmpLandingPath.en)}): ${xmpLanding.en.lead}`,
     `- [${xmpLanding.es.h1}](${url(xmpLandingPath.es)}): ${xmpLanding.es.lead}`,
+    `- [${freePresetsPack.en.h1}](${url(freePresetsPackPath.en)}): ${freePresetsPack.en.lead}`,
+    `- [${freePresetsPack.es.h1}](${url(freePresetsPackPath.es)}): ${freePresetsPack.es.lead}`,
     `- [Home](${url(href('home', 'en'))}) / [Inicio](${url(href('home', 'es'))})`,
     `- [Editor](${url(EDITOR_PATH)})`,
     '',
@@ -93,6 +96,16 @@ export async function llmsFullTxt(): Promise<string> {
         `### ${xmpLanding.en.stepsTitle}\n\n${xmpLanding.en.steps.map((s, i) => `${i + 1}. **${s.name}.** ${s.text}`).join('\n')}`,
         `### ${xmpLanding.en.tableTitle}\n\n${xmpLanding.en.supportedRows.map((r) => `- ${r.setting}: ${r.supported ? 'imported' : 'not imported'}${r.notes ? ` (${r.notes})` : ''}`).join('\n')}`,
         `### Questions\n\n${xmpLanding.en.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
+      ].join('\n\n'),
+    ),
+    section(
+      freePresetsPack.en.h1,
+      freePresetsPackPath.en,
+      freePresetsPack.en.lead,
+      [
+        freePresetsPack.en.license,
+        `### ${freePresetsPack.en.howTitle}\n\n${freePresetsPack.en.how.map((s, i) => `${i + 1}. **${s.name}.** ${s.text}`).join('\n')}`,
+        `### Questions\n\n${freePresetsPack.en.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
       ].join('\n\n'),
     ),
     section('Frequently asked questions', href('faq', 'en'), '', faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')),

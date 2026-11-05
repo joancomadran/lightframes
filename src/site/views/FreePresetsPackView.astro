@@ -1,0 +1,167 @@
+---
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import { absoluteUrl } from '../config'
+import { formatDate, href, ui, type Lang } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, faqPage, howTo, webPage } from '../schema'
+import {
+  freePresetsPack,
+  freePresetsPackAlternates,
+  freePresetsPackPath,
+  freePresetsPackUpdated,
+} from '../freePresetsPack'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const t = ui[lang]
+const c = freePresetsPack[lang]
+const path = freePresetsPackPath[lang]
+const url = absoluteUrl(path)
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: c.h1, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={c.title}
+  description={c.description}
+  path={path}
+  alternates={freePresetsPackAlternates}
+  schema={[
+    webPage({ url, name: c.h1, description: c.description, lang, updated: freePresetsPackUpdated }),
+    breadcrumbs(crumbs),
+    howTo(url, c.howTitle, c.how),
+    faqPage(url, c.faq),
+  ]}
+>
+  <article class="wrap page">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{c.h1}</h1>
+      <p class="lead">{c.lead}</p>
+      <p class="fineprint">{c.license}</p>
+      <p>
+        <a class="button button--primary" href={c.zipUrl} data-pack-download="full-pack">{c.zipLabel}</a>
+      </p>
+    </header>
+
+    <section class="section-block" aria-labelledby="looks-title">
+      <h2 id="looks-title">{lang === 'es' ? 'Los ocho looks' : 'The eight looks'}</h2>
+      <ul class="pack-looks">
+        {
+          c.looks.map((look) => (
+            <li class="pack-look">
+              <div class="pack-look__previews">
+                <figure>
+                  <img src={c.sampleBefore} alt={c.sampleBeforeAlt} width="240" height="160" loading="lazy" />
+                  <figcaption>{lang === 'es' ? 'Antes' : 'Before'}</figcaption>
+                </figure>
+                <figure>
+                  <img src={look.preview} alt={look.name} width="240" height="160" loading="lazy" />
+                  <figcaption>{look.name}</figcaption>
+                </figure>
+              </div>
+              <h3>{look.name}</h3>
+              <p>{look.description}</p>
+              <div class="pack-look__actions">
+                <a class="button button--primary" href={look.editorUrl}>{c.tryLabel}</a>
+                <a class="button button--small" href={look.xmp} download data-pack-download={look.id} data-pack-file="xmp">
+                  {c.downloadXmp}
+                </a>
+                <a class="button button--small" href={look.cube} download data-pack-download={look.id} data-pack-file="cube">
+                  {c.downloadCube}
+                </a>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="steps" aria-labelledby="how-title">
+      <h2 id="how-title">{c.howTitle}</h2>
+      <ol>
+        {
+          c.how.map((step, i) => (
+            <li id={`step-${i + 1}`}>
+              <h3>{step.name}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="section-block" aria-labelledby="faq-title">
+      <h2 id="faq-title">{t.tool.faq}</h2>
+      <ul class="faq">
+        {c.faq.map((item) => (
+          <li>
+            <h3>{item.q}</h3>
+            <p>{item.a}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="section-block" aria-labelledby="related-title">
+      <h2 id="related-title">{c.relatedTitle}</h2>
+      <ul>
+        {c.related.map((link) => (
+          <li>
+            <a href={link.path}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+      <p class="meta">
+        {t.tool.updated}{' '}
+        <time datetime={freePresetsPackUpdated.toISOString()}>{formatDate(freePresetsPackUpdated, lang)}</time>
+      </p>
+    </section>
+  </article>
+
+  <script>
+    import { trackFreePackDownload } from '../../lib/analytics'
+
+    document.querySelectorAll('[data-pack-download]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const look = el.getAttribute('data-pack-download')
+        if (look) trackFreePackDownload(look)
+      })
+    })
+  </script>
+</Base>
+
+<style>
+  .pack-looks {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 2rem;
+  }
+  .pack-look__previews {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .pack-look__previews figure {
+    margin: 0;
+  }
+  .pack-look__previews figcaption {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+  .pack-look__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+</style>

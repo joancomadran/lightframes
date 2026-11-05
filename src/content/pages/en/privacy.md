@@ -4,7 +4,7 @@ slug: privacy
 title: "Privacy policy"
 description: "How Lightframes handles your data: photos are edited locally in your browser and never uploaded. What the hosting, fonts and AI downloads involve."
 h1: "Privacy policy"
-updated: 2026-10-22
+updated: 2026-11-05
 schemaType: WebPage
 ---
 
@@ -60,6 +60,7 @@ The AI features (background removal, subject masks, upscaling and object removal
 - **What:** pages visited, referring page, approximate country, browser, operating system and device type.
 - **Why:** to know, in aggregate, how many people use the site and which pages are useful.
 - **How it works:** according to Vercel, Web Analytics does not use cookies, does not build cross-site profiles, and counts visits using a short-lived identifier derived from the request that is not kept beyond a short period. We only see aggregated statistics; we cannot identify individual visitors.
+- **Custom events:** the editor also sends anonymous event names such as `editor_opened`, `photo_loaded`, `export_completed`, `preset_applied` and `free_pack_download`, with coarse properties like export format or file type (for example “raw” or “jpeg”). These events never include file names, image data, EXIF, file sizes or anything that identifies you.
 - **Legal basis:** our legitimate interest in understanding, in aggregate, how the site is used (art. 6(1)(f) GDPR).
 - **Who:** Vercel Inc., acting as data processor.
 
