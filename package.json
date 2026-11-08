@@ -9,6 +9,7 @@
     "check": "astro check",
     "lint": "oxlint",
     "test:collage-export": "node --test scripts/collage-export-size.test.mjs",
+    "test": "node --test scripts/*.test.mjs",
     "preview": "astro preview",
     "indexnow": "node scripts/indexnow.mjs",
     "build:free-pack": "node scripts/build-free-pack.mjs"
