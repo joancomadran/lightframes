@@ -6,7 +6,7 @@ test('editor shell mounts with the expected primary controls', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'Lightframes' })).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByRole('tab', { name: 'Collage' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Open images. Hold Option/Alt to open a folder.' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Open', exact: true })).toBeVisible()
 })
 
 test('switches between edit and collage modes', async ({ page }) => {
