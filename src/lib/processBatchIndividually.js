@@ -8,7 +8,9 @@
  * @returns {Promise<{ successful: T[], failed: Array<{ item: E, error: unknown }> }>}
  */
 export async function processBatchIndividually(items, processItem) {
+  /** @type {T[]} */
   const successful = [];
+  /** @type {Array<{ item: E, error: unknown }>} */
   const failed = [];
 
   for (const item of items) {
