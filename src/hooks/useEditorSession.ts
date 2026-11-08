@@ -133,6 +133,9 @@ async function makePhoto(
   const image = isRawFile(file) ? await decodeRawToJpegBlob(file) : file;
   const objectUrl = URL.createObjectURL(image);
   try {
+    // A supported extension/MIME type does not guarantee valid image data.
+    // Decode once before accepting the file into the session.
+    await loadImage(objectUrl);
     const thumbnail = await makeThumbnail(image);
     return {
       id: uid(),
