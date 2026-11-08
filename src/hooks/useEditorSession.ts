@@ -63,6 +63,7 @@ import {
   type Preset,
 } from "../types/edits";
 import { uid } from "../lib/uid";
+import { processBatchIndividually } from "../lib/processBatchIndividually.js";
 
 const ALL_SHIPPED_PRESETS = [...BUILTIN_PRESETS, ...FREE_PACK_PRESETS];
 
@@ -532,19 +533,17 @@ export function useEditorSession({
           : "Loading images…",
       );
 
-      const next: PhotoSession[] = [];
-      const failures: string[] = [];
       // Keep imports sequential to avoid spiking memory with large RAW batches.
       // A single corrupt or unsupported file must not discard successful imports.
-      for (const file of files) {
-        try {
-          next.push(await makePhoto(file, edits));
-        } catch (error) {
-          const reason =
-            error instanceof Error ? error.message : "Could not open file";
-          failures.push(`${file.name}: ${reason}`);
-        }
-      }
+      const { successful: next, failed } = await processBatchIndividually(
+        files,
+        (file) => makePhoto(file, edits),
+      );
+      const failures = failed.map(({ item, error }) => {
+        const reason =
+          error instanceof Error ? error.message : "Could not open file";
+        return `${item.name}: ${reason}`;
+      });
 
       if (next.length === 0) {
         setStatus(
