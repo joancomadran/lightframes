@@ -30,3 +30,24 @@ jobs:
           npm run build
           npm run lint
           npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci
+      - name: Install Playwright for browser tests
+        run: |
+          npm install --no-save --package-lock=false @playwright/test
+          npx playwright install --with-deps chromium
+      - name: Build production site
+        run: npm run build
+      - name: Run browser smoke tests
+        run: npx playwright test
