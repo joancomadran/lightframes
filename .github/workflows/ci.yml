@@ -30,4 +30,4 @@ jobs:
         run: |
           npm run build
           npm run lint
-          npm run test:collage-export
+          npm test
