@@ -41,7 +41,7 @@ faq:
     a: "Sí. El RAW se revela primero y el LUT se aplica a la imagen revelada, tanto en la vista previa como en la exportación a resolución completa."
   - q: "¿Se suben mi LUT o mis fotos a algún sitio?"
     a: "No. El archivo .cube se lee y se aplica en tu navegador, y el LUT se guarda en el almacenamiento local como parte del preset."
-updated: 2026-10-20
+updated: 2026-11-08
 ---
 
 ## Qué significa aplicar un LUT en Lightframes
@@ -73,6 +73,18 @@ La edición es no destructiva: el LUT queda guardado como ajuste de la foto y el
 | No compatible | LUT 1D (`LUT_1D_SIZE`), `.3dl`, `.look`, `.csp` y otros formatos |
 
 Las fotos pueden ser JPEG, PNG o cualquier RAW compatible, y se exportan en JPEG, PNG o WebP.
+
+## Prueba un LUT .cube gratuito en tu foto
+
+No hace falta tener un pack de LUTs propio para probar una gradación en Lightframes. **Coastal Mist** (en español, *Bruma costera*) es un `.cube` 3D del [pack gratis de presets y LUTs](/es/presets-luts-gratis), publicado bajo CC0; puedes bajar solo el LUT y usarlo en cualquier foto.
+
+1. **Descarga el LUT.** Guarda [coastal-mist.cube](/downloads/free-presets-pack/coastal-mist/coastal-mist.cube) (33×33×33, [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/)).
+2. **Abre una foto** en el [editor](/editor) con **Open** o **Folder**: JPEG, PNG o un [archivo RAW](/es/herramientas/editor-fotos-raw).
+3. **Impórtalo.** En la pestaña **Presets**, pulsa **Import** y elige `coastal-mist.cube`. Aparecerá en **My presets** como *Coastal Mist* (nombre del `TITLE` del archivo).
+4. **Aplícalo y regula la intensidad.** Pulsa el preset y mueve **Intensity** (bajo **Applied**) entre 0 y 100 %. Coastal Mist aclara sombras con un tono frío; en un JPEG sRGB normal, suele bastar con 60–80 % antes de retocar la exposición.
+5. **Compara y exporta.** Pulsa **\\** para ver el antes y el después. Cuando te convenza, **Export** y elige JPEG, PNG o WebP.
+
+El mismo pack incluye otros siete looks en `.xmp` y `.cube`; cada `.cube` se importa igual. Para la descarga completa y la licencia, mira [presets y LUTs gratis](/es/presets-luts-gratis). En esta página solo hablamos de aplicar un `.cube` 3D; los `.xmp` usan el mismo botón **Import**, con las limitaciones de compatibilidad que explica la página de [presets para fotos](/es/herramientas/presets-fotos).
 
 ## Cómo combinar el LUT con tus propios ajustes
 
