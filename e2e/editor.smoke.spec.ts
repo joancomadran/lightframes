@@ -60,7 +60,7 @@ test('keeps valid images when another image in the same import batch is corrupt'
 
   await page.getByRole('button', { name: 'Open', exact: true }).click()
 
-  await expect(page.getByRole('status')).toHaveText('Loaded 1 image; 1 failed')
+  await expect(page.locator('.toolbar__status')).toHaveText('Loaded 1 image; 1 failed')
   await expect(page.locator('.filmstrip__count')).toHaveText('1/1')
 })
 
@@ -69,6 +69,6 @@ test('reports a batch with no importable images without creating a photo', async
 
   await page.getByRole('button', { name: 'Open', exact: true }).click()
 
-  await expect(page.getByRole('status')).toHaveText('Could not open 1 image')
+  await expect(page.locator('.toolbar__status')).toHaveText('Could not open 1 image')
   await expect(page.locator('.filmstrip__count')).toHaveCount(0)
 })
