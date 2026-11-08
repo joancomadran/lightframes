@@ -26,6 +26,12 @@ export function isSupportedImage(file: File): boolean {
   return false
 }
 
+export type OpenImagesResult = {
+  files: File[]
+  /** User chose files or a folder but none were supported images (not a cancel). */
+  unsupportedOnly: boolean
+}
+
 type OpenFilePickerWindow = Window & {
   showOpenFilePicker?: (options?: {
     multiple?: boolean
@@ -42,7 +48,7 @@ type OpenFilePickerWindow = Window & {
   }>
 }
 
-async function pickWithOpenFilePicker(): Promise<File[] | null> {
+async function pickWithOpenFilePicker(): Promise<OpenImagesResult | null> {
   const w = window as OpenFilePickerWindow
   if (typeof w.showOpenFilePicker !== 'function') return null
 
@@ -63,21 +69,22 @@ async function pickWithOpenFilePicker(): Promise<File[] | null> {
       ],
     })
     const files: File[] = []
+    let rejected = 0
     for (const handle of handles) {
       const file = await handle.getFile()
       if (isSupportedImage(file)) files.push(file)
+      else rejected++
     }
-    return files
+    return { files, unsupportedOnly: files.length === 0 && rejected > 0 }
   } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') return []
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      return { files: [], unsupportedOnly: false }
+    }
     return null
   }
 }
 
-export async function pickImageFiles(): Promise<File[]> {
-  const fromPicker = await pickWithOpenFilePicker()
-  if (fromPicker !== null) return fromPicker
-
+function pickFromHiddenInput(): Promise<OpenImagesResult> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -92,21 +99,26 @@ export async function pickImageFiles(): Promise<File[]> {
     input.multiple = true
 
     let settled = false
-    const finish = (files: File[]) => {
+    const finish = (result: OpenImagesResult) => {
       if (settled) return
       settled = true
-      resolve(files)
+      resolve(result)
     }
 
-    input.onchange = () => {
-      finish(Array.from(input.files ?? []).filter(isSupportedImage))
+    const readInput = (): OpenImagesResult => {
+      const all = Array.from(input.files ?? [])
+      const files = all.filter(isSupportedImage)
+      return {
+        files,
+        unsupportedOnly: all.length > 0 && files.length === 0,
+      }
     }
+
+    input.onchange = () => finish(readInput())
     window.addEventListener(
       'focus',
       () => {
-        window.setTimeout(() => {
-          finish(Array.from(input.files ?? []).filter(isSupportedImage))
-        }, 400)
+        window.setTimeout(() => finish(readInput()), 400)
       },
       { once: true },
     )
@@ -114,22 +126,35 @@ export async function pickImageFiles(): Promise<File[]> {
   })
 }
 
-async function pickImageFolder(): Promise<File[] | null> {
+export async function pickImageFiles(): Promise<OpenImagesResult> {
+  const fromPicker = await pickWithOpenFilePicker()
+  if (fromPicker !== null) return fromPicker
+  return pickFromHiddenInput()
+}
+
+async function pickImageFolder(): Promise<OpenImagesResult | null> {
   const w = window as OpenFilePickerWindow
   if (typeof w.showDirectoryPicker !== 'function') return null
 
   try {
     const handle = await w.showDirectoryPicker()
     const files: File[] = []
+    let seen = 0
     for await (const entry of handle.values()) {
       if (entry.kind !== 'file') continue
+      seen++
       const file = await entry.getFile()
       if (isSupportedImage(file)) files.push(file)
     }
     files.sort((a, b) => a.name.localeCompare(b.name))
-    return files
+    return {
+      files,
+      unsupportedOnly: files.length === 0 && seen > 0,
+    }
   } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') return []
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      return { files: [], unsupportedOnly: false }
+    }
     return null
   }
 }
@@ -138,7 +163,7 @@ async function pickImageFolder(): Promise<File[] | null> {
  * Open images via multi-file picker (RAW-friendly).
  * Hold Alt/Option while clicking to open a folder instead.
  */
-export async function openImages(opts?: { folder?: boolean }): Promise<File[]> {
+export async function openImages(opts?: { folder?: boolean }): Promise<OpenImagesResult> {
   if (opts?.folder) {
     const folderFiles = await pickImageFolder()
     if (folderFiles !== null) return folderFiles
