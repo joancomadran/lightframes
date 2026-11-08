@@ -564,11 +564,21 @@ export function useEditorSession({
 
   const handleOpen = useCallback(
     async (opts?: { folder?: boolean }): Promise<PhotoSession[]> => {
-      const files = await openImages(opts);
+      const { files, unsupportedOnly } = await openImages(opts);
+      if (unsupportedOnly) {
+        showToast(
+          "That file type isn't supported. Open a JPEG, PNG, or supported RAW.",
+          "error",
+        );
+        if (photosRef.current.length === 0) {
+          setStatus("Open images to begin");
+        }
+        return [];
+      }
       if (files.length === 0) return [];
       return loadFiles(files);
     },
-    [loadFiles],
+    [loadFiles, showToast],
   );
 
   /** First-visit demo: sample photos opened unedited, like a fresh RAW import. */
