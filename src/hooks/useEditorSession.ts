@@ -570,7 +570,9 @@ export function useEditorSession({
           "That file type isn't supported. Open a JPEG, PNG, or supported RAW.",
           "error",
         );
-        setStatus("Open images to begin");
+        if (photosRef.current.length === 0) {
+          setStatus("Open images to begin");
+        }
         return [];
       }
       if (files.length === 0) return [];
