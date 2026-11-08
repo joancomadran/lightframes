@@ -30,3 +30,45 @@ test('editor fits a mobile viewport without horizontal page overflow', async ({ 
   }))
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1)
 })
+
+async function prepareFilePicker(page: import('@playwright/test').Page, includeValidImage: boolean) {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'showOpenFilePicker', {
+      configurable: true,
+      value: async () => {
+        const files = (window as Window & { __lightframesFiles?: File[] }).__lightframesFiles ?? []
+        return files.map((file) => ({ getFile: async () => file }))
+      },
+    })
+  })
+
+  await page.goto('/editor')
+  await page.evaluate(async (withValidImage) => {
+    const files: File[] = []
+    if (withValidImage) {
+      const response = await fetch('/samples/pagoda.jpg')
+      if (!response.ok) throw new Error('Could not load the JPEG fixture')
+      files.push(new File([await response.blob()], 'valid-photo.jpg', { type: 'image/jpeg' }))
+    }
+    files.push(new File(['not an image'], 'corrupt-photo.jpg', { type: 'image/jpeg' }))
+    ;(window as Window & { __lightframesFiles?: File[] }).__lightframesFiles = files
+  }, includeValidImage)
+}
+
+test('keeps valid images when another image in the same import batch is corrupt', async ({ page }) => {
+  await prepareFilePicker(page, true)
+
+  await page.getByRole('button', { name: 'Open', exact: true }).click()
+
+  await expect(page.getByRole('status')).toHaveText('Loaded 1 image; 1 failed')
+  await expect(page.locator('.filmstrip__count')).toHaveText('1/1')
+})
+
+test('reports a batch with no importable images without creating a photo', async ({ page }) => {
+  await prepareFilePicker(page, false)
+
+  await page.getByRole('button', { name: 'Open', exact: true }).click()
+
+  await expect(page.getByRole('status')).toHaveText('Could not open 1 image')
+  await expect(page.locator('.filmstrip__count')).toHaveCount(0)
+})
