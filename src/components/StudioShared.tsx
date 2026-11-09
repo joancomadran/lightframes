@@ -1,4 +1,5 @@
 import type { PhotoSession } from '../types/edits'
+import type { CollageExportStrings } from '../hooks/useEditorLang'
 import { PHOTO_MIME, SWATCH_COLORS, type StudioFormat, type useSlideExport } from '../hooks/useStudio'
 
 export function ExportStatus({
@@ -6,20 +7,32 @@ export function ExportStatus({
   ready,
   onSave,
   onShare,
-}: Pick<ReturnType<typeof useSlideExport>, 'progress' | 'ready'> & { onSave: () => void; onShare: () => void }) {
+  strings,
+}: Pick<ReturnType<typeof useSlideExport>, 'progress' | 'ready'> & {
+  onSave: () => void
+  onShare: () => void
+  strings: CollageExportStrings
+}) {
   if (!progress && !ready) return null
+  const count = ready?.length ?? 0
   return (
     <div className="collage-ready" role="status">
       {progress ? (
-        <span>Rendering… {Math.round((progress.done / Math.max(1, progress.total)) * 100)}%</span>
+        <span>{strings.renderingProgress(Math.round((progress.done / Math.max(1, progress.total)) * 100))}</span>
       ) : (
         <>
-          <span>{ready!.length > 1 ? `${ready!.length} slides ready` : 'Image ready'}</span>
-          <button type="button" className="btn btn--sm" onClick={onSave}>
-            Save
+          <span>{count > 1 ? strings.slidesReady(count) : strings.imageReady}</span>
+          <button type="button" className="btn btn--sm" onClick={onSave} aria-label={strings.save} title={strings.save}>
+            {strings.save}
           </button>
-          <button type="button" className="btn btn--sm btn--accent" onClick={onShare}>
-            Share
+          <button
+            type="button"
+            className="btn btn--sm btn--accent"
+            onClick={onShare}
+            aria-label={strings.share}
+            title={strings.share}
+          >
+            {strings.share}
           </button>
         </>
       )}

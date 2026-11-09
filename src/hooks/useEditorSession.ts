@@ -46,6 +46,11 @@ import {
   saveSessionSnapshot,
 } from "../lib/sessionStore";
 import {
+  packStudioState,
+  unpackStudioState,
+  type PackedStudio,
+} from "../lib/studioPersist";
+import {
   DEFAULT_EDITS,
   DEFAULT_EXPORT_OPTIONS,
   blendEdits,
@@ -261,6 +266,7 @@ export function useEditorSession({
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [restoredStudio, setRestoredStudio] = useState<PackedStudio | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
   const photosRef = useRef(photos);
@@ -273,6 +279,8 @@ export function useEditorSession({
   const historyAnchorRef = useRef<EditParams | null>(null);
   const persistTimerRef = useRef(0);
   const toastTimerRef = useRef(0);
+  const studioRef = useRef<PackedStudio | null>(null);
+  const [studioTick, setStudioTick] = useState(0);
 
   const activePhoto = useMemo(
     () => photos.find((p) => p.id === activeId) ?? null,
@@ -370,6 +378,7 @@ export function useEditorSession({
           setSessionReady(true);
           return;
         }
+        const studio = unpackStudioState(snap.studio);
         setStatus(
           `Restoring ${snap.photos.length} image${snap.photos.length === 1 ? "" : "s"}…`,
         );
@@ -394,6 +403,8 @@ export function useEditorSession({
           revokeAll(next);
           return;
         }
+        studioRef.current = studio;
+        setRestoredStudio(studio);
         setPhotos(next);
         setActiveId(
           snap.activeId && next.some((p) => p.id === snap.activeId)
@@ -432,11 +443,24 @@ export function useEditorSession({
           activeId,
           selectedIds,
           updatedAt: new Date().toISOString(),
+          studio: studioRef.current,
         },
         new Map(photos.map((p) => [p.id, p.file])),
       );
     }, 600);
-  }, [photos, activeId, selectedIds, sessionReady]);
+  }, [photos, activeId, selectedIds, sessionReady, studioTick]);
+
+  const rememberStudio = useCallback(
+    (state: {
+      format?: string | null;
+      collage?: PackedStudio["collage"];
+      carousel?: PackedStudio["carousel"];
+    }) => {
+      studioRef.current = packStudioState(state);
+      setStudioTick((tick) => tick + 1);
+    },
+    [],
+  );
 
   const pushHistory = useCallback(
     (photoId: string, edits: EditParams) => {
@@ -1335,11 +1359,15 @@ export function useEditorSession({
       }
     }
 
-    window.history.replaceState({}, "", "/editor");
+    const editorPathname = window.location.pathname.startsWith("/es") ? "/es/editor" : "/editor";
+    window.history.replaceState({}, "", editorPathname);
   }, [handleOpen, openSamples, applyPreset]);
 
   return {
     photos,
+    sessionReady,
+    restoredStudio,
+    rememberStudio,
     activePhoto,
     activeId,
     selectedIds,

@@ -103,7 +103,7 @@ export const freePresetsPack = {
       name: look.nameEs,
       description: look.descriptionEs,
       ...lookFiles(look.id),
-      editorUrl: `/editor?look=${look.id}`,
+      editorUrl: `/es/editor?look=${look.id}`,
     })),
     howTitle: 'Cómo usar los archivos',
     how: [

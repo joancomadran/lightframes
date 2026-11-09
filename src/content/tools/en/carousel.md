@@ -96,6 +96,6 @@ After applying a layout you can change anything. Select a photo to set its **Zoo
 
 ## Limitations
 
-The carousel maker exports JPEG only, at a fixed 1080 px width. It has no text, stickers or video. Layouts are kept while the tab is open, but unlike your photos and edits they aren't restored after a page reload, so export before you close the tab. Very long strips with many large RAW files take longer to export, since each photo is developed at full quality.
+The carousel maker exports JPEG only, at a fixed 1080 px width. It has no text, stickers or video. The layout, including each photo's rotation, is restored with your photos after a reload and stays on this device. Very long strips with many large RAW files take longer to export, since each photo is developed at full quality.
 
 Questions about privacy or installing the app? See the [FAQ](/faq), or [open the editor](/editor) and build your first carousel.

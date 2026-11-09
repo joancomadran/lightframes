@@ -1,7 +1,7 @@
 ---
 import { SITE } from '../config'
 import { entryPath, getTools, pagePath } from '../content'
-import { EDITOR_PATH, href, ui, type Lang } from '../i18n'
+import { editorPath, href, ui, type Lang } from '../i18n'
 import { xmpLandingPath } from '../xmpLanding'
 import { freePresetsPackPath } from '../freePresetsPack'
 import Logo from './Logo.astro'
@@ -29,7 +29,7 @@ const year = new Date().getFullYear()
       </a>
       <p>{t.footer.tagline}</p>
       <div class="site-footer__actions">
-        <a class="button button--primary button--small" href={EDITOR_PATH}>{t.openEditor}</a>
+        <a class="button button--primary button--small" href={editorPath(lang)}>{t.openEditor}</a>
         <StarLink label={t.starGithub} />
       </div>
     </div>

@@ -97,6 +97,6 @@ Después de aplicar una composición puedes cambiar lo que quieras. Selecciona u
 
 ## Limitaciones
 
-El creador de carruseles solo exporta en JPEG y con un ancho fijo de 1080 px. No tiene textos, stickers ni vídeo. La composición se mantiene mientras la pestaña está abierta, pero, a diferencia de tus fotos y ajustes, no se recupera si recargas la página, así que exporta antes de cerrar. Las tiras largas con muchos RAW grandes tardan más en exportarse, porque cada foto se revela a calidad completa.
+El creador de carruseles solo exporta en JPEG y con un ancho fijo de 1080 px. No tiene textos, stickers ni vídeo. La composición, incluida la rotación de cada foto, se recupera con tus fotos si recargas la página y se queda en este dispositivo. Las tiras largas con muchos RAW grandes tardan más en exportarse, porque cada foto se revela a calidad completa.
 
-¿Dudas sobre privacidad o sobre cómo instalar la app? Mira las [preguntas frecuentes](/es/preguntas-frecuentes) o [abre el editor](/editor) y monta tu primer carrusel.
+¿Dudas sobre privacidad o sobre cómo instalar la app? Mira las [preguntas frecuentes](/es/preguntas-frecuentes) o [abre el editor](/es/editor) y monta tu primer carrusel.

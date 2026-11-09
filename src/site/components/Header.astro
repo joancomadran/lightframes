@@ -1,6 +1,6 @@
 ---
 import { pagePath } from '../content'
-import { EDITOR_PATH, href, sectionAlternates, ui, type Lang } from '../i18n'
+import { editorPath, href, sectionAlternates, ui, type Lang } from '../i18n'
 import Logo from './Logo.astro'
 import StarLink from './StarLink.astro'
 
@@ -45,7 +45,7 @@ const nav = [
       <span class="site-header__star">
         <StarLink label={t.starGithub} />
       </span>
-      <a class="button button--primary button--small" href={EDITOR_PATH}>{t.openEditorShort}</a>
+      <a class="button button--primary button--small" href={editorPath(lang)}>{t.openEditorShort}</a>
     </div>
   </div>
 </header>

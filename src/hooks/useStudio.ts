@@ -138,7 +138,14 @@ function canShareFiles(files: File[]): boolean {
  * Runs an export and hands the files over: downloads on desktop; on phones the
  * share sheet (straight into Instagram), which needs a fresh tap once rendering is done.
  */
-export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
+export type SlideExportMessages = {
+  exportedOne: string
+  exportedZip: (n: number) => string
+  exportFailed: string
+  shareFailed: string
+}
+
+export function useSlideExport(onNotify: Notify, coarsePointer: boolean, messages: SlideExportMessages) {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [ready, setReady] = useState<File[] | null>(null)
   const busyRef = useRef(false)
@@ -159,16 +166,16 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
         } else {
           await downloadFiles(files)
           if (options?.onSuccess) options.onSuccess(files)
-          else onNotify(files.length > 1 ? `Exported ${files.length} slides as a ZIP` : 'Exported 1 image')
+          else onNotify(files.length > 1 ? messages.exportedZip(files.length) : messages.exportedOne)
         }
       } catch {
-        onNotify('Export failed', 'error')
+        onNotify(messages.exportFailed, 'error')
       } finally {
         busyRef.current = false
         setProgress(null)
       }
     },
-    [onNotify, coarsePointer],
+    [onNotify, coarsePointer, messages],
   )
 
   const share = async () => {
@@ -177,7 +184,7 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean) {
       await navigator.share({ files: ready })
       setReady(null)
     } catch (err) {
-      if ((err as DOMException).name !== 'AbortError') onNotify('Could not open the share sheet', 'error')
+      if ((err as DOMException).name !== 'AbortError') onNotify(messages.shareFailed, 'error')
     }
   }
 

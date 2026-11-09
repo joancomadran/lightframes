@@ -96,4 +96,4 @@ If you open more than nine photos, Lightframes starts you off with grids of four
 
 ## Limitations
 
-Collages are exported as JPEG only, at the fixed sizes above. There's no text, stickers or free-form placement: photos sit in layout cells (the carousel mode allows free placement). Your photos and edits are restored after a reload, but the collage layout itself is not, so export before you close the tab. For other questions, see the [FAQ](/faq) or [open the editor](/editor).
+Collages are exported as JPEG only, at the fixed sizes above. There's no text, stickers or free-form placement: photos sit in layout cells (the carousel mode allows free placement). Your photos, edits and the collage or carousel layout, including each photo's rotation, are restored after a reload and stay on this device. For other questions, see the [FAQ](/faq) or [open the editor](/editor).

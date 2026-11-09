@@ -2,11 +2,12 @@ import {
   COLLAGE_ASPECTS,
   aspectById,
   canvasToBlob,
-  coverWindow,
   developForBox,
   type CollageAspectId,
   type CollageRenderPhoto,
 } from './collage'
+import { carouselFrameDrawSize, paintCarouselSlide } from './carouselPaint.js'
+import type { RotateDegrees } from '../types/edits'
 import { uid } from './uid'
 
 /**
@@ -21,10 +22,12 @@ export type CarouselFrame = {
   y: number
   w: number
   h: number
-  /** Framing inside the box: focal point (0–1) and zoom. */
+  /** Framing inside the box: focal point (0–1), zoom, and clockwise quarter-turns. */
   fx: number
   fy: number
   zoom: number
+  /** Clockwise rotation inside the frame (independent of the photo's edit rotation). */
+  rotate?: RotateDegrees
 }
 
 export type CarouselDoc = {
@@ -45,7 +48,7 @@ const CAROUSEL_ASPECT_IDS: readonly string[] = ['4:5', '1:1', '3:4']
 export const CAROUSEL_ASPECTS = COLLAGE_ASPECTS.filter((a) => CAROUSEL_ASPECT_IDS.includes(a.id))
 
 export function createFrame(photoId: string, x: number, y: number, w: number, h: number): CarouselFrame {
-  return { id: uid(), photoId, x, y, w, h, fx: 0.5, fy: 0.5, zoom: 1 }
+  return { id: uid(), photoId, x, y, w, h, fx: 0.5, fy: 0.5, zoom: 1, rotate: 0 }
 }
 
 export type CarouselTemplateId =
@@ -233,7 +236,8 @@ export async function renderCarousel({
   const byPhoto = [...doc.frames].sort((a, b) => a.photoId.localeCompare(b.photoId))
   for (const frame of byPhoto) {
     const item = await getPhoto(frame.photoId)
-    const tile = item ? await developForBox(item, frame.w * width, frame.h * height, frame.zoom) : null
+    const { localW, localH } = carouselFrameDrawSize(frame, width, height)
+    const tile = item ? await developForBox(item, localW, localH, frame.zoom) : null
     if (tile) tiles.set(frame.id, tile)
     onProgress?.(++step, total)
   }
@@ -248,18 +252,8 @@ export async function renderCarousel({
     ctx.fillStyle = doc.background
     ctx.fillRect(0, 0, width, height)
     ctx.imageSmoothingQuality = 'high'
-    for (const frame of doc.frames) {
-      const tile = tiles.get(frame.id)
-      if (!tile) continue
-      // Same strip geometry on every slide, shifted by whole slide widths, so the cuts line up exactly.
-      const x = (frame.x - k) * width
-      const w = frame.w * width
-      if (x + w <= 0 || x >= width) continue
-      const y = frame.y * height
-      const h = frame.h * height
-      const win = coverWindow(tile.width, tile.height, w, h, { x: frame.fx, y: frame.fy, zoom: frame.zoom })
-      ctx.drawImage(tile, win.x, win.y, win.w, win.h, x, y, w, h)
-    }
+    // Same strip geometry on every slide, shifted by whole slide widths, so the cuts line up exactly.
+    paintCarouselSlide(ctx, width, height, doc.frames, k, (frame) => tiles.get(frame.id) ?? null)
     blobs.push(await canvasToBlob(canvas, mime, quality))
     onProgress?.(++step, total)
   }

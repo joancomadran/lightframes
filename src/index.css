@@ -3414,9 +3414,100 @@ select.field option {
   border-top: 1px solid var(--line);
 }
 
+.studio-export {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid var(--line);
+  background: var(--bg-panel);
+}
+
+.studio-export__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.studio-export__title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.studio-export__presets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.studio-export__preset {
+  appearance: none;
+  min-width: 0;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.25rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.studio-export__preset:hover:not(:disabled) {
+  border-color: rgba(200, 245, 96, 0.4);
+}
+
+.studio-export__preset--active,
+.studio-export__preset--active:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(200, 245, 96, 0.12);
+}
+
+.studio-export__hint {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.studio-export__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.studio-export__actions .btn {
+  width: 100%;
+  min-height: 2.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Accent fill is the same colour as the app focus ring, so the primary action needs a light ring. */
+.studio-export .btn--accent:focus-visible {
+  outline: 2px solid #f4f7f2;
+  outline-offset: 3px;
+}
+
 .export-presets {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.35rem;
 }
 

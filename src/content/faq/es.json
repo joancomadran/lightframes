@@ -58,7 +58,7 @@
     },
     {
       "q": "¿Pierdo los ajustes si cierro la pestaña o recargo la página?",
-      "a": "No. Lightframes guarda tus fotos abiertas, sus ajustes, valoraciones y selección en el IndexedDB del navegador y lo recupera todo cuando vuelves. La edición no es destructiva, así que tus archivos originales nunca se modifican; lo único que no se recupera son las composiciones de collage y carrusel, así que expórtalas antes de cerrar."
+      "a": "No. Lightframes guarda tus fotos abiertas, sus ajustes, valoraciones, selección y la composición del collage o carrusel (incluida la rotación de cada foto) en el IndexedDB del navegador y lo recupera todo cuando vuelves. La edición no es destructiva, así que tus archivos originales nunca se modifican, y esa copia se queda en este dispositivo."
     },
     {
       "q": "¿Cómo puedo apoyar el proyecto?",

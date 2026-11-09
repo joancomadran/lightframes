@@ -19,6 +19,26 @@ test('switches between edit and collage modes', async ({ page }) => {
   await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true')
 })
 
+async function openCollageSettings(page: import('@playwright/test').Page) {
+  await page.getByRole('tab', { name: 'Collage' }).click()
+  const settings = page.getByRole('button', { name: 'Collage settings' })
+  if ((await settings.count()) > 0 && (await settings.isVisible())) await settings.click()
+}
+
+test('collage export labels follow the route language', async ({ page }) => {
+  await page.goto('/editor')
+  await openCollageSettings(page)
+  await expect(page.getByRole('button', { name: 'Export collage' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Export size' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Exportar collage' })).toHaveCount(0)
+
+  await page.goto('/es/editor')
+  await openCollageSettings(page)
+  await expect(page.getByRole('button', { name: 'Exportar collage' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Tamaño de exportación' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Export collage', exact: true })).toHaveCount(0)
+})
+
 test('editor fits a mobile viewport without horizontal page overflow', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/editor')

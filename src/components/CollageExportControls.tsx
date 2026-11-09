@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import {
   COLLAGE_EXPORT_PRESETS,
   presetLongEdge,
@@ -19,6 +19,7 @@ type CollageExportControlsProps = {
   /** Preview output size for the current preset at 1× slide (fixed presets only). */
   previewSize?: { width: number; height: number }
   disabled?: boolean
+  actions: ReactNode
 }
 
 type CollageExportTextKey = Exclude<
@@ -35,6 +36,14 @@ const PRESET_META: Record<CollageExportPreset, { label: CollageExportTextKey; de
   original: { label: 'presetOriginal', detail: 'presetOriginalDetail' },
 }
 
+export function StudioExportBar({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <footer className="studio-export" aria-label={label}>
+      {children}
+    </footer>
+  )
+}
+
 export function CollageExportControls({
   doc,
   settings,
@@ -42,6 +51,7 @@ export function CollageExportControls({
   strings,
   previewSize,
   disabled,
+  actions,
 }: CollageExportControlsProps) {
   const base = aspectById(doc.aspect)
   const hintSize = useMemo(() => {
@@ -61,28 +71,34 @@ export function CollageExportControls({
     saveCollageExportSettings(merged)
   }
 
+  const selected = PRESET_META[settings.preset]
+
   return (
-    <>
-      <div className="export-section">
-        <h3 className="adjust-group__title">{strings.exportSize}</h3>
-        <div className="export-presets" role="group" aria-label={strings.exportSize}>
+    <StudioExportBar label={strings.exportBar}>
+      <div className="studio-export__options">
+        <h3 className="studio-export__title">{strings.sizeAndQuality}</h3>
+        <div className="studio-export__presets" role="group" aria-label={strings.exportSize}>
           {COLLAGE_EXPORT_PRESETS.map((id) => {
             const meta = PRESET_META[id]
+            const label = strings[meta.label]
+            const detail = strings[meta.detail]
             return (
               <button
                 key={id}
                 type="button"
                 disabled={disabled}
-                className={settings.preset === id ? 'export-preset export-preset--active' : 'export-preset'}
+                className={settings.preset === id ? 'studio-export__preset studio-export__preset--active' : 'studio-export__preset'}
                 aria-pressed={settings.preset === id}
+                aria-label={`${label}: ${detail}`}
+                title={detail}
                 onClick={() => patch({ preset: id })}
               >
-                <span className="export-preset__label">{strings[meta.label]}</span>
-                <span className="export-preset__detail">{strings[meta.detail]}</span>
+                {label}
               </button>
             )
           })}
         </div>
+        <p className="studio-export__hint">{strings[selected.detail]}</p>
         <Slider
           label={strings.quality}
           value={Math.round(settings.quality * 100)}
@@ -92,8 +108,9 @@ export function CollageExportControls({
           disabled={disabled}
           onChange={(q) => patch({ quality: q / 100 })}
         />
-        <p className="field-hint">{strings.sizePerSlide(hintSize.width, hintSize.height)}</p>
+        <p className="studio-export__hint">{strings.sizePerSlide(hintSize.width, hintSize.height)}</p>
       </div>
-    </>
+      <div className="studio-export__actions">{actions}</div>
+    </StudioExportBar>
   )
 }

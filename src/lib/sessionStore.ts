@@ -31,6 +31,11 @@ export type PersistedSession = {
   activeId: string | null
   selectedIds: string[]
   updatedAt: string
+  /**
+   * Collage and carousel layout, including each image's rotation.
+   * Stored only in this IndexedDB record. Never uploaded.
+   */
+  studio?: unknown
 }
 
 /** A restored photo with its file, whichever store it came from. */
