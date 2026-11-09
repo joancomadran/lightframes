@@ -82,7 +82,7 @@ You do not need your own LUT pack to try a grade in Lightframes. **Coastal Mist*
 4. **Apply and set strength.** Click the preset, then drag **Intensity** under **Applied** between 0 and 100%. Coastal Mist adds cool, lifted shadows; on a typical sRGB JPEG, 60–80% is often enough before fine-tuning exposure.
 5. **Compare and export.** Press **\\** for a before/after view. When you are happy, click **Export** and pick JPEG, PNG or WebP.
 
-The same pack has seven other looks as `.xmp` and `.cube` files; import each `.cube` the same way. For the full pack download and licence details, see [free presets & LUTs](/free-presets-luts). Only 3D `.cube` LUTs are supported here; preset `.xmp` files use the same **Import** button but follow the compatibility rules on the [photo presets](/tools/photo-presets) page.
+The same pack has seven other looks as `.xmp` and `.cube` files; import each `.cube` the same way. For the full pack download and licence details, see [free presets & LUTs](/free-presets-luts). Only 3D `.cube` LUTs are supported here; preset `.xmp` files use the same **Import** button but follow the compatibility rules on the [photo presets](/tools/photo-presets) page. If you mainly use Lightroom or Camera Raw `.xmp` presets rather than LUTs, see [how to use XMP presets without Lightroom](/xmp-presets-without-lightroom) for import steps and which develop settings carry over.
 
 ## Using LUTs together with your own edits
 
