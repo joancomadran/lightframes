@@ -69,6 +69,42 @@ test('keeps valid images when another image in the same import batch is corrupt'
   await expect(page.locator('.filmstrip__count')).toHaveText('1/1')
 })
 
+test('revokes the object URL when a corrupt image fails to decode', async ({ page }) => {
+  await page.addInitScript(() => {
+    const created: string[] = []
+    const revoked: string[] = []
+    const originalCreate = URL.createObjectURL.bind(URL)
+    const originalRevoke = URL.revokeObjectURL.bind(URL)
+
+    URL.createObjectURL = (blob) => {
+      const url = originalCreate(blob)
+      created.push(url)
+      return url
+    }
+    URL.revokeObjectURL = (url) => {
+      revoked.push(url)
+      originalRevoke(url)
+    }
+
+    ;(window as Window & {
+      __lightframesObjectUrls?: { created: string[]; revoked: string[] }
+    }).__lightframesObjectUrls = { created, revoked }
+  })
+
+  await prepareFilePicker(page, false)
+  await page.getByRole('button', { name: 'Open', exact: true }).click()
+
+  await expect(page.locator('.toolbar__status')).toHaveText('Could not open 1 image')
+  const urls = await page.evaluate(() =>
+    (window as Window & {
+      __lightframesObjectUrls?: { created: string[]; revoked: string[] }
+    }).__lightframesObjectUrls,
+  )
+  expect(urls?.created).toHaveLength(1)
+  expect(urls?.revoked).toEqual(urls?.created)
+  await expect(page.locator('.filmstrip__count')).toHaveCount(0)
+})
+
 test('reports a batch with no importable images without creating a photo', async ({ page }) => {
   await prepareFilePicker(page, false)
 
