@@ -63,6 +63,7 @@ import {
   type Preset,
 } from "../types/edits";
 import { uid } from "../lib/uid";
+import { processBatchIndividually } from "../lib/processBatchIndividually.js";
 
 const ALL_SHIPPED_PRESETS = [...BUILTIN_PRESETS, ...FREE_PACK_PRESETS];
 
@@ -131,19 +132,26 @@ async function makePhoto(
 ): Promise<PhotoSession> {
   const image = isRawFile(file) ? await decodeRawToJpegBlob(file) : file;
   const objectUrl = URL.createObjectURL(image);
-  const thumbnail = await makeThumbnail(image);
-
-  return {
-    id: uid(),
-    name: file.name,
-    path: file.name,
-    objectUrl,
-    file,
-    edits: cloneEdits(edits ?? DEFAULT_EDITS),
-    thumbnailUrl: thumbnail ? URL.createObjectURL(thumbnail) : objectUrl,
-    rating: 0,
-    flag: null,
-  };
+  try {
+    // A supported extension/MIME type does not guarantee valid image data.
+    // Decode once before accepting the file into the session.
+    await loadImage(objectUrl);
+    const thumbnail = await makeThumbnail(image);
+    return {
+      id: uid(),
+      name: file.name,
+      path: file.name,
+      objectUrl,
+      file,
+      edits: cloneEdits(edits ?? DEFAULT_EDITS),
+      thumbnailUrl: thumbnail ? URL.createObjectURL(thumbnail) : objectUrl,
+      rating: 0,
+      flag: null,
+    };
+  } catch (error) {
+    URL.revokeObjectURL(objectUrl);
+    throw error;
+  }
 }
 
 export type Toast = {
@@ -528,36 +536,48 @@ export function useEditorSession({
           : "Loading images…",
       );
 
-      const next: PhotoSession[] = [];
-      try {
-        for (const file of files) {
-          next.push(await makePhoto(file, edits));
-        }
-        const append = photosRef.current.length > 0;
-        setPhotos((prev) => (append ? [...prev, ...next] : next));
-        if (!append) {
-          pastRef.current = [];
-          futureRef.current = [];
-          syncHistoryFlags();
-        }
-        const focusId = next[0]?.id ?? null;
-        setActiveId(focusId);
-        setSelectedIds(focusId ? [focusId] : []);
+      // Keep imports sequential to avoid spiking memory with large RAW batches.
+      // A single corrupt or unsupported file must not discard successful imports.
+      const { successful: next, failed } = await processBatchIndividually(
+        files,
+        (file) => makePhoto(file, edits),
+      );
+      const failures = failed.map(({ item, error }) => {
+        const reason =
+          error instanceof Error ? error.message : "Could not open file";
+        return `${item.name}: ${reason}`;
+      });
+
+      if (next.length === 0) {
         setStatus(
-          append
-            ? `Added ${next.length} image${next.length === 1 ? "" : "s"}`
-            : `Loaded ${next.length} image${next.length === 1 ? "" : "s"}`,
+          failures.length > 0
+            ? `Could not open ${failures.length} image${failures.length === 1 ? "" : "s"}`
+            : "No images were loaded",
         );
-        const types = new Set(files.map(coarseFileType));
-        trackPhotoLoaded(types.size === 1 ? [...types][0]! : "other");
-        return next;
-      } catch (err) {
-        revokeAll(next);
-        const message =
-          err instanceof Error ? err.message : "Failed to open images";
-        setStatus(message);
         return [];
       }
+
+      const append = photosRef.current.length > 0;
+      setPhotos((prev) => (append ? [...prev, ...next] : next));
+      if (!append) {
+        pastRef.current = [];
+        futureRef.current = [];
+        syncHistoryFlags();
+      }
+      const focusId = next[0]?.id ?? null;
+      setActiveId(focusId);
+      setSelectedIds(focusId ? [focusId] : []);
+      const loadedStatus = append
+        ? `Added ${next.length} image${next.length === 1 ? "" : "s"}`
+        : `Loaded ${next.length} image${next.length === 1 ? "" : "s"}`;
+      setStatus(
+        failures.length > 0
+          ? `${loadedStatus}; ${failures.length} failed`
+          : loadedStatus,
+      );
+      const types = new Set(next.map((photo) => coarseFileType(photo.file)));
+      trackPhotoLoaded(types.size === 1 ? [...types][0]! : "other");
+      return next;
     },
     [syncHistoryFlags],
   );
