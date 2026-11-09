@@ -3994,6 +3994,11 @@ kbd {
   object-fit: cover;
 }
 
+.collage-thumb__cell .collage-cell__rotor img {
+  max-width: none;
+  object-fit: fill;
+}
+
 .collage-cell-rotate {
   margin-top: 0.35rem;
   align-items: center;

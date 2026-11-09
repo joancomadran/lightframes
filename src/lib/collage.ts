@@ -1,5 +1,6 @@
 import type { EditParams, PhotoSession, RotateDegrees } from '../types/edits'
-import { cellDrawSize, coverWindow as coverWindowImpl, drawRotatedCoverCell } from './collageCover.js'
+import { cellDrawSize, coverWindow as coverWindowImpl } from './collageCover.js'
+import { paintCollageCell } from './collageExportPaint.js'
 import { prepareBase, type RenderSource } from './imageProcessing'
 import { developBase } from './renderPipeline'
 import { uid } from './uid'
@@ -331,7 +332,7 @@ export async function renderCollageSlide({
     const tile = await developForBox(item, localW, localH, cell.zoom)
     if (!tile) continue
 
-    drawRotatedCoverCell(ctx, tile, x0, y0, w, h, cell)
+    paintCollageCell(ctx, tile, x0, y0, w, h, cell)
   }
 
   return canvasToBlob(canvas, mime, quality)

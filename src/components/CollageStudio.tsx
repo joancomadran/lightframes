@@ -87,17 +87,19 @@ function CollageCellPhoto({
   const rot = cell.rotate ?? 0
   const win = coverWindow(imageW, imageH, boxW, boxH, cell)
   const { localW, localH } = cellDrawSize(boxW, boxH, rot)
-  const toUnit = (v: number) => (unit === '%' ? `${(v / boxW) * 100}%` : v)
-  const toUnitH = (v: number) => (unit === '%' ? `${(v / boxH) * 100}%` : v)
+  const imgLeft = -win.x * win.scale
+  const imgTop = -win.y * win.scale
+  const imgW = imageW * win.scale
+  const imgH = imageH * win.scale
+  // Percentages are of the rotor (the rotated layer), not the cell.
+  const box = (v: number, base: number) => (unit === '%' ? `${(v / base) * 100}%` : v)
   return (
     <div
       className="collage-cell__rotor"
       style={{
         width: unit === '%' ? `${(localW / boxW) * 100}%` : localW,
         height: unit === '%' ? `${(localH / boxH) * 100}%` : localH,
-        marginLeft: unit === '%' ? `${(-localW / boxW / 2) * 100}%` : -localW / 2,
-        marginTop: unit === '%' ? `${(-localH / boxH / 2) * 100}%` : -localH / 2,
-        transform: rot ? `rotate(${rot}deg)` : undefined,
+        transform: `translate(-50%, -50%) rotate(${rot}deg)`,
       }}
     >
       <img
@@ -106,10 +108,10 @@ function CollageCellPhoto({
         draggable={false}
         className={className}
         style={{
-          left: toUnit(-win.x * win.scale),
-          top: toUnitH(-win.y * win.scale),
-          width: toUnit(imageW * win.scale),
-          height: toUnitH(imageH * win.scale),
+          left: box(imgLeft, localW),
+          top: box(imgTop, localH),
+          width: box(imgW, localW),
+          height: box(imgH, localH),
         }}
       />
     </div>

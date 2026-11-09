@@ -10,6 +10,7 @@ import {
   type CollageSlide,
 } from './collage'
 import { clampCanvasSize } from './canvasLimits.js'
+export { paintCollageCell } from './collageExportPaint.js'
 
 export const COLLAGE_EXPORT_PRESETS = ['1x', '2x', '3x', 'original'] as const
 export type CollageExportPreset = (typeof COLLAGE_EXPORT_PRESETS)[number]
