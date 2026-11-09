@@ -61,6 +61,11 @@ test('keeps valid images when another image in the same import batch is corrupt'
   await page.getByRole('button', { name: 'Open', exact: true }).click()
 
   await expect(page.locator('.toolbar__status')).toHaveText('Loaded 1 image; 1 failed')
+
+  // On phones the filmstrip lives inside the Photos tray, which is closed by default.
+  if ((await page.evaluate(() => window.innerWidth)) <= 767) {
+    await page.getByRole('button', { name: 'Show photos' }).click()
+  }
   await expect(page.locator('.filmstrip__count')).toHaveText('1/1')
 })
 
