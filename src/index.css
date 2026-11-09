@@ -3981,6 +3981,19 @@ kbd {
   object-fit: cover;
 }
 
+.collage-cell-rotate {
+  margin-top: 0.35rem;
+  align-items: center;
+}
+
+.collage-cell-rotate__deg {
+  margin: 0;
+  min-width: 2.25rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 .collage-slides__add {
   display: grid;
   place-items: center;

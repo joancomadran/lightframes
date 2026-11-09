@@ -11,8 +11,10 @@ import {
   aspectById,
   borderWidth,
   cellRects,
+  coverOverflow,
   coverWindow,
   createSlide,
+  screenPanDelta,
   emptyCell,
   layoutById,
   renderCollageSlide,
@@ -23,6 +25,7 @@ import {
   type CollageSlide,
 } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
+import { stepRotate } from '../types/edits'
 import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
 import { CollageExportControls } from './CollageExportControls'
@@ -97,7 +100,10 @@ function SlideThumb({
       {rects.map((r, i) => {
         const cell = cells[i]!
         const photo = cell.photoId ? photoById.get(cell.photoId) : undefined
-        const src = photo ? (previews.get(photo.id)?.url ?? photo.thumbnailUrl) : null
+        const preview = photo ? previews.get(photo.id) : undefined
+        const src = preview?.url ?? photo?.thumbnailUrl ?? null
+        const rot = cell.rotate ?? 0
+        const win = preview ? coverWindow(preview.w, preview.h, r.w, r.h, cell) : null
         return (
           <span
             key={i}
@@ -109,7 +115,19 @@ function SlideThumb({
                 src={src}
                 alt=""
                 draggable={false}
-                style={{ objectPosition: `${cell.x * 100}% ${cell.y * 100}%` }}
+                style={
+                  win
+                    ? {
+                        position: 'absolute',
+                        left: `${((-win.x * win.scale) / r.w) * 100}%`,
+                        top: `${((-win.y * win.scale) / r.h) * 100}%`,
+                        width: `${((preview!.w * win.scale) / r.w) * 100}%`,
+                        height: `${((preview!.h * win.scale) / r.h) * 100}%`,
+                        transform: rot ? `rotate(${rot}deg)` : undefined,
+                        transformOrigin: `${((r.w / 2 + win.x * win.scale) / (preview!.w * win.scale)) * 100}% ${((r.h / 2 + win.y * win.scale) / (preview!.h * win.scale)) * 100}%`,
+                      }
+                    : { objectPosition: `${cell.x * 100}% ${cell.y * 100}%` }
+                }
               />
             )}
           </span>
@@ -432,6 +450,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
               const cell = cells[i]!
               const photo = cell.photoId ? photoById.get(cell.photoId) : undefined
               const preview = photo ? previews.get(photo.id) : undefined
+              const rot = cell.rotate ?? 0
               const win = preview ? coverWindow(preview.w, preview.h, r.w, r.h, cell) : null
               const classes = ['collage-cell']
               if (!photo) classes.push('collage-cell--empty')
@@ -464,13 +483,12 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                     const over = cellIndexAt(e.clientX, e.clientY)
                     setDropTarget(over !== null && over !== i ? over : null)
                     if (!drag.preview) return
-                    const w = coverWindow(drag.preview.w, drag.preview.h, drag.cellW, drag.cellH, drag.start)
-                    const overflowX = drag.preview.w * w.scale - drag.cellW
-                    const overflowY = drag.preview.h * w.scale - drag.cellH
+                    const pan = coverOverflow(drag.preview.w, drag.preview.h, drag.cellW, drag.cellH, drag.start)
+                    const [ldx, ldy] = screenPanDelta(drag.start.rotate ?? 0, e.clientX - drag.startX, e.clientY - drag.startY)
                     const clamp = (v: number) => Math.min(1, Math.max(0, v))
                     updateCell(drag.slideId, i, {
-                      x: overflowX > 0.5 ? clamp(drag.start.x - (e.clientX - drag.startX) / overflowX) : drag.start.x,
-                      y: overflowY > 0.5 ? clamp(drag.start.y - (e.clientY - drag.startY) / overflowY) : drag.start.y,
+                      x: pan.x > 0.5 ? clamp(drag.start.x - ldx / pan.x) : drag.start.x,
+                      y: pan.y > 0.5 ? clamp(drag.start.y - ldy / pan.y) : drag.start.y,
                     })
                   }}
                   onPointerUp={(e) => {
@@ -512,6 +530,8 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                         top: -win.y * win.scale,
                         width: preview.w * win.scale,
                         height: preview.h * win.scale,
+                        transform: rot ? `rotate(${rot}deg)` : undefined,
+                        transformOrigin: `${r.w / 2 + win.x * win.scale}px ${r.h / 2 + win.y * win.scale}px`,
                       }}
                     />
                   ) : photo ? (
@@ -797,12 +817,71 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                     format={(v) => `${v}%`}
                     onChange={(v) => updateCell(slide.id, selectedCell!, { zoom: v / 100 })}
                   />
+                  <div className="btn-group collage-cell-rotate" role="group" aria-label="Rotate photo">
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm btn--icon"
+                      onClick={() =>
+                        updateCell(slide.id, selectedCell!, {
+                          rotate: stepRotate(selected.rotate ?? 0, -90),
+                        })
+                      }
+                      title="Rotate left"
+                      aria-label="Rotate left"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path
+                          d="M2.5 12a9.5 9.5 0 1 0 3.2-7.1"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M2.5 5.5v4.2h4.2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm btn--icon"
+                      onClick={() =>
+                        updateCell(slide.id, selectedCell!, {
+                          rotate: stepRotate(selected.rotate ?? 0, 90),
+                        })
+                      }
+                      title="Rotate right"
+                      aria-label="Rotate right"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path
+                          d="M21.5 12a9.5 9.5 0 1 1-3.2-7.1"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M21.5 5.5v4.2h-4.2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    {(selected.rotate ?? 0) !== 0 && (
+                      <span className="field-hint collage-cell-rotate__deg">{selected.rotate}°</span>
+                    )}
+                  </div>
                   <div className="crop-info">
                     <span className="collage-photo-name">{selectedPhoto.name}</span>
                     <button
                       type="button"
                       className="link-btn"
-                      onClick={() => updateCell(slide.id, selectedCell!, { x: 0.5, y: 0.5, zoom: 1 })}
+                      onClick={() => updateCell(slide.id, selectedCell!, { x: 0.5, y: 0.5, zoom: 1, rotate: 0 })}
                     >
                       Reset framing
                     </button>

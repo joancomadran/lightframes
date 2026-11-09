@@ -79,7 +79,11 @@ async function originalMultiplier(
     const full = croppedSize(item.source, item.photo.edits)
     const r = rects[i]!
     if (r.w <= 0 || r.h <= 0) continue
-    mult = Math.max(mult, full.w / (r.w * cell.zoom), full.h / (r.h * cell.zoom))
+    const rot = cell.rotate ?? 0
+    const quarter = rot === 90 || rot === 270
+    const fitW = quarter ? full.h : full.w
+    const fitH = quarter ? full.w : full.h
+    mult = Math.max(mult, fitW / (r.w * cell.zoom), fitH / (r.h * cell.zoom))
   }
   return Math.max(1, mult)
 }
