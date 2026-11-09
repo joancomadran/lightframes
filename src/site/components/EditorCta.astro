@@ -1,5 +1,5 @@
 ---
-import { EDITOR_PATH, ui, type Lang } from '../i18n'
+import { editorPath, ui, type Lang } from '../i18n'
 
 interface Props {
   lang: Lang
@@ -9,7 +9,7 @@ interface Props {
 
 const { lang, editorQuery } = Astro.props
 const t = ui[lang]
-const editorHref = editorQuery ? `${EDITOR_PATH}${editorQuery}` : EDITOR_PATH
+const editorHref = editorQuery ? `${editorPath(lang)}${editorQuery}` : editorPath(lang)
 ---
 
 <div class="editor-cta">

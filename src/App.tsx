@@ -59,9 +59,13 @@ export default function App() {
     modeRef.current = mode
   })
   const session = useEditorSession({ keyboard: mode === 'edit' })
+  const { sessionReady, restoredStudio, rememberStudio } = session
+  const photoCount = session.photos.length
   const [collage, setCollage] = useState<CollageDoc | null>(null)
   const [carousel, setCarousel] = useState<CarouselDoc | null>(null)
   const [studioFormat, setStudioFormat] = useState<StudioFormat>('collage')
+  const [studioReady, setStudioReady] = useState(false)
+  const sawPhotos = useRef(false)
   const studioApi = useRef<StudioApi | null>(null)
   const canEdit = Boolean(session.activePhoto)
   const edits = session.activePhoto?.edits ?? DEFAULT_EDITS
@@ -263,6 +267,33 @@ export default function App() {
   const updateCarousel = useCallback((update: (doc: CarouselDoc) => CarouselDoc) => {
     setCarousel((doc) => (doc ? update(doc) : doc))
   }, [])
+
+  // Layout, including each photo's rotation, comes back with the local session.
+  useEffect(() => {
+    if (!sessionReady || studioReady) return
+    if (restoredStudio?.collage) setCollage(restoredStudio.collage)
+    if (restoredStudio?.carousel) setCarousel(restoredStudio.carousel)
+    if (restoredStudio?.format) setStudioFormat(restoredStudio.format)
+    setStudioReady(true)
+  }, [sessionReady, restoredStudio, studioReady])
+
+  useEffect(() => {
+    if (!studioReady) return
+    rememberStudio({ format: studioFormat, collage, carousel })
+  }, [studioReady, studioFormat, collage, carousel, rememberStudio])
+
+  useEffect(() => {
+    if (!studioReady) return
+    if (photoCount > 0) {
+      sawPhotos.current = true
+      return
+    }
+    if (!sawPhotos.current) return
+    sawPhotos.current = false
+    setCollage(null)
+    setCarousel(null)
+    setStudioFormat('collage')
+  }, [studioReady, photoCount])
 
   const hasPhoto = (id: string | null) => id !== null && session.photos.some((p) => p.id === id)
   const studioHasPhotos =

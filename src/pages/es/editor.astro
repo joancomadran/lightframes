@@ -1,0 +1,87 @@
+---
+import '@fontsource-variable/bricolage-grotesque/opsz.css'
+import '@fontsource-variable/figtree'
+import EditorRoot from '../../EditorRoot'
+import { SITE, absoluteUrl } from '../../site/config'
+import { ui } from '../../site/i18n'
+import { author, webApplication } from '../../site/schema'
+
+// Same editor shell as /editor. html lang selects the Spanish strings.
+const title = 'Editor de Lightframes — editor de fotos gratis en el navegador'
+const description =
+  'Abre el editor de Lightframes: edición RAW y JPEG, presets, copiar y pegar ajustes, exportación por lotes e IA en el dispositivo. Se ejecuta en local y no se sube nada.'
+const jsonLd = { '@context': 'https://schema.org', '@graph': [webApplication('es', []), author()] }
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="theme-color" content={SITE.themeColor} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Lightframes" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={absoluteUrl('/es/editor')} />
+    <link rel="alternate" hreflang="en" href={absoluteUrl('/editor')} />
+    <link rel="alternate" hreflang="es" href={absoluteUrl('/es/editor')} />
+    <link rel="alternate" hreflang="x-default" href={absoluteUrl('/editor')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:url" content={absoluteUrl('/es/editor')} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteUrl(SITE.ogImage)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ui.es.ogImageAlt} />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={SITE.author.xHandle} />
+    <meta name="twitter:creator" content={SITE.author.xHandle} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteUrl(SITE.ogImage)} />
+    <meta name="twitter:image:alt" content={ui.es.ogImageAlt} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <h1 class="sr-only">Editor de fotos Lightframes</h1>
+    <style is:global>
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+    <div id="root">
+      <EditorRoot client:only="react" />
+    </div>
+    <noscript>
+      <p>Lightframes es un editor de fotos que funciona en el navegador. Activa JavaScript para usarlo.</p>
+    </noscript>
+    {import.meta.env.PROD && (
+      <script is:inline>
+        if ('serviceWorker' in navigator) {
+          addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+        }
+      </script>
+    )}
+  </body>
+</html>

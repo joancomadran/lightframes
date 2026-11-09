@@ -32,6 +32,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [webApplication('en
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={absoluteUrl('/editor')} />
+    <link rel="alternate" hreflang="en" href={absoluteUrl('/editor')} />
+    <link rel="alternate" hreflang="es" href={absoluteUrl('/es/editor')} />
+    <link rel="alternate" hreflang="x-default" href={absoluteUrl('/editor')} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:url" content={absoluteUrl('/editor')} />

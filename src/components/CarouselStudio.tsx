@@ -14,8 +14,9 @@ import {
   type CarouselFrame,
   type CarouselTemplateId,
 } from '../lib/carousel'
-import { MAX_ZOOM, MIN_ZOOM, aspectById, coverWindow } from '../lib/collage'
+import { MAX_ZOOM, MIN_ZOOM, aspectById, cellDrawSize, coverOverflow, coverWindow, screenPanDelta } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
+import { stepRotate } from '../types/edits'
 import { AdSlot } from './AdSlot'
 import { AspectPicker } from './AspectPicker'
 import { PhoneDock, PhoneSheetHead, SettingsIcon } from './PhoneDock'
@@ -31,6 +32,8 @@ import {
   type StudioApi,
   type StudioFormat,
 } from '../hooks/useStudio'
+import { StudioExportBar } from './CollageExportControls'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { ColorSwatches, ExportStatus, FormatSwitch, PhotoTray } from './StudioShared'
 
 type CarouselStudioProps = {
@@ -92,23 +95,35 @@ function FrameImage({
   w: number
   h: number
 }) {
-  if (!preview) {
+  if (!preview || w < 1 || h < 1) {
     return <img src={photo.thumbnailUrl} alt="" draggable={false} className="collage-cell__img collage-cell__img--loading" />
   }
-  const win = coverWindow(preview.w, preview.h, w, h, { x: frame.fx, y: frame.fy, zoom: frame.zoom })
+  const rot = frame.rotate ?? 0
+  const framing = { x: frame.fx, y: frame.fy, zoom: frame.zoom, rotate: rot }
+  const win = coverWindow(preview.w, preview.h, w, h, framing)
+  const { localW, localH } = cellDrawSize(w, h, rot)
   return (
-    <img
-      src={preview.url}
-      alt=""
-      draggable={false}
-      className="collage-cell__img"
+    <div
+      className="collage-cell__rotor"
       style={{
-        left: -win.x * win.scale,
-        top: -win.y * win.scale,
-        width: preview.w * win.scale,
-        height: preview.h * win.scale,
+        width: localW,
+        height: localH,
+        transform: `translate(-50%, -50%) rotate(${rot}deg)`,
       }}
-    />
+    >
+      <img
+        src={preview.url}
+        alt=""
+        draggable={false}
+        className="collage-cell__img"
+        style={{
+          left: -win.x * win.scale,
+          top: -win.y * win.scale,
+          width: preview.w * win.scale,
+          height: preview.h * win.scale,
+        }}
+      />
+    </div>
   )
 }
 
@@ -291,7 +306,17 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
   const stripRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<Drag | null>(null)
   const [stageSize, setStageSize] = useState({ w: 0, h: 0 })
-  const { progress, ready, run, share, save } = useSlideExport(onNotify, coarsePointer)
+  const { strings: tx } = useEditorLang()
+  const exportMessages = useMemo(
+    () => ({
+      exportedOne: tx.exportedOne,
+      exportedZip: tx.exportedZip,
+      exportFailed: tx.exportFailed,
+      shareFailed: tx.shareFailed,
+    }),
+    [tx],
+  )
+  const { progress, ready, run, share, save } = useSlideExport(onNotify, coarsePointer, exportMessages)
 
   const aspect = aspectById(doc.aspect)
   const ratio = aspect.width / aspect.height
@@ -443,13 +468,13 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
     if (drag.kind === 'pan') {
       const preview = previews.get(s.photoId)
       if (!preview) return
-      const win = coverWindow(preview.w, preview.h, startPx.w, startPx.h, { x: s.fx, y: s.fy, zoom: s.zoom })
-      const overflowX = preview.w * win.scale - startPx.w
-      const overflowY = preview.h * win.scale - startPx.h
+      const framing = { x: s.fx, y: s.fy, zoom: s.zoom, rotate: s.rotate ?? 0 }
+      const pan = coverOverflow(preview.w, preview.h, startPx.w, startPx.h, framing)
+      const [ldx, ldy] = screenPanDelta(framing.rotate, dx, dy)
       const clamp = (v: number) => Math.min(1, Math.max(0, v))
       updateFrame(drag.id, {
-        fx: overflowX > 0.5 ? clamp(s.fx - dx / overflowX) : s.fx,
-        fy: overflowY > 0.5 ? clamp(s.fy - dy / overflowY) : s.fy,
+        fx: pan.x > 0.5 ? clamp(s.fx - ldx / pan.x) : s.fx,
+        fy: pan.y > 0.5 ? clamp(s.fy - ldy / pan.y) : s.fy,
       })
       return
     }
@@ -559,14 +584,14 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
   const exportSlides = useCallback(() => {
     const current: CarouselDoc = { ...doc, frames: doc.frames.filter((f) => photoById.has(f.photoId)) }
     if (current.frames.length === 0) {
-      onNotify('Add photos to the carousel first', 'error')
+      onNotify(tx.addCarouselPhotos, 'error')
       return
     }
     void run(async (onProgress) => {
       const blobs = await renderCarousel({ doc: current, getPhoto: createExportLoader(photoById), onProgress })
       return blobs.map((blob, i) => new File([blob], slideFileName('carousel', i, blobs.length), { type: 'image/jpeg' }))
     })
-  }, [doc, photoById, onNotify, run])
+  }, [doc, photoById, onNotify, run, tx.addCarouselPhotos])
 
   useEffect(() => {
     if (!apiRef) return
@@ -704,7 +729,7 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
           </div>
         </div>
 
-        <ExportStatus progress={progress} ready={ready} onSave={save} onShare={() => void share()} />
+        <ExportStatus progress={progress} ready={ready} onSave={save} onShare={() => void share()} strings={tx} />
 
         {phone && (
           <PhoneDock
@@ -816,6 +841,57 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
                     format={(v) => `${v}%`}
                     onChange={(v) => updateFrame(selected.id, { zoom: v / 100 })}
                   />
+                  <div className="btn-group collage-cell-rotate" role="group" aria-label="Rotate photo">
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm btn--icon"
+                      onClick={() => updateFrame(selected.id, { rotate: stepRotate(selected.rotate ?? 0, -90) })}
+                      title="Rotate left"
+                      aria-label="Rotate left"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path
+                          d="M2.5 12a9.5 9.5 0 1 0 3.2-7.1"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M2.5 5.5v4.2h4.2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm btn--icon"
+                      onClick={() => updateFrame(selected.id, { rotate: stepRotate(selected.rotate ?? 0, 90) })}
+                      title="Rotate right"
+                      aria-label="Rotate right"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path
+                          d="M21.5 12a9.5 9.5 0 1 1-3.2-7.1"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M21.5 5.5v4.2h-4.2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    {(selected.rotate ?? 0) !== 0 && (
+                      <span className="field-hint collage-cell-rotate__deg">{selected.rotate}°</span>
+                    )}
+                  </div>
                   <div className="carousel-photo-actions">
                     <button
                       type="button"
@@ -857,7 +933,7 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
                   <p className="field-hint collage-photo-name">{photoById.get(selected.photoId)?.name}</p>
                 </>
               ) : (
-                <p className="field-hint">Select a photo on the strip to size, reframe or remove it.</p>
+                <p className="field-hint">Select a photo on the strip to rotate, size, reframe or remove it.</p>
               )}
               <p className="field-hint">
                 {coarsePointer
@@ -866,24 +942,38 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
               </p>
             </div>
 
-            <div className="adjust-group carousel-export">
-              <button type="button" className="btn" onClick={() => setPreviewOpen(true)} disabled={frames.length === 0}>
-                Preview swipe
-              </button>
-              <button
-                type="button"
-                className="btn btn--accent"
-                onClick={exportSlides}
-                disabled={Boolean(progress) || frames.length === 0}
-              >
-                {progress ? 'Rendering…' : `Export ${n} slides`}
-              </button>
-              <p className="field-hint">
-                JPEG, {aspect.width} × {aspect.height} px per slide. Post them in order for a seamless swipe.
-              </p>
-            </div>
           </section>
         </div>
+
+        <StudioExportBar label={tx.exportBar}>
+          <div className="studio-export__options">
+            <h3 className="studio-export__title">{tx.exportBar}</h3>
+            <p className="studio-export__hint">{tx.sizePerSlide(aspect.width, aspect.height)}</p>
+            <p className="studio-export__hint">{tx.seamlessHint}</p>
+          </div>
+          <div className="studio-export__actions">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setPreviewOpen(true)}
+              disabled={frames.length === 0}
+              aria-label={tx.previewSwipe}
+              title={tx.previewSwipe}
+            >
+              {tx.previewSwipe}
+            </button>
+            <button
+              type="button"
+              className="btn btn--accent"
+              onClick={exportSlides}
+              disabled={Boolean(progress) || frames.length === 0}
+              aria-label={progress ? tx.rendering : tx.exportSlides(n)}
+              title={progress ? tx.rendering : tx.exportSlides(n)}
+            >
+              {progress ? tx.rendering : tx.exportSlides(n)}
+            </button>
+          </div>
+        </StudioExportBar>
 
         <AdSlot id="sidebar" height={250} />
       </aside>

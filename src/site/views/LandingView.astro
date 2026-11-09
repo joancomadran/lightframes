@@ -3,7 +3,7 @@ import FaqList from '../components/FaqList.astro'
 import ToolList from '../components/ToolList.astro'
 import { SITE, absoluteUrl } from '../config'
 import { entryPath, getFaq, getPosts, getTools } from '../content'
-import { EDITOR_PATH, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
+import { editorPath, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
 import { landing } from '../landing'
 import { xmpLandingPath } from '../xmpLanding'
 import Base from '../layouts/Base.astro'
@@ -47,9 +47,9 @@ const posts = (await getPosts(lang)).slice(0, 3)
     ...(faq.length ? [faqPage(url, faq)] : []),
   ]}
 >
-  <script is:inline slot="head">
+  <script is:inline slot="head" define:vars={{ editorHref: editorPath(lang) }}>
     // The installed app used to start at "/": send it to the editor instead of the landing page
-    if (matchMedia('(display-mode: standalone)').matches) location.replace('/editor')
+    if (matchMedia('(display-mode: standalone)').matches) location.replace(editorHref)
   </script>
 
   <section class="hero wrap">
@@ -57,7 +57,7 @@ const posts = (await getPosts(lang)).slice(0, 3)
       <h1>{c.h1}</h1>
       <p class="lead">{c.lead}</p>
       <div class="hero__actions">
-        <a class="button button--primary button--large" href={EDITOR_PATH}>{t.openEditor}</a>
+        <a class="button button--primary button--large" href={editorPath(lang)}>{t.openEditor}</a>
         <a class="button button--ghost button--large" href="#how">{c.secondary}</a>
       </div>
       <ul class="facts">
@@ -185,7 +185,7 @@ const posts = (await getPosts(lang)).slice(0, 3)
     <h2 id="end-title">{c.end.h2}</h2>
     <p>{c.end.p}</p>
     <div class="hero__actions">
-      <a class="button button--primary button--large" href={EDITOR_PATH}>{t.openEditor}</a>
+      <a class="button button--primary button--large" href={editorPath(lang)}>{t.openEditor}</a>
       <a class="button button--ghost button--large" href={SITE.github} rel="noopener">{c.end.github}</a>
     </div>
   </section>

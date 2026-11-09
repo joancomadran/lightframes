@@ -16,8 +16,12 @@ const SECTIONS = {
 
 export type Section = keyof typeof SECTIONS
 
-/** The editor is a single English app shared by both languages. */
+/** English editor. Spanish UI is the same app at `editorPath('es')`. */
 export const EDITOR_PATH = '/editor'
+
+export function editorPath(lang: Lang): string {
+  return lang === 'es' ? '/es/editor' : EDITOR_PATH
+}
 
 export function href(section: Section, lang: Lang, slug?: string): string {
   const root = SECTIONS[section][lang]
@@ -139,6 +143,18 @@ export const ui = {
       exportedOne: 'Exported 1 image',
       exportedZip: (n: number) => `Exported ${n} slides as a ZIP`,
       exportFailed: 'Export failed',
+      exportBar: 'Export',
+      sizeAndQuality: 'Size and quality',
+      previewSwipe: 'Preview swipe',
+      exportSlides: (n: number) => `Export ${n} ${n === 1 ? 'slide' : 'slides'}`,
+      seamlessHint: 'Post them in order for a seamless swipe.',
+      renderingProgress: (pct: number) => `Rendering… ${pct}%`,
+      slidesReady: (n: number) => `${n} ${n === 1 ? 'slide' : 'slides'} ready`,
+      imageReady: 'Image ready',
+      save: 'Save',
+      share: 'Share',
+      shareFailed: 'Could not open the share sheet',
+      addCarouselPhotos: 'Add photos to the carousel first',
     },
   },
   es: {
@@ -242,6 +258,18 @@ export const ui = {
       exportedOne: '1 imagen exportada',
       exportedZip: (n: number) => `${n} diapositivas exportadas en un ZIP`,
       exportFailed: 'Error al exportar',
+      exportBar: 'Exportar',
+      sizeAndQuality: 'Tamaño y calidad',
+      previewSwipe: 'Previsualizar',
+      exportSlides: (n: number) => `Exportar ${n} ${n === 1 ? 'diapositiva' : 'diapositivas'}`,
+      seamlessHint: 'Publícalas en orden para un desliz continuo.',
+      renderingProgress: (pct: number) => `Generando… ${pct} %`,
+      slidesReady: (n: number) => `${n} ${n === 1 ? 'diapositiva lista' : 'diapositivas listas'}`,
+      imageReady: 'Imagen lista',
+      save: 'Guardar',
+      share: 'Compartir',
+      shareFailed: 'No se ha podido abrir la hoja para compartir',
+      addCarouselPhotos: 'Añade fotos al carrusel primero',
     },
   },
 } as const

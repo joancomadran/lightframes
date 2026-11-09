@@ -58,7 +58,7 @@
     },
     {
       "q": "Will I lose my edits if I close the tab or refresh the page?",
-      "a": "No. Lightframes saves your open photos, their edits, ratings and selection in your browser's IndexedDB and restores them when you come back. Edits are non-destructive, so your original files are never changed; only collage and carousel layouts are not restored, so export those before closing."
+      "a": "No. Lightframes saves your open photos, their edits, ratings, selection and collage or carousel layout (including each photo's rotation) in your browser's IndexedDB and restores them when you come back. Edits are non-destructive, so your original files are never changed, and that copy stays on this device."
     },
     {
       "q": "How can I support Lightframes?",

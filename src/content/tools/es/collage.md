@@ -96,4 +96,4 @@ Si abres más de nueve fotos, Lightframes empieza con cuadrículas de cuatro por
 
 ## Limitaciones
 
-Los collages solo se exportan en JPEG y con los tamaños fijos de arriba. No hay textos, stickers ni colocación libre: las fotos van en las celdas de la composición (el modo carrusel sí permite colocarlas libremente). Tus fotos y ajustes se recuperan si recargas la página, pero la composición del collage no, así que exporta antes de cerrar la pestaña. Para otras dudas, consulta las [preguntas frecuentes](/es/preguntas-frecuentes) o [abre el editor](/editor).
+Los collages solo se exportan en JPEG y con los tamaños fijos de arriba. No hay textos, stickers ni colocación libre: las fotos van en las celdas de la composición (el modo carrusel sí permite colocarlas libremente). Tus fotos, ajustes y la composición del collage o carrusel, incluida la rotación de cada foto, se recuperan si recargas la página y se quedan en este dispositivo. Para otras dudas, consulta las [preguntas frecuentes](/es/preguntas-frecuentes) o [abre el editor](/es/editor).

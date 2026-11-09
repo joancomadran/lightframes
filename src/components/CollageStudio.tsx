@@ -211,8 +211,17 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
   const [activeSlideId, setActiveSlideId] = useState(doc.slides[0]?.id ?? '')
   const [selectedCell, setSelectedCell] = useState<number | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
-  const { progress, ready, run, share, save } = useSlideExport(onNotify, coarsePointer)
   const { strings: tx } = useEditorLang()
+  const exportMessages = useMemo(
+    () => ({
+      exportedOne: tx.exportedOne,
+      exportedZip: tx.exportedZip,
+      exportFailed: tx.exportFailed,
+      shareFailed: tx.shareFailed,
+    }),
+    [tx],
+  )
+  const { progress, ready, run, share, save } = useSlideExport(onNotify, coarsePointer, exportMessages)
   const [exportSettings, setExportSettings] = useState<CollageExportSettings>(loadCollageExportSettings)
   const stageRef = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
@@ -689,7 +698,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
           </div>
         </div>
 
-        <ExportStatus progress={progress} ready={ready} onSave={save} onShare={() => void share()} />
+        <ExportStatus progress={progress} ready={ready} onSave={save} onShare={() => void share()} strings={tx} />
 
         {phone && (
           <PhoneDock
@@ -948,42 +957,42 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
               </p>
             </div>
 
-            <CollageExportControls
-              doc={doc}
-              settings={exportSettings}
-              onChange={setExportSettings}
-              strings={tx}
-              disabled={Boolean(progress)}
-            />
-
-            <div className="adjust-group">
-              <div className="btn-group" style={{ flexWrap: 'wrap' }}>
-                {exportableCount > 1 && (
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => exportSlides(true)}
-                    disabled={Boolean(progress) || !slideHasPhotos}
-                  >
-                    {progress ? tx.rendering : tx.exportThis}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="btn btn--accent"
-                  onClick={() => exportSlides(false)}
-                  disabled={Boolean(progress) || filledCount === 0}
-                >
-                  {progress
-                    ? tx.rendering
-                    : exportableCount > 1
-                      ? tx.exportAll
-                      : tx.exportCollage}
-                </button>
-              </div>
-            </div>
           </section>
         </div>
+
+        <CollageExportControls
+          doc={doc}
+          settings={exportSettings}
+          onChange={setExportSettings}
+          strings={tx}
+          disabled={Boolean(progress)}
+          actions={
+            <>
+              {exportableCount > 1 && (
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => exportSlides(true)}
+                  disabled={Boolean(progress) || !slideHasPhotos}
+                  aria-label={tx.exportThis}
+                  title={tx.exportThis}
+                >
+                  {progress ? tx.rendering : tx.exportThis}
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn btn--accent"
+                onClick={() => exportSlides(false)}
+                disabled={Boolean(progress) || filledCount === 0}
+                aria-label={exportableCount > 1 ? tx.exportAll : tx.exportCollage}
+                title={exportableCount > 1 ? tx.exportAll : tx.exportCollage}
+              >
+                {progress ? tx.rendering : exportableCount > 1 ? tx.exportAll : tx.exportCollage}
+              </button>
+            </>
+          }
+        />
 
         <AdSlot id="sidebar" height={250} />
       </aside>
