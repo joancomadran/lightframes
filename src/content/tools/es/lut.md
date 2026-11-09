@@ -84,7 +84,7 @@ No hace falta tener un pack de LUTs propio para probar una gradación en Lightfr
 4. **Aplícalo y regula la intensidad.** Pulsa el preset y mueve **Intensity** (bajo **Applied**) entre 0 y 100 %. Coastal Mist aclara sombras con un tono frío; en un JPEG sRGB normal, suele bastar con 60–80 % antes de retocar la exposición.
 5. **Compara y exporta.** Pulsa **\\** para ver el antes y el después. Cuando te convenza, **Export** y elige JPEG, PNG o WebP.
 
-El mismo pack incluye otros siete looks en `.xmp` y `.cube`; cada `.cube` se importa igual. Para la descarga completa y la licencia, mira [presets y LUTs gratis](/es/presets-luts-gratis). En esta página solo hablamos de aplicar un `.cube` 3D; los `.xmp` usan el mismo botón **Import**, con las limitaciones de compatibilidad que explica la página de [presets para fotos](/es/herramientas/presets-fotos).
+El mismo pack incluye otros siete looks en `.xmp` y `.cube`; cada `.cube` se importa igual. Para la descarga completa y la licencia, mira [presets y LUTs gratis](/es/presets-luts-gratis). En esta página solo hablamos de aplicar un `.cube` 3D; los `.xmp` usan el mismo botón **Import**, con las limitaciones de compatibilidad que explica la página de [presets para fotos](/es/herramientas/presets-fotos). Si tu biblioteca son sobre todo presets `.xmp` de Lightroom o Camera Raw y no LUTs, mira [cómo usar presets XMP sin Lightroom](/es/presets-xmp-sin-lightroom): pasos de importación y qué ajustes del revelado se conservan.
 
 ## Cómo combinar el LUT con tus propios ajustes
 
