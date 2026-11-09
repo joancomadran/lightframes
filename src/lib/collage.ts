@@ -1,4 +1,6 @@
-import type { EditParams, PhotoSession } from '../types/edits'
+import type { EditParams, PhotoSession, RotateDegrees } from '../types/edits'
+import { cellDrawSize, coverWindow as coverWindowImpl } from './collageCover.js'
+import { paintCollageCell } from './collageExportPaint.js'
 import { prepareBase, type RenderSource } from './imageProcessing'
 import { developBase } from './renderPipeline'
 import { uid } from './uid'
@@ -135,6 +137,8 @@ export type CollageCell = {
   y: number
   /** 1 = just covers the cell. */
   zoom: number
+  /** Clockwise rotation inside the cell (independent of the photo's edit rotation). */
+  rotate?: RotateDegrees
 }
 
 export type CollageSlide = {
@@ -163,7 +167,7 @@ export const MIN_ZOOM = 1
 export const MAX_ZOOM = 4
 
 export function emptyCell(photoId: string | null = null): CollageCell {
-  return { photoId, x: 0.5, y: 0.5, zoom: 1 }
+  return { photoId, x: 0.5, y: 0.5, zoom: 1, rotate: 0 }
 }
 
 export function createSlide(layoutId: string, photoIds: string[] = []): CollageSlide {
@@ -220,16 +224,23 @@ export function cellRects(layout: CollageLayout, width: number, height: number, 
   }))
 }
 
-/** Which part of a photo stays in view: focal point (0–1) and zoom (1 = just covers the box). */
-export type Framing = { x: number; y: number; zoom: number }
+/** Which part of a photo stays in view: focal point (0–1), zoom, and optional cell rotation. */
+export type Framing = { x: number; y: number; zoom: number; rotate?: RotateDegrees }
 
-/** Part of an image (in its pixels) that fills a box: cover-fit, then zoom around the focal point. */
+/** Part of an image (in its pixels) that fills a box: cover-fit, zoom, optional clockwise rotate. */
 export function coverWindow(imageW: number, imageH: number, boxW: number, boxH: number, framing: Framing) {
-  const scale = Math.max(boxW / imageW, boxH / imageH) * framing.zoom
-  const w = boxW / scale
-  const h = boxH / scale
-  return { x: (imageW - w) * framing.x, y: (imageH - h) * framing.y, w, h, scale }
+  return coverWindowImpl(imageW, imageH, boxW, boxH, framing)
 }
+
+export {
+  cellDrawSize,
+  coverOverflow,
+  deviceToSource,
+  drawRotatedCoverCell,
+  normalizeCollageRotate,
+  rotatedCoverSamples,
+  screenPanDelta,
+} from './collageCover.js'
 
 /** Size of the photo after rotate, straighten and crop, at full resolution. */
 export function croppedSize(source: RenderSource, edits: EditParams): { w: number; h: number; long: number } {
@@ -316,11 +327,12 @@ export async function renderCollageSlide({
     const h = Math.round(r.y + r.h) - y0
     const item = cell.photoId ? await getPhoto(cell.photoId) : null
     if (!item) continue
-    const tile = await developForBox(item, w, h, cell.zoom)
+    const rot = cell.rotate ?? 0
+    const { localW, localH } = cellDrawSize(w, h, rot)
+    const tile = await developForBox(item, localW, localH, cell.zoom)
     if (!tile) continue
 
-    const win = coverWindow(tile.width, tile.height, w, h, cell)
-    ctx.drawImage(tile, win.x, win.y, win.w, win.h, x0, y0, w, h)
+    paintCollageCell(ctx, tile, x0, y0, w, h, cell)
   }
 
   return canvasToBlob(canvas, mime, quality)
