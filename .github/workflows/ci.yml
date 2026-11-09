@@ -46,7 +46,7 @@ jobs:
         run: npm ci
       - name: Install Playwright for browser tests
         run: |
-          npm install --no-save --package-lock=false @playwright/test
+          npm install --no-save --package-lock=false @playwright/test@1.65.0
           npx playwright install --with-deps chromium
       - name: Build production site
         run: npm run build
