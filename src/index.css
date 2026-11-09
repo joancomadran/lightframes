@@ -3853,6 +3853,19 @@ kbd {
     #1a211d;
 }
 
+.collage-cell__rotor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.collage-cell__rotor .collage-cell__img {
+  position: absolute;
+  max-width: none;
+}
+
 .collage-cell__img {
   position: absolute;
   max-width: none;

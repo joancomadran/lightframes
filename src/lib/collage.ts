@@ -1,5 +1,5 @@
 import type { EditParams, PhotoSession, RotateDegrees } from '../types/edits'
-import { coverWindow as coverWindowImpl } from './collageCover.js'
+import { cellDrawSize, coverWindow as coverWindowImpl, drawRotatedCoverCell } from './collageCover.js'
 import { prepareBase, type RenderSource } from './imageProcessing'
 import { developBase } from './renderPipeline'
 import { uid } from './uid'
@@ -231,7 +231,15 @@ export function coverWindow(imageW: number, imageH: number, boxW: number, boxH: 
   return coverWindowImpl(imageW, imageH, boxW, boxH, framing)
 }
 
-export { screenPanDelta, coverOverflow, normalizeCollageRotate } from './collageCover.js'
+export {
+  cellDrawSize,
+  coverOverflow,
+  deviceToSource,
+  drawRotatedCoverCell,
+  normalizeCollageRotate,
+  rotatedCoverSamples,
+  screenPanDelta,
+} from './collageCover.js'
 
 /** Size of the photo after rotate, straighten and crop, at full resolution. */
 export function croppedSize(source: RenderSource, edits: EditParams): { w: number; h: number; long: number } {
@@ -319,21 +327,11 @@ export async function renderCollageSlide({
     const item = cell.photoId ? await getPhoto(cell.photoId) : null
     if (!item) continue
     const rot = cell.rotate ?? 0
-    const quarter = rot === 90 || rot === 270
-    const devW = quarter ? h : w
-    const devH = quarter ? w : h
-    const tile = await developForBox(item, devW, devH, cell.zoom)
+    const { localW, localH } = cellDrawSize(w, h, rot)
+    const tile = await developForBox(item, localW, localH, cell.zoom)
     if (!tile) continue
 
-    const win = coverWindow(tile.width, tile.height, w, h, cell)
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(x0, y0, w, h)
-    ctx.clip()
-    ctx.translate(x0 + w / 2, y0 + h / 2)
-    ctx.rotate((rot * Math.PI) / 180)
-    ctx.drawImage(tile, win.x, win.y, win.w, win.h, -w / 2, -h / 2, w, h)
-    ctx.restore()
+    drawRotatedCoverCell(ctx, tile, x0, y0, w, h, cell)
   }
 
   return canvasToBlob(canvas, mime, quality)

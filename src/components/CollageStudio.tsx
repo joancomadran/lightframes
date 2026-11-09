@@ -10,6 +10,7 @@ import {
   MIN_ZOOM,
   aspectById,
   borderWidth,
+  cellDrawSize,
   cellRects,
   coverOverflow,
   coverWindow,
@@ -62,6 +63,59 @@ type CollageStudioProps = {
   apiRef?: { current: StudioApi | null }
 }
 
+/** Stage/thumb preview for a placed photo; mirrors canvas `drawRotatedCoverCell`. */
+function CollageCellPhoto({
+  src,
+  imageW,
+  imageH,
+  cell,
+  boxW,
+  boxH,
+  className,
+  unit = 'px',
+}: {
+  src: string
+  imageW: number
+  imageH: number
+  cell: CollageCell
+  boxW: number
+  boxH: number
+  className?: string
+  /** `px` for the stage; `%` of cell size for slide thumbs. */
+  unit?: 'px' | '%'
+}) {
+  const rot = cell.rotate ?? 0
+  const win = coverWindow(imageW, imageH, boxW, boxH, cell)
+  const { localW, localH } = cellDrawSize(boxW, boxH, rot)
+  const toUnit = (v: number) => (unit === '%' ? `${(v / boxW) * 100}%` : v)
+  const toUnitH = (v: number) => (unit === '%' ? `${(v / boxH) * 100}%` : v)
+  return (
+    <div
+      className="collage-cell__rotor"
+      style={{
+        width: unit === '%' ? `${(localW / boxW) * 100}%` : localW,
+        height: unit === '%' ? `${(localH / boxH) * 100}%` : localH,
+        marginLeft: unit === '%' ? `${(-localW / boxW / 2) * 100}%` : -localW / 2,
+        marginTop: unit === '%' ? `${(-localH / boxH / 2) * 100}%` : -localH / 2,
+        transform: rot ? `rotate(${rot}deg)` : undefined,
+      }}
+    >
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        className={className}
+        style={{
+          left: toUnit(-win.x * win.scale),
+          top: toUnitH(-win.y * win.scale),
+          width: toUnit(imageW * win.scale),
+          height: toUnitH(imageH * win.scale),
+        }}
+      />
+    </div>
+  )
+}
+
 function LayoutIcon({ layout, ratio }: { layout: CollageLayout; ratio: number }) {
   const w = 24
   const h = 24 / ratio
@@ -102,33 +156,31 @@ function SlideThumb({
         const photo = cell.photoId ? photoById.get(cell.photoId) : undefined
         const preview = photo ? previews.get(photo.id) : undefined
         const src = preview?.url ?? photo?.thumbnailUrl ?? null
-        const rot = cell.rotate ?? 0
-        const win = preview ? coverWindow(preview.w, preview.h, r.w, r.h, cell) : null
         return (
           <span
             key={i}
             className="collage-thumb__cell"
             style={{ left: `${r.x}%`, top: `${(r.y / H) * 100}%`, width: `${r.w}%`, height: `${(r.h / H) * 100}%` }}
           >
-            {src && (
-              <img
+            {src && preview ? (
+              <CollageCellPhoto
                 src={src}
-                alt=""
-                draggable={false}
-                style={
-                  win
-                    ? {
-                        position: 'absolute',
-                        left: `${((-win.x * win.scale) / r.w) * 100}%`,
-                        top: `${((-win.y * win.scale) / r.h) * 100}%`,
-                        width: `${((preview!.w * win.scale) / r.w) * 100}%`,
-                        height: `${((preview!.h * win.scale) / r.h) * 100}%`,
-                        transform: rot ? `rotate(${rot}deg)` : undefined,
-                        transformOrigin: `${((r.w / 2 + win.x * win.scale) / (preview!.w * win.scale)) * 100}% ${((r.h / 2 + win.y * win.scale) / (preview!.h * win.scale)) * 100}%`,
-                      }
-                    : { objectPosition: `${cell.x * 100}% ${cell.y * 100}%` }
-                }
+                imageW={preview.w}
+                imageH={preview.h}
+                cell={cell}
+                boxW={r.w}
+                boxH={r.h}
+                unit="%"
               />
+            ) : (
+              src && (
+                <img
+                  src={src}
+                  alt=""
+                  draggable={false}
+                  style={{ objectPosition: `${cell.x * 100}% ${cell.y * 100}%` }}
+                />
+              )
             )}
           </span>
         )
@@ -450,8 +502,6 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
               const cell = cells[i]!
               const photo = cell.photoId ? photoById.get(cell.photoId) : undefined
               const preview = photo ? previews.get(photo.id) : undefined
-              const rot = cell.rotate ?? 0
-              const win = preview ? coverWindow(preview.w, preview.h, r.w, r.h, cell) : null
               const classes = ['collage-cell']
               if (!photo) classes.push('collage-cell--empty')
               if (selectedCell === i) classes.push('collage-cell--selected')
@@ -519,20 +569,15 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
                     setSelectedCell(i)
                   }}
                 >
-                  {photo && win && preview ? (
-                    <img
+                  {photo && preview ? (
+                    <CollageCellPhoto
                       src={preview.url}
-                      alt=""
-                      draggable={false}
+                      imageW={preview.w}
+                      imageH={preview.h}
+                      cell={cell}
+                      boxW={r.w}
+                      boxH={r.h}
                       className="collage-cell__img"
-                      style={{
-                        left: -win.x * win.scale,
-                        top: -win.y * win.scale,
-                        width: preview.w * win.scale,
-                        height: preview.h * win.scale,
-                        transform: rot ? `rotate(${rot}deg)` : undefined,
-                        transformOrigin: `${r.w / 2 + win.x * win.scale}px ${r.h / 2 + win.y * win.scale}px`,
-                      }}
                     />
                   ) : photo ? (
                     <img
