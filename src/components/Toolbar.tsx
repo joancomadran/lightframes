@@ -118,7 +118,8 @@ export function Toolbar({
     <header className={editing && !canEdit ? 'toolbar toolbar--empty' : 'toolbar'}>
       <div className="toolbar__brand">
         <span className="brand-mark" aria-hidden="true" />
-        <h1 className="brand-name">Lightframes</h1>
+        {/* Logo, not a second page title. The visible h1 is the empty-state headline. */}
+        <p className="brand-name">Lightframes</p>
         <div className="mode-switch" role="tablist" aria-label="Mode">
           {MODES.map((m) => (
             <button
