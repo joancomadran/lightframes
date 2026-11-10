@@ -1,5 +1,5 @@
 import { SITE } from './config'
-import { entryPath, getFaq, getPages, getPosts, getTools } from './content'
+import { entryPath, getAnswers, getFaq, getPages, getPosts, getTools } from './content'
 import { EDITOR_PATH, href } from './i18n'
 import { xmpLanding, xmpLandingPath } from './xmpLanding'
 import { freePresetsPack, freePresetsPackPath } from './freePresetsPack'
@@ -28,7 +28,16 @@ const FACTS = [
 ]
 
 export async function llmsTxt(): Promise<string> {
-  const [tools, posts, pages, toolsEs] = await Promise.all([getTools('en'), getPosts('en'), getPages('en'), getTools('es')])
+  const [tools, posts, pages, toolsEs, compare, platforms, compareEs, platformsEs] = await Promise.all([
+    getTools('en'),
+    getPosts('en'),
+    getPages('en'),
+    getTools('es'),
+    getAnswers('compare', 'en'),
+    getAnswers('platforms', 'en'),
+    getAnswers('compare', 'es'),
+    getAnswers('platforms', 'es'),
+  ])
   return [
     `# ${SITE.name}`,
     '',
@@ -48,6 +57,16 @@ export async function llmsTxt(): Promise<string> {
     '## Tools',
     '',
     ...tools.map((tool) => `- [${tool.data.h1}](${url(entryPath(tool))}): ${tool.data.lead}`),
+    '',
+    '## Lightframes vs…',
+    '',
+    ...compare.map((page) => `- [${page.data.h1}](${url(entryPath(page))}): ${page.data.lead}`),
+    ...compareEs.map((page) => `- [${page.data.h1}](${url(entryPath(page))}): ${page.data.lead}`),
+    '',
+    '### By device',
+    '',
+    ...platforms.map((page) => `- [${page.data.h1}](${url(entryPath(page))}): ${page.data.lead}`),
+    ...platformsEs.map((page) => `- [${page.data.h1}](${url(entryPath(page))}): ${page.data.lead}`),
     '',
     '## Guides',
     '',
@@ -69,7 +88,15 @@ export async function llmsTxt(): Promise<string> {
 
 /** Every tool page, guide and the FAQ as Markdown, for assistants that want the full text in one fetch. */
 export async function llmsFullTxt(): Promise<string> {
-  const [tools, posts, faq] = await Promise.all([getTools('en'), getPosts('en'), getFaq('en')])
+  const [tools, posts, faq, compare, platforms, compareEs, platformsEs] = await Promise.all([
+    getTools('en'),
+    getPosts('en'),
+    getFaq('en'),
+    getAnswers('compare', 'en'),
+    getAnswers('platforms', 'en'),
+    getAnswers('compare', 'es'),
+    getAnswers('platforms', 'es'),
+  ])
   const section = (title: string, path: string, lead: string, body = '') =>
     [`## ${title}`, '', `Source: ${url(path)}`, '', lead, '', body.trim(), ''].join('\n')
   return [
@@ -89,6 +116,42 @@ export async function llmsFullTxt(): Promise<string> {
           tool.data.steps.length ? `### Steps\n\n${tool.data.steps.map((s, i) => `${i + 1}. **${s.name}.** ${s.text}`).join('\n')}` : '',
           tool.data.faq.length ? `### Questions\n\n${tool.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : '',
         ].join('\n\n'),
+      ),
+    ),
+    '## Lightframes vs…',
+    '',
+    ...compare.map((page) =>
+      section(
+        page.data.h1,
+        entryPath(page),
+        page.data.lead,
+        [stripComments(page.body), page.data.faq.length ? `### Questions\n\n${page.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : ''].join('\n\n'),
+      ),
+    ),
+    '### By device',
+    '',
+    ...platforms.map((page) =>
+      section(
+        page.data.h1,
+        entryPath(page),
+        page.data.lead,
+        [stripComments(page.body), page.data.faq.length ? `### Questions\n\n${page.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : ''].join('\n\n'),
+      ),
+    ),
+    ...compareEs.map((page) =>
+      section(
+        page.data.h1,
+        entryPath(page),
+        page.data.lead,
+        [stripComments(page.body), page.data.faq.length ? `### Preguntas\n\n${page.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : ''].join('\n\n'),
+      ),
+    ),
+    ...platformsEs.map((page) =>
+      section(
+        page.data.h1,
+        entryPath(page),
+        page.data.lead,
+        [stripComments(page.body), page.data.faq.length ? `### Preguntas\n\n${page.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : ''].join('\n\n'),
       ),
     ),
     ...posts.map((post) => section(post.data.h1 ?? post.data.title, entryPath(post), post.data.description, stripComments(post.body))),

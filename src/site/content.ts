@@ -4,8 +4,17 @@ import { href, langOf, type Lang, type Section } from './i18n'
 export type Tool = CollectionEntry<'tools'>
 export type Post = CollectionEntry<'blog'>
 export type Page = CollectionEntry<'pages'>
+export type Compare = CollectionEntry<'compare'>
+export type Platform = CollectionEntry<'platforms'>
+export type Answer = Compare | Platform
 
-const SECTION_OF = { tools: 'tools', blog: 'blog', pages: 'pages' } as const satisfies Record<string, Section>
+const SECTION_OF = {
+  tools: 'tools',
+  blog: 'blog',
+  pages: 'pages',
+  compare: 'compare',
+  platforms: 'platforms',
+} as const satisfies Record<string, Section>
 
 export async function getTools(lang: Lang): Promise<Tool[]> {
   const tools = await getCollection('tools', (entry) => langOf(entry.id) === lang)
@@ -24,11 +33,16 @@ export async function getPages(lang: Lang): Promise<Page[]> {
   return getCollection('pages', (entry) => langOf(entry.id) === lang)
 }
 
+export async function getAnswers(collection: 'compare' | 'platforms', lang: Lang): Promise<Answer[]> {
+  const entries = await getCollection(collection, (entry) => langOf(entry.id) === lang)
+  return entries.sort((a, b) => a.data.order - b.data.order || a.data.h1.localeCompare(b.data.h1))
+}
+
 export async function getFaq(lang: Lang) {
   return (await getEntry('faq', lang))?.data.items ?? []
 }
 
-type Entry = Tool | Post | Page
+type Entry = Tool | Post | Page | Answer
 
 export function entryPath(entry: Entry): string {
   return href(SECTION_OF[entry.collection], langOf(entry.id), entry.data.slug)
