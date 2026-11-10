@@ -43,6 +43,8 @@ const year = new Date().getFullYear()
       <h2>{t.footer.resources}</h2>
       <ul>
         <li><a href={href('blog', lang)}>{t.nav.blog}</a></li>
+        <li><a href={href('compare', lang)}>{t.compareIndex.h1}</a></li>
+        <li><a href={href('platforms', lang)}>{t.platformIndex.h1}</a></li>
         <li><a href={xmpLandingPath[lang]}>{lang === 'es' ? 'Presets XMP sin Lightroom' : 'XMP presets without Lightroom'}</a></li>
         <li><a href={freePresetsPackPath[lang]}>{lang === 'es' ? 'Presets y LUTs gratis' : 'Free presets & LUTs'}</a></li>
         <li><a href={href('faq', lang)}>{t.nav.faq}</a></li>

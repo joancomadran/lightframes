@@ -5,6 +5,7 @@ title: "Free Lightroom Alternatives Compared Honestly"
 description: "Free Lightroom alternatives for RAW and XMP presets: Lightframes in your browser, plus darktable, RawTherapee and Photopea. Honest pros, cons and who each fits."
 h1: "Free Lightroom alternatives for RAW editing and presets"
 published: 2026-10-29
+updated: 2026-11-10
 author: Lightframes
 tags: ["guides", "presets", "raw"]
 tools: ["raw-editor", "presets", "lut", "batch", "raw-to-jpg", "remove-objects", "carousel", "collage"]
@@ -20,6 +21,10 @@ keywords:
 ---
 
 **Short answer:** if you want to **apply Lightroom `.xmp` presets or `.cube` LUTs without installing anything**, and keep **RAW files on your device**, use [Lightframes](/editor) in a desktop browser — or read the dedicated guide on [using XMP presets without Lightroom](/xmp-presets-without-lightroom). For a **full desktop RAW catalogue and module-based local edits**, **darktable** or **RawTherapee** (both free, GPLv3) are stronger, but they do not read Lightroom develop presets. **Photopea** is a capable **browser** editor for layers and JPEG workflows; it opens many RAWs with basic develop sliders, but it is not a Lightroom preset replacement. Adobe’s **free Lightroom mobile app** covers capture and basic edits on a phone; **RAW develop, selective adjustments, batch editing and synced presets** sit behind paid plans, per [Adobe’s Lightroom mobile FAQ](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
+
+**Lightframes is a free, open-source (MIT) photo editor that runs entirely in the browser.** Photos are processed on your device and are never uploaded.
+
+For one editor at a time, use the comparisons: [Lightframes vs darktable](/compare/lightframes-vs-darktable), [Lightframes vs Photopea](/compare/lightframes-vs-photopea) and [Lightframes vs Lightroom](/compare/lightframes-vs-lightroom). Device notes: [Chromebook](/for/chromebook), [Mac](/for/mac), [Linux](/for/linux) and [iPad](/for/ipad). This guide stays the overview.
 
 ## Quick comparison
 

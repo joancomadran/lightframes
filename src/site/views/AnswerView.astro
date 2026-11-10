@@ -1,0 +1,83 @@
+---
+import { render } from 'astro:content'
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import EditorCta from '../components/EditorCta.astro'
+import FaqList from '../components/FaqList.astro'
+import { absoluteUrl } from '../config'
+import { entryAlternates, entryPath, getAnswers, getPosts, getTools, type Answer } from '../content'
+import { formatDate, href, langOf, ui } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, faqPage, publishingOrganization, softwareApplication, webPage } from '../schema'
+
+interface Props {
+  entry: Answer
+}
+
+const { entry } = Astro.props
+const { data } = entry
+const lang = langOf(entry.id)
+const t = ui[lang]
+const path = entryPath(entry)
+const url = absoluteUrl(path)
+const section = entry.collection
+const sectionPath = href(section, lang)
+const sectionName = section === 'compare' ? t.compareIndex.h1 : t.platformIndex.h1
+const { Content } = await render(entry)
+const tools = await getTools(lang)
+const siblings = (await getAnswers(section, lang)).filter((other) => other.id !== entry.id)
+const posts = await getPosts(lang)
+const roundup = posts.find((post) => post.data.key === 'free-lightroom-alternatives')
+const otherSection = section === 'compare' ? 'platforms' : 'compare'
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: sectionName, path: sectionPath },
+  { name: data.h1, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={data.title}
+  description={data.description}
+  path={path}
+  alternates={await entryAlternates(entry)}
+  ogImage={data.ogImage}
+  noindex={data.noindex}
+  schema={[
+    webPage({ url, name: data.h1, description: data.description, lang, updated: data.updated }),
+    breadcrumbs(crumbs),
+    softwareApplication(lang, tools.map((tool) => tool.data.label), publishingOrganization()),
+    ...(data.faq.length ? [faqPage(url, data.faq)] : []),
+  ]}
+>
+  <article class="wrap page page--answer">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{data.h1}</h1>
+      <p class="lead">{data.lead}</p>
+      <EditorCta lang={lang} />
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+    {
+      data.faq.length > 0 && (
+        <section class="section-block" aria-labelledby="faq-title">
+          <h2 id="faq-title">{t.tool.faq}</h2>
+          <FaqList items={data.faq} />
+        </section>
+      )
+    }
+    <p class="meta">
+      {t.tool.updated} <time datetime={data.updated.toISOString()}>{formatDate(data.updated, lang)}</time>
+    </p>
+    <section class="section-block" aria-labelledby="related-title">
+      <h2 id="related-title">{t.answer.also}</h2>
+      <ul>
+        {siblings.map((other) => <li><a href={entryPath(other)}>{other.data.h1}</a></li>)}
+        <li><a href={href(otherSection, lang)}>{otherSection === 'compare' ? t.answer.comparisons : t.answer.devices}</a></li>
+        {roundup && <li><a href={entryPath(roundup)}>{t.answer.roundup}</a></li>}
+      </ul>
+    </section>
+  </article>
+</Base>

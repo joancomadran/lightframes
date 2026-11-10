@@ -16,6 +16,8 @@ npm run build    # astro check + build → dist/
 | `/tools` | `/es/herramientas` | textos en `src/site/i18n.ts` → `toolsIndex` |
 | `/tools/<slug>` | `/es/herramientas/<slug>` | `src/content/tools/{en,es}/*.md` |
 | `/blog`, `/blog/<slug>` | `/es/blog`, `/es/blog/<slug>` | `src/content/blog/{en,es}/*.md` |
+| `/compare`, `/compare/<slug>` | `/es/comparar`, `/es/comparar/<slug>` | `src/content/compare/{en,es}/*.md` |
+| `/for`, `/for/<slug>` | `/es/para`, `/es/para/<slug>` | `src/content/platforms/{en,es}/*.md` |
 | `/blog/rss.xml` | `/es/blog/rss.xml` | generado |
 | `/faq` | `/es/preguntas-frecuentes` | `src/content/faq/{en,es}.json` (las 6 primeras salen también en la home) |
 | `/gear` | `/es/equipo` | `src/lib/affiliate.ts` (compartido con el editor) + traducciones en `src/site/views/GearView.astro` |
@@ -61,5 +63,5 @@ Un post nuevo se crea copiando uno existente en `src/content/blog/en/` y su par 
 6. **Banner de consentimiento (CMP)** antes de activar AdSense o cualquier red de anuncios. Ahora mismo no hay cookies propias que no sean técnicas.
 7. ~~**Textos legales.**~~ Hecho: titular Joan Comadran (persona física, España), contacto por X (https://x.com/dev_coma). Quedan comentarios `<!-- TODO legal review … -->` en el Markdown, que salen en el HTML publicado: revisarlos o quitarlos.
 8. **Datos de Instagram en los posts del carrusel** (ratio 3:4 y límite de diapositivas): marcados con TODO para comprobarlos.
-9. **Marca.** Lightroom solo se puede nombrar en frases de compatibilidad ("importa presets .xmp de Lightroom / Camera Raw", "funciona con tus presets de Lightroom") y como "alternativa gratis a Lightroom" en textos descriptivos. Nunca comparativas punto por punto, críticas ni nada que sugiera afiliación con Adobe; donde se nombre en detalle, añadir que Lightroom y Camera Raw son marcas de Adobe. No mencionar otros productos concretos.
+9. **Marca.** Lightroom se nombra en frases de compatibilidad ("importa presets .xmp de Lightroom / Camera Raw") y en las comparativas de `/compare` y las páginas por equipo de `/for`. Donde se nombre en detalle, añadir que Lightroom y Camera Raw son marcas de Adobe y que Lightframes no está afiliado. Los datos de darktable, Photopea o Adobe tienen que salir de sus sitios, con enlace. No inventar precios.
 10. **Afiliados de Amazon.** El texto de divulgación obligatorio en español está en `src/lib/affiliate.ts` y se muestra en `/gear` y en el pie en español.

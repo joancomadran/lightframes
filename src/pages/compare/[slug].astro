@@ -1,0 +1,15 @@
+---
+import type { GetStaticPaths } from 'astro'
+import { getAnswers, type Compare } from '../../site/content'
+import AnswerView from '../../site/views/AnswerView.astro'
+
+export const getStaticPaths = (async () =>
+  (await getAnswers('compare', 'en')).map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: { entry },
+  }))) satisfies GetStaticPaths
+
+const { entry } = Astro.props as { entry: Compare }
+---
+
+<AnswerView entry={entry} />

@@ -12,6 +12,8 @@ const SECTIONS = {
   faq: { en: '/faq', es: '/es/preguntas-frecuentes' },
   gear: { en: '/gear', es: '/es/equipo' },
   pages: { en: '', es: '/es' },
+  compare: { en: '/compare', es: '/es/comparar' },
+  platforms: { en: '/for', es: '/es/para' },
 } satisfies Record<string, Record<Lang, string>>
 
 export type Section = keyof typeof SECTIONS
@@ -96,6 +98,28 @@ export const ui = {
         'Every Lightframes tool in one place: RAW editing, batch edits, presets, LUTs, background removal, object removal, upscaling, carousels and collages.',
       h1: 'Tools',
       lead: 'Each tool is part of the same editor. Open it once and everything runs locally in your browser.',
+    },
+    compareIndex: {
+      title: 'Compare free photo editors',
+      description:
+        'Pairwise comparisons of Lightframes with darktable, Photopea and Lightroom: price, where each runs, RAW, presets, LUTs, AI, privacy and batch.',
+      h1: 'Comparisons',
+      lead: 'Each page answers one comparison: who should use Lightframes, and who should use the other editor. The longer roundup of free Lightroom alternatives stays on the blog.',
+      updated: 'Updated',
+    },
+    platformIndex: {
+      title: 'Lightroom alternatives by device',
+      description:
+        'Free Lightroom alternatives for Chromebook, Mac, Linux and iPad. Lightframes stays in the browser; this index links the page for each device.',
+      h1: 'By device',
+      lead: 'Lightframes is the same browser editor on every device. These pages say what actually works on a Chromebook, a Mac, Linux and an iPad, including the limits.',
+      updated: 'Updated',
+    },
+    answer: {
+      also: 'Also read',
+      roundup: 'Free Lightroom alternatives',
+      comparisons: 'All comparisons',
+      devices: 'By device',
     },
     faqPage: {
       title: 'Frequently asked questions',
@@ -208,6 +232,28 @@ export const ui = {
         'Todas las herramientas de Lightframes: editar RAW, edición por lotes, presets, LUTs, quitar fondos, borrar objetos, ampliar fotos, carruseles y collages.',
       h1: 'Herramientas',
       lead: 'Todas forman parte del mismo editor. Ábrelo una vez y todo se procesa en tu navegador.',
+    },
+    compareIndex: {
+      title: 'Comparar editores de fotos',
+      description:
+        'Comparativas de Lightframes con darktable, Photopea y Lightroom: precio, dónde funciona, RAW, presets, LUTs, IA, privacidad y edición por lotes.',
+      h1: 'Comparativas',
+      lead: 'Cada página responde a una sola comparación: para quién encaja Lightframes y para quién encaja el otro editor. El repaso largo de alternativas gratis a Lightroom sigue en el blog.',
+      updated: 'Actualizado',
+    },
+    platformIndex: {
+      title: 'Alternativas a Lightroom por equipo',
+      description:
+        'Alternativas gratis a Lightroom para Chromebook, Mac, Linux e iPad. Lightframes se queda en el navegador; este índice enlaza la página de cada equipo.',
+      h1: 'Por equipo',
+      lead: 'Lightframes es el mismo editor de navegador en todos los equipos. Estas páginas dicen qué funciona de verdad en un Chromebook, un Mac, Linux y un iPad, límites incluidos.',
+      updated: 'Actualizado',
+    },
+    answer: {
+      also: 'También',
+      roundup: 'Alternativas gratis a Lightroom',
+      comparisons: 'Todas las comparativas',
+      devices: 'Por equipo',
     },
     faqPage: {
       title: 'Preguntas frecuentes',

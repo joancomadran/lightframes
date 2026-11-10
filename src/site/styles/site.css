@@ -785,6 +785,15 @@ a {
   max-width: calc(780px + 2 * var(--gutter));
 }
 
+/* Comparison tables need the full column; prose paragraphs stay readable. */
+.page--answer .prose {
+  max-width: none;
+}
+
+.page--answer .prose :is(p, ul, ol, h2, h3, blockquote) {
+  max-width: 70ch;
+}
+
 .page-head {
   padding-block: 28px 40px;
 }

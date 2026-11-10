@@ -1,0 +1,75 @@
+---
+import Breadcrumbs from '../components/Breadcrumbs.astro'
+import EditorCta from '../components/EditorCta.astro'
+import { absoluteUrl } from '../config'
+import { entryPath, getAnswers } from '../content'
+import { formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
+import Base from '../layouts/Base.astro'
+import { breadcrumbs, webPage } from '../schema'
+
+interface Props {
+  lang: Lang
+  section: 'compare' | 'platforms'
+}
+
+const { lang, section } = Astro.props
+const t = ui[lang]
+const copy = section === 'compare' ? t.compareIndex : t.platformIndex
+const path = href(section, lang)
+const entries = await getAnswers(section, lang)
+const updated = entries.reduce<Date | undefined>((latest, entry) => {
+  if (!latest || entry.data.updated > latest) return entry.data.updated
+  return latest
+}, undefined)
+const other = section === 'compare' ? 'platforms' : 'compare'
+const crumbs = [
+  { name: t.home, path: href('home', lang) },
+  { name: copy.h1, path },
+]
+---
+
+<Base
+  lang={lang}
+  title={copy.title}
+  description={copy.description}
+  path={path}
+  alternates={sectionAlternates(section)}
+  schema={[
+    webPage({
+      url: absoluteUrl(path),
+      name: copy.h1,
+      description: copy.description,
+      lang,
+      type: 'CollectionPage',
+      updated,
+    }),
+    breadcrumbs(crumbs),
+  ]}
+>
+  <div class="wrap page page--narrow">
+    <Breadcrumbs lang={lang} items={crumbs} />
+    <header class="page-head">
+      <h1>{copy.h1}</h1>
+      <p class="lead">{copy.lead}</p>
+      <EditorCta lang={lang} />
+    </header>
+    <ul class="post-list">
+      {
+        entries.map((entry) => (
+          <li>
+            <a href={entryPath(entry)}>
+              <h2>{entry.data.h1}</h2>
+              <p>{entry.data.lead}</p>
+            </a>
+            <time datetime={entry.data.updated.toISOString()}>
+              {copy.updated} {formatDate(entry.data.updated, lang)}
+            </time>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="fineprint">
+      <a href={href(other, lang)}>{other === 'compare' ? t.answer.comparisons : t.answer.devices}</a>
+    </p>
+  </div>
+</Base>

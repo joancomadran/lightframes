@@ -67,6 +67,28 @@ const blog = defineCollection({
   }),
 })
 
+/** Answer-first pages: pairwise comparisons and per-device guides. */
+const answer = {
+  ...seo,
+  h1: z.string(),
+  /** Two or three sentences: who should use which option. Rendered under the H1. */
+  lead: z.string(),
+  updated: z.coerce.date(),
+  faq: z.array(faqItem).default([]),
+  /** Order on the section index. */
+  order: z.number().default(0),
+}
+
+const compare = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/compare', generateId: byPath }),
+  schema: z.object(answer),
+})
+
+const platforms = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/platforms', generateId: byPath }),
+  schema: z.object(answer),
+})
+
 /** Plain prose pages: about, legal, changelog. */
 const pages = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/pages', generateId: byPath }),
@@ -84,4 +106,4 @@ const faq = defineCollection({
   schema: z.object({ items: z.array(faqItem) }),
 })
 
-export const collections = { tools, blog, pages, faq }
+export const collections = { tools, blog, pages, faq, compare, platforms }
