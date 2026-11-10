@@ -5,7 +5,7 @@ title: "Make a Seamless Instagram Carousel From a Panorama"
 description: "Split a panorama into a seamless Instagram carousel that swipes as one picture. Pick 4:5, 3:4 or 1:1, set the slides and export each at 1080 px wide."
 h1: "How to make a seamless Instagram carousel from a panorama"
 published: 2026-10-20
-author: Joan Comadran
+author: Lightframes
 tags: ["instagram", "guides"]
 tools: ["carousel", "collage", "raw-editor"]
 keywords:

@@ -16,7 +16,7 @@ export async function rssFeed(lang: Lang) {
       pubDate: post.data.published,
       link: entryPath(post),
       categories: post.data.tags,
-      author: post.data.author,
+      author: SITE.name,
     })),
   })
 }

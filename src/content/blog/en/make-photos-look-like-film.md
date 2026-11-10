@@ -5,7 +5,7 @@ title: "How to Make Digital Photos Look Like Film"
 description: "Give digital photos a real film look for free: lift the blacks, soften highlights, shift colours, add grain. A step-by-step recipe that runs in your browser."
 h1: "How to make digital photos look like film"
 published: 2026-10-22
-author: Joan Comadran
+author: Lightframes
 tags: ["film", "guides"]
 tools: ["presets", "lut", "raw-editor", "batch"]
 keywords:

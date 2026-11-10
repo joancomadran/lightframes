@@ -12,7 +12,7 @@ faq:
   - q: "Mi panorámica sale cortada por arriba y por abajo. ¿Qué cambio?"
     a: "La tira es más ancha que tu foto. Usa menos diapositivas o cambia a un formato más alto (1:1 → 4:5 → 3:4) hasta que la proporción de la tira se parezca a la de la panorámica. Luego afina con Zoom y Reframe."
 published: 2026-10-20
-author: Joan Comadran
+author: Lightframes
 tags: ["instagram", "guias"]
 tools: ["carousel", "collage", "raw-editor"]
 keywords:

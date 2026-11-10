@@ -8,7 +8,7 @@ import Header from '../components/Header.astro'
 import StarLink from '../components/StarLink.astro'
 import { SITE, absoluteUrl } from '../config'
 import { DEFAULT_LANG, LOCALES, ui, type Lang } from '../i18n'
-import { author, organization, website } from '../schema'
+import { organization, website } from '../schema'
 import '../styles/site.css'
 
 interface Props {
@@ -24,7 +24,7 @@ interface Props {
   ogImage?: string
   ogType?: 'website' | 'article'
   noindex?: boolean
-  /** JSON-LD nodes; Organization, WebSite and the author Person are always added. */
+  /** JSON-LD nodes; Organization and WebSite are always added. */
   schema?: Record<string, unknown>[]
 }
 
@@ -47,7 +47,7 @@ const hreflangs = Object.entries(alternates) as [Lang, string][]
 const otherLangs = hreflangs.filter(([l]) => l !== lang)
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@graph': [organization(), website(lang), author(), ...schema],
+  '@graph': [organization(), website(lang), ...schema],
 }
 const t = ui[lang]
 // A page-specific image shows that page, so its title describes it better than the generic alt
@@ -61,6 +61,8 @@ const ogImageAlt = ogImage === SITE.ogImage ? t.ogImageAlt : pageTitle
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={SITE.name} />
+    {ogType === 'article' && <meta property="article:author" content={SITE.url} />}
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
     {hreflangs.map(([l, p]) => <link rel="alternate" hreflang={l} href={absoluteUrl(p)} />)}
@@ -84,7 +86,6 @@ const ogImageAlt = ogImage === SITE.ogImage ? t.ogImageAlt : pageTitle
     {otherLangs.map(([l]) => <meta property="og:locale:alternate" content={LOCALES[l]} />)}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content={SITE.author.xHandle} />
-    <meta name="twitter:creator" content={SITE.author.xHandle} />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={absoluteUrl(ogImage)} />

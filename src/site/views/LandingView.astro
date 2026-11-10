@@ -7,7 +7,7 @@ import { editorPath, formatDate, href, sectionAlternates, ui, type Lang } from '
 import { landing } from '../landing'
 import { xmpLandingPath } from '../xmpLanding'
 import Base from '../layouts/Base.astro'
-import { faqPage, videoObject, webApplication, webPage } from '../schema'
+import { faqPage, publishingOrganization, videoObject, webApplication, webPage } from '../schema'
 
 interface Props {
   lang: Lang
@@ -33,7 +33,7 @@ const posts = (await getPosts(lang)).slice(0, 3)
   alternates={sectionAlternates('home')}
   schema={[
     webPage({ url, name: c.h1, description: c.description, lang }),
-    webApplication(lang, allTools.map((tool) => tool.data.label)),
+    webApplication(lang, allTools.map((tool) => tool.data.label), publishingOrganization()),
     videoObject({
       url,
       name: c.video.label,

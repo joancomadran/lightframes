@@ -5,7 +5,7 @@ import FaqList from '../components/FaqList.astro'
 import { absoluteUrl } from '../config'
 import { formatDate, href, ui, type Lang } from '../i18n'
 import Base from '../layouts/Base.astro'
-import { breadcrumbs, faqPage, howTo, softwareApplication, webPage } from '../schema'
+import { breadcrumbs, faqPage, howTo, publishingOrganization, softwareApplication, webPage } from '../schema'
 import { getTools } from '../content'
 import { xmpLanding, xmpLandingAlternates, xmpLandingPath, xmpLandingUpdated } from '../xmpLanding'
 
@@ -34,7 +34,7 @@ const crumbs = [
   schema={[
     webPage({ url, name: c.h1, description: c.description, lang, updated: xmpLandingUpdated }),
     breadcrumbs(crumbs),
-    softwareApplication(lang, tools.map((tool) => tool.data.label)),
+    softwareApplication(lang, tools.map((tool) => tool.data.label), publishingOrganization()),
     howTo(url, c.stepsTitle, c.steps),
     faqPage(url, c.faq),
   ]}
