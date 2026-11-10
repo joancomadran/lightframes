@@ -839,9 +839,22 @@ a {
   margin-top: 28px;
 }
 
+.editor-cta .button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
 .editor-cta p {
   font-size: 0.9375rem;
   color: var(--text-muted);
+}
+
+/* `.prose a` would otherwise paint the button label the same colour as its background. */
+.prose a.button--primary,
+.prose a.button--primary:hover {
+  color: var(--accent-ink);
+  text-decoration: none;
 }
 
 .breadcrumbs ol {

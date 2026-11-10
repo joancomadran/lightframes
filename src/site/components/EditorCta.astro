@@ -5,14 +5,16 @@ interface Props {
   lang: Lang
   /** Optional query string (e.g. `?intent=raw`) appended to the editor link. */
   editorQuery?: string
+  /** Button label. Defaults to the shared “Open the editor” string. */
+  label?: string
 }
 
-const { lang, editorQuery } = Astro.props
+const { lang, editorQuery, label } = Astro.props
 const t = ui[lang]
 const editorHref = editorQuery ? `${editorPath(lang)}${editorQuery}` : editorPath(lang)
 ---
 
 <div class="editor-cta">
-  <a class="button button--primary" href={editorHref}>{t.openEditor}</a>
+  <a class="button button--primary" href={editorHref}>{label ?? t.openEditor}</a>
   <p>{t.tool.free}</p>
 </div>

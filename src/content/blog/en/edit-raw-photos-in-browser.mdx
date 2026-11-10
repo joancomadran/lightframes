@@ -1,10 +1,12 @@
 ---
 key: raw-in-browser
 slug: edit-raw-photos-in-browser
-title: "Can You Edit RAW Photos in a Browser? Yes"
-description: "Yes — edit camera RAW files (ARW, CR3, NEF, DNG, RAF and more) in your browser with Lightframes. Free, open source; nothing is uploaded, decoding stays on your device."
+title: "Edit RAW Photos in Your Browser: Free, No Upload"
+description: "Edit ARW, CR3, NEF, DNG and RAF in your browser, step by step. Your files are not uploaded. Open the free editor and export a JPEG, PNG or WebP."
 h1: "Can you edit RAW photos in a browser without uploading them?"
 faq:
+  - q: "Can I edit RAW images in a browser-based AI tool?"
+    a: "Yes. Lightframes decodes the RAW on your device with LibRaw in WebAssembly, then runs object removal, background removal and AI upscaling locally on that decoded image. Your files are not uploaded. Many browser AI tools upload the file to a server instead. If LibRaw cannot develop a file, these tools run on the camera's embedded JPEG."
   - q: "Is it really free, and do I need an account?"
     a: "Yes, it's free and there's no account. Lightframes is open source under the MIT licence; you can read the code on GitHub. See About for how the project is funded."
   - q: "Does it work on a phone?"
@@ -12,6 +14,7 @@ faq:
   - q: "My camera's RAW opens, but it looks just like the JPEG. Why?"
     a: "If LibRaw can't develop that file, Lightframes edits the embedded JPEG instead. Converting the file to DNG usually helps. If it doesn't, please open an issue with the camera model."
 published: 2026-10-20
+updated: 2026-11-10
 author: Joan Comadran
 tags: ["raw", "guides"]
 tools: ["raw-editor", "raw-to-jpg", "presets", "batch"]
@@ -24,9 +27,14 @@ keywords:
   - edit nef online
   - dng editor online
   - private photo editor
+  - can i edit raw images in a browser-based ai tool
 ---
 
+import EditorCta from '../../../site/components/EditorCta.astro'
+
 **Yes, you can edit RAW photos in a web browser** — ARW, CR3, NEF, DNG, RAF and more — with [Lightframes](/editor). Nothing is uploaded: LibRaw decodes the sensor data on your own computer in WebAssembly. Open your files, edit with the sliders, then export a JPEG, PNG or WebP developed from the full-resolution RAW.
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
 
 ## What is a RAW file, and why edit it at all?
 
@@ -38,7 +46,7 @@ A JPEG straight out of the camera has already had white balance, contrast and sh
 - **White balance you can change freely,** because it hasn't been applied to the pixels yet.
 - **Fewer banding and posterisation problems** when you push exposure or colour hard.
 
-The catch is that a RAW has to be "developed" before you can share it, and that usually means installing desktop software or sending the file to a web service.
+The catch is that a RAW has to be "developed" before you can share it, and that usually means installing desktop software or sending the file to a web service. If you would rather install a program, see [free Lightroom alternatives](/blog/free-lightroom-alternatives).
 
 ## Why does it matter that the photo isn't uploaded?
 
@@ -49,6 +57,20 @@ Most online editors work by sending your photo to a server, processing it there 
 - **Accounts and limits.** Server-side tools usually need a sign-up, and many cap the file size or the number of exports.
 
 Lightframes runs the whole pipeline in the browser tab. The RAW decoder, the editing engine and the export all run on your device; the heavy pixel work is spread across Web Workers so the page stays responsive. Your open photos and edits are kept in your browser's own storage (IndexedDB), so a page refresh doesn't lose your work, and none of it is sent anywhere. Once the app has loaded, editing also works offline. The first use of object removal still downloads its model from Hugging Face.
+
+## Can I edit RAW images in a browser-based AI tool?
+
+Yes. Lightframes decodes the RAW on your device with LibRaw in WebAssembly, and its AI tools run in the same browser tab on that decoded image. The photo is not uploaded. Many browser AI tools do the opposite: they upload the file, run a model on a server and send a result back.
+
+These three run locally, on a decoded RAW as well as on JPEG and PNG:
+
+- **Object removal.** In the Retouch panel, Remove fills the area you paint with an on-device inpainting model. See [remove objects from photos](/tools/remove-objects-from-photos).
+- **Background removal.** In Retouch, under Background, Remove finds the subject with an on-device model. You can export a transparent PNG, a solid colour or a blur. The same model drives subject masks in the Local panel. See the [background remover](/tools/background-remover).
+- **AI upscale.** At export, 2× or 4× super-resolution runs on your device, on the photo developed from the RAW. See the [AI image upscaler](/tools/ai-image-upscaler).
+
+While you edit, the preview is a half-size RAW decode, and that is what object removal and background removal see. Export decodes the RAW again at full resolution and applies those edits. If you turn on AI upscale, that step runs on the full-resolution photo. If LibRaw cannot develop a particular file, the editor uses the camera's embedded JPEG instead, and the AI tools run on that JPEG.
+
+Object removal downloads its model from Hugging Face the first time you use it. Background removal and upscaling download theirs from Lightframes. The photo stays on your device, and those tools work offline once the models are stored.
 
 ## How do you edit a RAW photo in Lightframes, step by step?
 
@@ -61,7 +83,7 @@ Lightframes runs the whole pipeline in the browser tab. The RAW decoder, the edi
 7. **Compare.** Press **\\** for a before/after view. Every edit is non-destructive and undoable (**Ctrl/Cmd+Z**).
 8. **Export.** Press **Ctrl/Cmd+E**, choose a size preset and format, and save.
 
-If you shot a whole series in the same light, edit one photo, copy its settings (**Ctrl/Cmd+C**) and paste them onto the rest of the selection (**Ctrl/Cmd+V**). The paste dialog lets you choose which settings to bring across, so you can paste the colour without the crop. There's more on that in the [batch photo editor](/tools/batch-photo-editor) guide, and you can save any look as a reusable preset with the [photo presets](/tools/photo-presets) tool.
+If you shot a whole series in the same light, edit one photo, copy its settings (**Ctrl/Cmd+C**) and paste them onto the rest of the selection (**Ctrl/Cmd+V**). The paste dialog lets you choose which settings to bring across, so you can paste the colour without the crop. There's more on that in the [batch photo editor](/tools/batch-photo-editor) guide, and you can save any look as a reusable preset with the [photo presets](/tools/photo-presets) tool. A [free presets and LUTs pack](/free-presets-luts) is there if you want a starting look.
 
 ## Which RAW formats are supported?
 
@@ -81,7 +103,7 @@ Lightframes recognises these extensions, plus regular JPEG and PNG:
 
 Decoding relies on LibRaw, so whether a specific camera model develops fully depends on LibRaw's own support for it. Very new bodies can lag behind.
 
-<!-- TODO: confirm the LibRaw version bundled by libraw-wasm and whether we want to mention a camera support list. -->
+{/* TODO: confirm the LibRaw version bundled by libraw-wasm and whether we want to mention a camera support list. */}
 
 ## Embedded preview or full RAW decode: what are you actually editing?
 
@@ -93,7 +115,7 @@ Most RAW files carry a full-size JPEG inside them, the same picture you see on t
 
 If LibRaw can't develop a particular file, the app falls back to the embedded JPEG so you can still edit it. In that case you're working on the camera's 8-bit rendering, and you'll notice that highlights don't recover the way they do on other RAWs. If that happens, convert the file to DNG and try again.
 
-<!-- TODO: if the UI ever shows which source is in use (RAW vs embedded JPEG), mention it here. -->
+{/* TODO: if the UI ever shows which source is in use (RAW vs embedded JPEG), mention it here. */}
 
 ## Tips for better results
 
@@ -109,9 +131,11 @@ Open the export dialog with **Ctrl/Cmd+E**. You can pick:
 
 - **A size preset:** Original (full resolution), Web (2048 px long edge), or Instagram sizes: 4:5 at 1080 × 1350, 1:1 at 1080 × 1080, and Story at 1080 × 1920. You can also set your own long edge. The Instagram sizes fit the whole photo inside the frame, with a border colour you choose, instead of cropping it.
 - **Format and quality:** JPEG, PNG or WebP, with a quality slider.
-- **A filename pattern,** such as `{name}-edited`, where `{name}` is the original file's name.
+- **A filename pattern,** such as {"{name}"}-edited, where {"{name}"} is the original file's name.
 - **Optional extras:** a text watermark, and AI upscaling at 2× or 4×, which also runs on your device (see the [AI image upscaler](/tools/ai-image-upscaler)).
 
 Select several photos in the filmstrip before exporting and each one is developed with its own edits; they download together as a single ZIP.
 
 Ready to try it? [Open the RAW photo editor](/tools/raw-photo-editor) or go straight to [the editor](/editor).
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />

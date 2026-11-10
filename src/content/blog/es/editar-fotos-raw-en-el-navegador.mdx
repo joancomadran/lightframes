@@ -1,10 +1,20 @@
 ---
 key: raw-in-browser
 slug: editar-fotos-raw-en-el-navegador
-title: "Cómo editar fotos RAW en el navegador"
-description: "Edita archivos RAW de tu cámara (ARW, CR3, NEF, DNG, RAF…) desde el navegador, sin subirlos a ningún sitio ni crear cuenta. Todo se revela en tu equipo."
+title: "¿Se puede editar RAW en el navegador? Gratis, sin subir"
+description: "¿Se puede editar RAW (ARW, CR3, NEF, DNG y RAF) en el navegador? Paso a paso, sin subir tus archivos. Abre el editor gratis y exporta un JPEG."
 h1: "Cómo editar fotos RAW en el navegador sin subirlas a internet"
+faq:
+  - q: "¿Puedo editar imágenes RAW con una herramienta de IA en el navegador?"
+    a: "Sí. Lightframes revela el RAW en tu dispositivo con LibRaw en WebAssembly, y luego la eliminación de objetos, la eliminación de fondo y la ampliación con IA se ejecutan en local sobre esa imagen revelada. Tus archivos no se suben. Muchas herramientas de IA en el navegador sí suben el archivo a un servidor. Si LibRaw no puede revelar un archivo, estas herramientas trabajan sobre el JPEG incrustado de la cámara."
+  - q: "¿De verdad es gratis? ¿Hace falta cuenta?"
+    a: "Sí, es gratis y no necesitas cuenta. Lightframes es código abierto con licencia MIT; puedes ver el código en GitHub (https://github.com/joancomadran/lightframes). En Sobre Lightframes (/es/sobre-lightframes) te contamos cómo se financia."
+  - q: "¿Funciona en el móvil?"
+    a: "El editor funciona en móviles y tabletas, con zoom y desplazamiento táctiles. Pero los RAW pesan mucho y el móvil tiene menos memoria, así que para tandas grandes es más cómodo el ordenador."
+  - q: "Mi RAW se abre, pero se ve igual que el JPEG. ¿Por qué?"
+    a: "Si LibRaw no puede revelar ese archivo, Lightframes edita el JPEG incrustado. Convertirlo a DNG suele solucionarlo. Si no, abre una incidencia en GitHub (https://github.com/joancomadran/lightframes/issues) indicando el modelo de cámara."
 published: 2026-10-20
+updated: 2026-11-10
 author: Joan Comadran
 tags: ["raw", "guias"]
 tools: ["raw-editor", "raw-to-jpg", "presets", "batch"]
@@ -17,9 +27,14 @@ keywords:
   - revelar raw sin instalar nada
   - editor de fotos sin subir archivos
   - editor dng online
+  - editar raw con ia en el navegador
 ---
 
+import EditorCta from '../../../site/components/EditorCta.astro'
+
 **En resumen:** abre [Lightframes](/editor) en el navegador del ordenador, pulsa **Open** y elige tus archivos RAW. La app revela los datos del sensor en tu propio equipo con LibRaw compilado a WebAssembly, así que la foto no se sube a ningún servidor. Ajustas con los controles y exportas un JPEG, PNG o WebP generado a partir del RAW a resolución completa.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
 
 ## ¿Qué es un archivo RAW y por qué merece la pena editarlo?
 
@@ -31,7 +46,7 @@ El JPEG que sale de la cámara ya lleva aplicados el balance de blancos, el cont
 - **Balance de blancos totalmente libre,** porque todavía no se ha aplicado a los píxeles.
 - **Menos bandas y saltos de color** cuando fuerzas la exposición o la saturación.
 
-El inconveniente es que hay que "revelar" el RAW antes de poder compartirlo, y normalmente eso implica instalar un programa o mandar el archivo a un servicio web.
+El inconveniente es que hay que "revelar" el RAW antes de poder compartirlo, y normalmente eso implica instalar un programa o mandar el archivo a un servicio web. Si prefieres instalar un programa, mira las [alternativas gratis a Lightroom](/es/blog/alternativas-gratis-a-lightroom).
 
 ## ¿Por qué importa que la foto no se suba a internet?
 
@@ -42,6 +57,20 @@ La mayoría de editores online envían tu foto a un servidor, la procesan allí 
 - **Cuentas y límites.** Los servicios en la nube suelen pedir registro y muchos limitan el tamaño del archivo o el número de exportaciones.
 
 Lightframes hace todo el proceso dentro de la pestaña del navegador. El decodificador RAW, el motor de edición y la exportación funcionan en tu dispositivo, y el trabajo pesado se reparte entre Web Workers para que la página no se congele. Las fotos abiertas y tus ajustes se guardan en el almacenamiento del propio navegador (IndexedDB), de modo que no pierdes nada si recargas la página, y nada de eso se envía a ninguna parte. Una vez cargada, la edición también funciona sin conexión. La primera vez que borras un objeto, esa herramienta descarga su modelo de Hugging Face.
+
+## ¿Puedo editar imágenes RAW con una herramienta de IA en el navegador?
+
+Sí. Lightframes revela el RAW en tu dispositivo con LibRaw en WebAssembly, y sus herramientas de IA se ejecutan en la misma pestaña sobre esa imagen revelada. La foto no se sube. Muchas herramientas de IA en el navegador hacen lo contrario: suben el archivo, lo procesan en un servidor y te devuelven el resultado.
+
+Estas tres funcionan en local, tanto sobre un RAW revelado como sobre JPEG y PNG:
+
+- **Eliminar objetos.** En el panel Retouch, Remove rellena la zona que pintas con un modelo de retoque que corre en tu equipo. Guía: [borrar objetos de una foto](/es/herramientas/borrar-objetos-foto).
+- **Quitar el fondo.** En Retouch, dentro de Background, Remove detecta el sujeto con un modelo en tu equipo. Puedes exportar un PNG transparente, un color sólido o un desenfoque. El mismo modelo alimenta las máscaras de sujeto del panel Local. Guía: [quitar el fondo](/es/herramientas/quitar-fondo-foto).
+- **Ampliar con IA.** Al exportar, la superresolución a 2× o 4× se hace en tu equipo, sobre la foto revelada a partir del RAW. Guía: [ampliar foto con IA](/es/herramientas/ampliar-foto-ia).
+
+Mientras editas, la vista previa es un revelado RAW a la mitad de tamaño, y eso es lo que ven la eliminación de objetos y la del fondo. La exportación vuelve a revelar el RAW a resolución completa y aplica esos ajustes. Si activas la ampliación con IA, ese paso se hace sobre la foto a tamaño completo. Si LibRaw no consigue revelar un archivo, el editor usa el JPEG incrustado de la cámara y las herramientas de IA trabajan sobre ese JPEG.
+
+La eliminación de objetos descarga su modelo de Hugging Face la primera vez que la usas. Quitar el fondo y ampliar descargan los suyos desde Lightframes. La foto se queda en tu dispositivo, y esas herramientas funcionan sin conexión una vez guardados los modelos.
 
 ## ¿Cómo se edita un RAW en Lightframes, paso a paso?
 
@@ -54,7 +83,7 @@ Lightframes hace todo el proceso dentro de la pestaña del navegador. El decodif
 7. **Compara.** Pulsa **\\** para ver el antes y el después. Todo es no destructivo y se puede deshacer (**Ctrl/Cmd+Z**).
 8. **Exporta.** Pulsa **Ctrl/Cmd+E**, elige tamaño y formato, y guarda.
 
-Si has hecho una serie con la misma luz, edita una foto, copia sus ajustes (**Ctrl/Cmd+C**) y pégalos en el resto de la selección (**Ctrl/Cmd+V**). Al pegar puedes elegir qué ajustes se copian, por ejemplo el color pero no el recorte. Lo explicamos con más detalle en [editar fotos por lotes](/es/herramientas/editar-fotos-por-lotes), y cualquier estilo que te guste lo puedes guardar como [preset](/es/herramientas/presets-fotos) para reutilizarlo.
+Si has hecho una serie con la misma luz, edita una foto, copia sus ajustes (**Ctrl/Cmd+C**) y pégalos en el resto de la selección (**Ctrl/Cmd+V**). Al pegar puedes elegir qué ajustes se copian, por ejemplo el color pero no el recorte. Lo explicamos con más detalle en [editar fotos por lotes](/es/herramientas/editar-fotos-por-lotes), y cualquier estilo que te guste lo puedes guardar como [preset](/es/herramientas/presets-fotos) para reutilizarlo. Si quieres un punto de partida, hay un [pack de presets y LUTs gratis](/es/presets-luts-gratis).
 
 ## ¿Qué formatos RAW admite?
 
@@ -74,7 +103,7 @@ Además de JPEG y PNG, Lightframes reconoce estas extensiones:
 
 El revelado depende de LibRaw, así que el que un modelo concreto se revele bien depende de que LibRaw lo soporte. Las cámaras recién salidas al mercado pueden tardar en estar cubiertas.
 
-<!-- TODO: confirmar la versión de LibRaw que incluye libraw-wasm y si queremos enlazar una lista de cámaras compatibles. -->
+{/* TODO: confirmar la versión de LibRaw que incluye libraw-wasm y si queremos enlazar una lista de cámaras compatibles. */}
 
 ## Vista previa incrustada o revelado RAW completo: ¿qué estás editando?
 
@@ -86,7 +115,7 @@ Casi todos los RAW llevan dentro un JPEG a tamaño completo, el mismo que ves en
 
 Si LibRaw no consigue revelar un archivo concreto, la app recurre al JPEG incrustado para que puedas editarlo igualmente. En ese caso trabajas sobre la versión de 8 bits que generó la cámara, y notarás que las luces no se recuperan como en otros RAW. Si te pasa, convierte el archivo a DNG y vuelve a probar.
 
-<!-- TODO: si la interfaz llega a indicar qué fuente se usa (RAW o JPEG incrustado), mencionarlo aquí. -->
+{/* TODO: si la interfaz llega a indicar qué fuente se usa (RAW o JPEG incrustado), mencionarlo aquí. */}
 
 ## Consejos para sacarle partido
 
@@ -102,20 +131,11 @@ Abre el cuadro de exportación con **Ctrl/Cmd+E**. Puedes elegir:
 
 - **Un tamaño predefinido:** Original (resolución completa), Web (2048 px en el lado largo) o tamaños de Instagram: 4:5 a 1080 × 1350, 1:1 a 1080 × 1080 e historia a 1080 × 1920. También puedes fijar tú el lado largo. Los tamaños de Instagram encajan la foto entera en el marco, con un borde del color que elijas, en lugar de recortarla.
 - **Formato y calidad:** JPEG, PNG o WebP, con control de calidad.
-- **Un patrón de nombre,** como `{name}-edited`, donde `{name}` es el nombre del archivo original.
+- **Un patrón de nombre,** como {"{name}"}-edited, donde {"{name}"} es el nombre del archivo original.
 - **Extras opcionales:** marca de agua de texto y ampliación con IA a 2× o 4×, que también se hace en tu equipo (mira [ampliar foto con IA](/es/herramientas/ampliar-foto-ia)).
 
 Si seleccionas varias fotos en la tira antes de exportar, cada una se revela con sus propios ajustes y se descargan juntas en un único ZIP.
 
-## Preguntas frecuentes
-
-**¿De verdad es gratis? ¿Hace falta cuenta?**
-Sí, es gratis y no necesitas cuenta. Lightframes es código abierto con licencia MIT; puedes ver el código en [GitHub](https://github.com/joancomadran/lightframes). En [Sobre Lightframes](/es/sobre-lightframes) te contamos cómo se financia.
-
-**¿Funciona en el móvil?**
-El editor funciona en móviles y tabletas, con zoom y desplazamiento táctiles. Pero los RAW pesan mucho y el móvil tiene menos memoria, así que para tandas grandes es más cómodo el ordenador.
-
-**Mi RAW se abre, pero se ve igual que el JPEG. ¿Por qué?**
-Si LibRaw no puede revelar ese archivo, Lightframes edita el JPEG incrustado. Convertirlo a DNG suele solucionarlo. Si no, [abre una incidencia en GitHub](https://github.com/joancomadran/lightframes/issues) indicando el modelo de cámara.
-
 ¿Te animas a probarlo? Entra en el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o directamente en [el editor](/editor).
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
