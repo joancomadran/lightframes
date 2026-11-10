@@ -1,9 +1,28 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+/** The toolbar wordmark. Exact text inside the banner skips the sr-only page title. */
+function editorWordmark(page: Page) {
+  return page.getByRole('banner').getByText('Lightframes', { exact: true })
+}
+
+/** Headings a sighted person can see. The 1px clipped page title does not count. */
+async function visibleH1Text(page: Page): Promise<string[]> {
+  return page.locator('h1').evaluateAll((nodes) =>
+    nodes
+      .filter((el) => {
+        const box = el.getBoundingClientRect()
+        return box.width > 2 && box.height > 2
+      })
+      .map((el) => (el.textContent ?? '').replace(/\s+/g, ' ').trim()),
+  )
+}
 
 test('editor shell mounts with the expected primary controls', async ({ page }) => {
   await page.goto('/editor')
 
-  await expect(page.getByRole('heading', { name: 'Lightframes' })).toBeVisible()
+  await expect(editorWordmark(page)).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Lightframes photo editor', exact: true })).toHaveCount(1)
+  expect(await visibleH1Text(page)).toEqual(['The open-source photo editor that stays on your device'])
   await expect(page.getByRole('tab', { name: 'Edit' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByRole('tab', { name: 'Collage' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Open', exact: true })).toBeVisible()
@@ -43,7 +62,8 @@ test('editor fits a mobile viewport without horizontal page overflow', async ({ 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/editor')
 
-  await expect(page.getByRole('heading', { name: 'Lightframes' })).toBeVisible()
+  await expect(editorWordmark(page)).toBeVisible()
+  expect(await visibleH1Text(page)).toEqual(['The open-source photo editor that stays on your device'])
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,
