@@ -9,6 +9,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
+import { trackToolUsed } from '../lib/analytics'
 import {
   computeHistogram,
   drawClippingOverlay,
@@ -759,6 +760,7 @@ export function PreviewCanvas({
         hold.timer = window.setTimeout(() => {
           hold.fired = true
           navigator.vibrate?.(8)
+          trackToolUsed('compare')
           setHolding(true)
         }, HOLD_MS)
         holdRef.current = hold

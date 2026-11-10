@@ -1,3 +1,4 @@
+import { fileExtension, trackPhotoLoadFailed } from './analytics'
 import { RAW_EXTENSIONS } from './rawDecode'
 
 const IMAGE_TYPES = new Set([
@@ -24,6 +25,21 @@ export function isSupportedImage(file: File): boolean {
   if (IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext))) return true
   if (file.type && IMAGE_TYPES.has(file.type.toLowerCase())) return true
   return false
+}
+
+/**
+ * Sidecars next to a successful import are not failures. When nothing opened,
+ * record each distinct extension once.
+ */
+function trackUnsupportedSelection(opened: number, rejectedNames: string[]): void {
+  if (opened > 0 || rejectedNames.length === 0) return
+  const seen = new Set<string>()
+  for (const name of rejectedNames) {
+    const ext = fileExtension(name)
+    if (seen.has(ext)) continue
+    seen.add(ext)
+    trackPhotoLoadFailed(name, 'unsupported')
+  }
 }
 
 export type OpenImagesResult = {
@@ -69,13 +85,14 @@ async function pickWithOpenFilePicker(): Promise<OpenImagesResult | null> {
       ],
     })
     const files: File[] = []
-    let rejected = 0
+    const rejected: string[] = []
     for (const handle of handles) {
       const file = await handle.getFile()
       if (isSupportedImage(file)) files.push(file)
-      else rejected++
+      else rejected.push(file.name)
     }
-    return { files, unsupportedOnly: files.length === 0 && rejected > 0 }
+    trackUnsupportedSelection(files.length, rejected)
+    return { files, unsupportedOnly: files.length === 0 && rejected.length > 0 }
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       return { files: [], unsupportedOnly: false }
@@ -107,7 +124,13 @@ function pickFromHiddenInput(): Promise<OpenImagesResult> {
 
     const readInput = (): OpenImagesResult => {
       const all = Array.from(input.files ?? [])
-      const files = all.filter(isSupportedImage)
+      const files: File[] = []
+      const rejected: string[] = []
+      for (const file of all) {
+        if (isSupportedImage(file)) files.push(file)
+        else rejected.push(file.name)
+      }
+      trackUnsupportedSelection(files.length, rejected)
       return {
         files,
         unsupportedOnly: all.length > 0 && files.length === 0,
@@ -139,17 +162,18 @@ async function pickImageFolder(): Promise<OpenImagesResult | null> {
   try {
     const handle = await w.showDirectoryPicker()
     const files: File[] = []
-    let seen = 0
+    const rejected: string[] = []
     for await (const entry of handle.values()) {
       if (entry.kind !== 'file') continue
-      seen++
       const file = await entry.getFile()
       if (isSupportedImage(file)) files.push(file)
+      else rejected.push(file.name)
     }
     files.sort((a, b) => a.name.localeCompare(b.name))
+    trackUnsupportedSelection(files.length, rejected)
     return {
       files,
-      unsupportedOnly: files.length === 0 && seen > 0,
+      unsupportedOnly: files.length === 0 && rejected.length > 0,
     }
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {

@@ -14,6 +14,7 @@ import {
   type CarouselFrame,
   type CarouselTemplateId,
 } from '../lib/carousel'
+import { trackToolUsed } from '../lib/analytics'
 import { MAX_ZOOM, MIN_ZOOM, aspectById, cellDrawSize, coverOverflow, coverWindow, screenPanDelta } from '../lib/collage'
 import type { PhotoSession } from '../types/edits'
 import { stepRotate } from '../types/edits'
@@ -413,6 +414,7 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
       onNotify('Add photos first', 'error')
       return
     }
+    if (id === 'panorama' || id === 'framed') trackToolUsed('panorama')
     onChange((d) => ({ ...d, frames: templateFrames(id, ids, d.slideCount, ratio), pool: ids }))
     setSelectedId(null)
   }
@@ -587,6 +589,7 @@ export function CarouselStudio({ photos, doc, onChange, onFormatChange, onOpen, 
       onNotify(tx.addCarouselPhotos, 'error')
       return
     }
+    trackToolUsed('carousel')
     void run(async (onProgress) => {
       const blobs = await renderCarousel({ doc: current, getPhoto: createExportLoader(photoById), onProgress })
       return blobs.map((blob, i) => new File([blob], slideFileName('carousel', i, blobs.length), { type: 'image/jpeg' }))
