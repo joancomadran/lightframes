@@ -1,3 +1,4 @@
+import { coarseAiReason, trackAiFeatureCompleted, trackAiFeatureFailed, type AiFeature } from './analytics'
 import type { AiReply, AiRequest, ModelId } from './aiModels'
 
 /*
@@ -87,8 +88,15 @@ function onReply(e: MessageEvent<AiReply>) {
     if (reply.id !== null) pending.delete(reply.id)
     if (job) settle(job.model)
     setStatus(reply.model, { phase: 'error', message: reply.message })
+    if (!job) trackAiFeatureFailed(aiFeature(reply.model), coarseAiReason(reply.message))
     job?.reject(new Error(reply.message))
   }
+}
+
+function aiFeature(model: ModelId): AiFeature {
+  if (model === 'inpaint') return 'remove_objects'
+  if (model === 'upscale') return 'upscale'
+  return 'cutout'
 }
 
 type WorkerSlot = { worker: Worker | null; create: () => Worker }
@@ -134,7 +142,8 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 /** Run a model; buffers in the job are transferred to the worker. */
 export function runModel(job: Job, onProgress?: (fraction: number) => void): Promise<Uint8ClampedArray> {
   const model = job.kind
-  return new Promise((resolve, reject) => {
+  const feature = aiFeature(model)
+  const promise = new Promise<Uint8ClampedArray>((resolve, reject) => {
     const id = nextId++
     pending.set(id, { model, resolve, reject, onProgress })
     running[model]++
@@ -144,4 +153,14 @@ export function runModel(job: Job, onProgress?: (fraction: number) => void): Pro
       job.kind === 'inpaint' ? [job.rgba.buffer, job.mask.buffer] : [job.rgba.buffer]
     getWorker(model).postMessage(request, transfer)
   })
+  return promise.then(
+    (data) => {
+      trackAiFeatureCompleted(feature)
+      return data
+    },
+    (err: unknown) => {
+      trackAiFeatureFailed(feature, coarseAiReason(err))
+      throw err
+    },
+  )
 }

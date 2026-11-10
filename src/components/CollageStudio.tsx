@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { trackToolUsed } from '../lib/analytics'
 import { COARSE_QUERY, PHONE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
 import { useSheetSwipe } from '../hooks/useSheetSwipe'
 import {
@@ -452,6 +453,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
           onNotify(tx.slideEmpty, 'error')
           return
         }
+        trackToolUsed('collage')
         void run((onProgress) => renderExportFiles([slide], onProgress), {
           onSuccess: (files) => onNotify(files.length > 1 ? tx.exportedZip(files.length) : tx.exportedOne),
         })
@@ -464,6 +466,7 @@ export function CollageStudio({ photos, doc, onChange, onFormatChange, onOpen, o
         onNotify(tx.addPhotosFirst, 'error')
         return
       }
+      trackToolUsed('collage')
       void run((onProgress) => renderExportFiles(slides, onProgress), {
         onSuccess: (files) => onNotify(files.length > 1 ? tx.exportedZip(files.length) : tx.exportedOne),
       })

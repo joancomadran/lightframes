@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CollageRenderPhoto } from '../lib/collage'
+import { coarseExportReason, trackExportFailed } from '../lib/analytics'
 import { downloadBlob } from '../lib/files'
 import { zipFiles } from '../lib/zip'
 
@@ -168,7 +169,8 @@ export function useSlideExport(onNotify: Notify, coarsePointer: boolean, message
           if (options?.onSuccess) options.onSuccess(files)
           else onNotify(files.length > 1 ? messages.exportedZip(files.length) : messages.exportedOne)
         }
-      } catch {
+      } catch (error) {
+        trackExportFailed('jpeg', coarseExportReason(error))
         onNotify(messages.exportFailed, 'error')
       } finally {
         busyRef.current = false

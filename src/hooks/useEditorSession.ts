@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  coarseExportReason,
+  coarsePhotoLoadReason,
+  presetImportTool,
+  trackEditTools,
   trackExportCompleted,
+  trackExportFailed,
+  trackLocalTool,
   trackPhotoLoaded,
+  trackPhotoLoadFailed,
   trackPresetApplied,
+  trackToolUsed,
 } from "../lib/analytics";
 import {
   downloadBlob,
@@ -250,10 +258,15 @@ export function useEditorSession({
   const [splitMode, setSplitMode] = useState(false);
   // The split slider over the image is the main before/after view; it replaces a whole-image "Before".
   const toggleSplit = useCallback(() => {
+    trackToolUsed("compare");
     setCompareMode(false);
     setSplitMode((v) => !v);
   }, []);
   const [showClipping, setShowClipping] = useState(false);
+  const setShowClippingTracked = useCallback((value: boolean) => {
+    trackToolUsed("histogram");
+    setShowClipping(value);
+  }, []);
   const [cropMode, setCropMode] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [exportOptions, setExportOptions] = useState<ExportOptions>(
@@ -508,6 +521,7 @@ export function useEditorSession({
       } else if (!historyAnchorRef.current) {
         beginEdit();
       }
+      trackEditTools(patch);
       setPhotos((prev) =>
         prev.map((photo) =>
           photo.id === id
@@ -567,6 +581,7 @@ export function useEditorSession({
         (file) => makePhoto(file, edits),
       );
       const failures = failed.map(({ item, error }) => {
+        trackPhotoLoadFailed(item.name, coarsePhotoLoadReason(error));
         const reason =
           error instanceof Error ? error.message : "Could not open file";
         return `${item.name}: ${reason}`;
@@ -750,7 +765,8 @@ export function useEditorSession({
 
   const copyEdits = useCallback(() => {
     const photo = photosRef.current.find((p) => p.id === activeIdRef.current);
-    if (!photo) return;
+      if (!photo) return;
+    trackToolUsed("copy_edits");
     setClipboard({
       photoId: photo.id,
       name: photo.name,
@@ -819,6 +835,8 @@ export function useEditorSession({
             : photo,
         ),
       );
+      trackToolUsed("paste_edits");
+      if (targets.length > 1) trackToolUsed("batch_apply");
       setStatus(
         `Pasted edits to ${targets.length} photo${targets.length === 1 ? "" : "s"}`,
       );
@@ -889,6 +907,8 @@ export function useEditorSession({
       setAppliedPreset(targets, preset.id, intensityRef.current);
       applyPresetAtIntensity(preset, intensityRef.current, targets);
       setStatus(`Applied “${preset.name}” to ${targets.length}`);
+      trackToolUsed("presets");
+      if (targets.length > 1) trackToolUsed("batch_apply");
       trackPresetApplied(presetAnalyticsKind(preset.id));
     },
     [applyPresetAtIntensity, pushHistory, setAppliedPreset],
@@ -940,6 +960,7 @@ export function useEditorSession({
       // Each photo keeps its own intensity: only the one on screen changes.
       setAppliedPreset([id], preset.id, next);
       applyPresetAtIntensity(preset, next, [id]);
+      trackToolUsed("presets");
       setStatus(`“${preset.name}” intensity ${next}%`);
     },
     [selectedPresetId, applyPresetAtIntensity, setAppliedPreset],
@@ -971,10 +992,12 @@ export function useEditorSession({
 
   const importPreset = useCallback(async (file: File) => {
     try {
+      const sample = await file.slice(0, 8192).text();
       const imported = await readPresetsFromFile(file);
       const existing = new Set(presetsRef.current.map((p) => p.id));
       const fresh = imported.filter((p) => !existing.has(p.id));
       setPresets((prev) => [...fresh, ...prev]);
+      trackToolUsed(presetImportTool(file.name, sample));
       if (imported.length === 1) {
         if (activeIdRef.current)
           setAppliedPreset([activeIdRef.current], imported[0]!.id);
@@ -999,6 +1022,7 @@ export function useEditorSession({
             ? [activeIdRef.current]
             : [];
       if (targets.length === 0) return;
+      if (options.upscale > 1) trackToolUsed("upscale");
       setExportOptions(options);
       setExportOpen(false);
       setStatus(
@@ -1052,7 +1076,8 @@ export function useEditorSession({
         setStatus(message);
         showToast(message);
         trackExportCompleted(written.length, options.format);
-      } catch {
+      } catch (error) {
+        trackExportFailed(options.format, coarseExportReason(error));
         setStatus("Export failed");
         showToast("Export failed", "error");
       }
@@ -1087,6 +1112,7 @@ export function useEditorSession({
             : p,
         ),
       );
+      trackLocalTool(type);
       setPanelFocus("local");
       setStatus(`Added ${preset?.name?.toLowerCase() ?? type} mask`);
     },
@@ -1097,6 +1123,9 @@ export function useEditorSession({
     (maskId: string, patch: LocalAdjustmentPatch) => {
       const id = activeIdRef.current;
       if (!id) return;
+      const photo = photosRef.current.find((p) => p.id === id);
+      const maskType = photo?.edits.localAdjustments.find((item) => item.id === maskId)?.type;
+      if (maskType) trackLocalTool(maskType);
       if (!historyAnchorRef.current) beginEdit();
       setPhotos((prev) =>
         prev.map((photo) => {
@@ -1120,6 +1149,7 @@ export function useEditorSession({
     (maskId: string) => {
       const photo = photosRef.current.find((p) => p.id === activeIdRef.current);
       if (!photo) return;
+      trackLocalTool(photo.edits.localAdjustments.find((item) => item.id === maskId)?.type);
       pushHistory(photo.id, photo.edits);
       setPhotos((prev) =>
         prev.map((p) =>
@@ -1247,6 +1277,7 @@ export function useEditorSession({
 
       if (key === "\\" || key === "|") {
         e.preventDefault();
+        trackToolUsed("compare");
         setCompareMode((v) => !v);
         return;
       }
@@ -1263,6 +1294,7 @@ export function useEditorSession({
       }
       if (key === "j") {
         e.preventDefault();
+        trackToolUsed("histogram");
         setShowClipping((v) => !v);
         return;
       }
@@ -1418,7 +1450,7 @@ export function useEditorSession({
     importPreset,
     setCompareMode,
     toggleSplit,
-    setShowClipping,
+    setShowClipping: setShowClippingTracked,
     setCropMode,
     setExportOpen,
     setExportOptions,

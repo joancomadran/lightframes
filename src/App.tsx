@@ -35,6 +35,7 @@ import { useSheetSwipe } from './hooks/useSheetSwipe'
 import type { StudioApi, StudioFormat } from './hooks/useStudio'
 import { createCarouselDoc, type CarouselDoc } from './lib/carousel'
 import { createCollageDoc, type CollageDoc } from './lib/collage'
+import { trackToolUsed } from './lib/analytics'
 import { aspectRatioFor, fitCropInImage, type FrameSize } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
 import { isRawFile } from './lib/rawDecode'
@@ -261,10 +262,12 @@ export default function App() {
   }
 
   const updateCollage = useCallback((update: (doc: CollageDoc) => CollageDoc) => {
+    trackToolUsed('collage')
     setCollage((doc) => (doc ? update(doc) : doc))
   }, [])
 
   const updateCarousel = useCallback((update: (doc: CarouselDoc) => CarouselDoc) => {
+    trackToolUsed('carousel')
     setCarousel((doc) => (doc ? update(doc) : doc))
   }, [])
 
