@@ -13,9 +13,9 @@ faq:
   - q: "Can Photopea apply my Lightroom .xmp presets?"
     a: "Not as a preset workflow. On GitHub issue 5658 the developer wrote that Photopea’s RAW interface does not support every Adobe Camera Raw option and would discard most of an XMP file."
   - q: "Is Photopea free?"
-    a: "The editor can be used for free, including selling the work you make. Premium is an optional one-time payment for a set number of days (their terms use 90 days as the example) and then the account returns to free. Prices are in the Account window, not repeated here."
+    a: "The editor can be used for free, including selling the work you make. Premium is an optional one-time payment for a set number of days (the terms use 90 days as the example) and then the account returns to free. Prices are in the Account window (https://www.photopea.com/api/accounts)."
   - q: "Which one imports a .cube LUT?"
-    a: "Lightframes imports a .cube file as a preset with an intensity slider. Photopea’s homepage and RAW tutorial do not describe .cube import, so this page does not claim it."
+    a: "Lightframes imports a .cube file as a preset with an intensity slider. Photopea: no documented .cube import (https://www.photopea.com/ and https://www.photopea.com/tuts/open-raw-photos-online/)."
 ---
 
 Lightroom and Camera Raw are trademarks of Adobe. Lightframes is independent and is not affiliated with Adobe or with Photopea.
@@ -29,7 +29,7 @@ Lightroom and Camera Raw are trademarks of Adobe. Lightframes is independent and
 | **Where it runs** | Current Chrome, Edge, Brave, Firefox and Safari. Installable PWA. Editor UI in English. | In the browser, “on any device” ([homepage](https://www.photopea.com/)). No install. |
 | **RAW** | LibRaw in WebAssembly: ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW. Half-size preview from sensor data; export up to 8192 px on the long edge, with an embedded-JPEG fallback. | Homepage lists DNG, CR2, CR3, NEF, ARW, RW2, RAF, ORF and FFF, with exposure, colour balance, contrast, highlights and shadows. The [RAW tutorial](https://www.photopea.com/tuts/open-raw-photos-online/) adds white balance, then Open into the editor or a JPG. |
 | **Lightroom .xmp presets** | Import. Sliders, curves, HSL, colour grading, grain and sharpening are mapped. Profiles, lens corrections and masks are not. | Not a supported preset path. The developer said the RAW interface does not cover every Camera Raw option and would discard most of an XMP ([issue #5658](https://github.com/photopea/photopea/issues/5658)). |
-| **.cube LUTs** | Import as a preset, with intensity. | Not described on the homepage or the RAW tutorial. |
+| **.cube LUTs** | Import as a preset, with intensity. | No documented .cube import ([homepage](https://www.photopea.com/), [RAW tutorial](https://www.photopea.com/tuts/open-raw-photos-online/)). |
 | **AI features** | On device: background removal, subject mask, object removal (MI-GAN from Hugging Face on first use), export upscale. Photos stay on the device. | The homepage advertises one-click background removal and replacing part of an image from a text description, and also says processing is fully local. |
 | **Privacy / uploads** | No photo upload. IndexedDB keeps the session. Cookieless Vercel Web Analytics on page visits. | “Files, which you open in Photopea, are never sent anywhere” ([privacy](https://www.photopea.com/privacy.html)). Logging in stores name, email and preferences on Photopea’s server. Optional cloud storage is the user’s own Dropbox, Drive or OneDrive. |
 | **Batch** | Presets and pasted edits on a selection, ZIP export. Session only, not a catalogue. | Opens the files you choose. The homepage describes layers, masks, smart objects and PSD open/save, not a photo library or an export queue. |

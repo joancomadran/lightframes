@@ -24,15 +24,15 @@ Lightroom and Camera Raw are trademarks of Adobe. Lightframes is an independent 
 
 | | **Lightframes** | **Lightroom** |
 | --- | --- | --- |
-| **Price** | Free. No trial and no paid tier. | Subscription. Desktop activation needs an internet connection and acceptance of the licence agreement ([system requirements](https://helpx.adobe.com/lightroom-cc/system-requirements.html)). This page does not quote a price, because Adobe’s plans differ by country. |
+| **Price** | Free. No trial and no paid tier. | Subscription ([Adobe plans](https://www.adobe.com/creativecloud/plans.html)). Desktop activation needs an internet connection and acceptance of the licence agreement ([system requirements](https://helpx.adobe.com/lightroom-cc/system-requirements.html)). |
 | **Licence** | [MIT](https://github.com/joancomadran/lightframes). | Proprietary. The system requirements say the product may not be available in every country and can change. |
 | **Where it runs** | The browser: Chrome, Edge, Brave, Firefox and Safari on computers, and mobile browsers. PWA. Editor UI in English. | Desktop system requirements list Windows and macOS (current notes: Windows 11 24H2 or later; macOS Sequoia 15 or Tahoe 26), not Linux. Mobile RAW editing for Creative Cloud members includes iPad, iPhone, Android and Chromebook ([mobile FAQ](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)). |
 | **RAW** | LibRaw in WebAssembly for ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF and SRW. Free, in the browser. | The mobile FAQ lists raw editing as a premium feature. A Creative Cloud membership is what that FAQ requires to import and edit raw files on a phone, tablet or Chromebook. |
 | **Lightroom .xmp presets** | Import a `.xmp` from disk. Profiles, lens corrections and masks in the file are skipped, so the look can differ. | This is the app those presets are written for. The mobile FAQ’s free tier is not the same as syncing your preset library; cloud sync needs a membership. |
-| **.cube LUTs** | Import as a preset with an intensity slider. | Not described on the Adobe pages cited here, so this row does not claim a Lightroom `.cube` importer. |
+| **.cube LUTs** | Import as a preset with an intensity slider. | No documented .cube import. |
 | **AI features** | On-device background removal, subject mask, object removal and export upscale. Models download once; photos are not sent with them. | The desktop [system requirements](https://helpx.adobe.com/lightroom-cc/system-requirements.html) name AI features such as Denoise, Lens Blur and Reflection Removal. The mobile FAQ lists Sensei-powered search under premium. |
 | **Privacy / uploads** | Photos are not uploaded. The session stays in IndexedDB. Visits use cookieless analytics. | The mobile FAQ says photos are backed up to the cloud and originals are stored in Creative Cloud, and that you can keep working from other devices with an active subscription. |
-| **Batch** | Copy/paste and preset on a selection, then one ZIP. No synced catalogue. | The mobile FAQ lists batch editing as premium. Desktop Lightroom is a library app with export; this page does not invent a desktop batch limit. |
+| **Batch** | Copy/paste and preset on a selection, then one ZIP. No synced catalogue. | Batch editing is a premium feature in the mobile app ([mobile FAQ](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html)). |
 
 ## When Lightroom is the better choice
 
@@ -46,4 +46,4 @@ Use Lightframes when you want those `.xmp` files, or a `.cube` LUT, on a compute
 
 It will not sync a catalogue or store originals in a cloud library. For a free installed raw library instead of a browser session, read [Lightframes vs darktable](/compare/lightframes-vs-darktable). For layers and PSD, read [Lightframes vs Photopea](/compare/lightframes-vs-photopea). The roundup of several free tools is [free Lightroom alternatives](/blog/free-lightroom-alternatives).
 
-Adobe’s plan matrix for web and mobile access is separate from the free mobile tier and is written for North American individual plans ([web and mobile access](https://helpx.adobe.com/creative-cloud/policy-pricing/cc-app-web-mobile-access.html)). Check that page before assuming a given Lightroom-on-the-web feature is included.
+For North American individual plans, Adobe lists Lightroom on the web apart from the free mobile tier ([web and mobile access](https://helpx.adobe.com/creative-cloud/policy-pricing/cc-app-web-mobile-access.html)).

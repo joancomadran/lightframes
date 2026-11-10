@@ -26,12 +26,12 @@ Lightframes is a free, open-source (MIT) photo editor that runs entirely in the 
 
 RAW extensions the editor accepts are `.arw`, `.cr2`, `.cr3`, `.nef`, `.nrw`, `.dng`, `.raf`, `.orf`, `.rw2`, `.pef` and `.srw`. The editing preview is a half-size 16-bit decode. Export develops the sensor data again, up to 8192 px on the long edge, and falls back to the camera’s embedded JPEG if LibRaw cannot develop that file.
 
-Presets → Import reads a Lightroom or Camera Raw `.xmp`, a Lightframes JSON preset or a `.cube` LUT, with intensity from 0 to 100%. Copy and paste edits across the filmstrip and export a selection as a ZIP. The editor interface is English; this page is the English guide.
+Presets → Import reads a Lightroom or Camera Raw `.xmp`, a Lightframes JSON preset or a `.cube` LUT, with intensity from 0 to 100%. Copy and paste edits across the filmstrip and export a selection as a ZIP. The editor interface is English.
 
 Chrome on ChromeOS is a Chromium browser, so Open can use the file picker and Folder can use the directory picker. Both read local files. There is no separate Lightframes package to install from the Play Store or from Linux.
 
 ## What this is not
 
-darktable publishes builds for Linux, macOS, Windows and BSD ([install](https://www.darktable.org/install/), [features](https://www.darktable.org/about/features/)). It is not a browser app, and this page does not claim a ChromeOS package. If you need its library and modules, that is a desktop install, covered in [Lightframes vs darktable](/compare/lightframes-vs-darktable).
+darktable publishes builds for Linux, macOS, Windows and BSD ([install](https://www.darktable.org/install/), [features](https://www.darktable.org/about/features/)). It is not a browser app, and that install page has no ChromeOS package. If you need its library and modules, that is a desktop install, covered in [Lightframes vs darktable](/compare/lightframes-vs-darktable).
 
 Adobe’s [mobile FAQ](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html) says a Creative Cloud member can import and edit raw files in Lightroom for mobile on a Chromebook, and lists raw editing, batch editing and cloud sync as premium. The free tier is capture, organisation, sharing and most basic edits. See [Lightframes vs Lightroom](/compare/lightframes-vs-lightroom) for the wider split, and the [roundup](/blog/free-lightroom-alternatives) if you are still choosing a tool.

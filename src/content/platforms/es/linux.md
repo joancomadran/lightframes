@@ -13,7 +13,7 @@ faq:
   - q: "¿Me conviene instalar darktable?"
     a: "Instálalo si quieres catálogo, disparo conectado y el revelado de escritorio. Es GPL, versión 3 o posterior, y su FAQ dice que los presets de Lightroom no son compatibles. La build Flatpak, a septiembre de 2026, no incluye las funciones de IA de darktable."
   - q: "¿Hay Lightroom de escritorio para Linux?"
-    a: "La página de requisitos de Lightroom lista Windows y macOS para la app de escritorio. No lista Linux. Lightroom en la web es otro producto, según el plan; mira la página de planes de Adobe antes de darlo por incluido."
+    a: "Los requisitos de Lightroom listan Windows y macOS para la app de escritorio, no Linux. Lightroom en la web aparece aparte en la página de acceso web y móvil de Adobe (https://helpx.adobe.com/creative-cloud/policy-pricing/cc-app-web-mobile-access.html)."
   - q: "¿Puedo exportar por lotes desde el navegador?"
     a: "Sí. Selecciona fotos, pega ajustes o aplica un preset y exporta un ZIP de JPEG, PNG o WebP. No hay un catálogo a largo plazo en el navegador; la sesión es IndexedDB en ese equipo."
 ---

@@ -13,7 +13,7 @@ faq:
   - q: "Should I install darktable instead?"
     a: "Install it if you want a catalogue, tethered shooting and the desktop pipeline. It is GPL, version 3 or later, and its FAQ says presets from Lightroom are not compatible. The Flatpak build, as of September 2026, does not include darktable’s AI features."
   - q: "Is there a Lightroom desktop app for Linux?"
-    a: "The Lightroom system requirements page lists Windows and macOS for the desktop app. It does not list Linux. Lightroom on the web is a separate, plan-based product; check Adobe’s plan page before assuming it is included."
+    a: "The Lightroom system requirements list Windows and macOS for the desktop app, not Linux. Lightroom on the web is a separate listing on Adobe’s web and mobile access page (https://helpx.adobe.com/creative-cloud/policy-pricing/cc-app-web-mobile-access.html)."
   - q: "Can I batch-export from the browser?"
     a: "Yes. Select photos, paste edits or apply a preset, and export a ZIP of JPEG, PNG or WebP files. There is no long-term catalogue in the browser; the session is IndexedDB on that machine."
 ---
