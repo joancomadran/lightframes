@@ -8,7 +8,7 @@ import { z } from 'astro/zod'
  */
 
 /** Keep "<lang>/<file>" as the id: the default would use the frontmatter `slug` and drop the language folder. */
-const byPath = ({ entry }: { entry: string }) => entry.replace(/\.(md|json)$/, '')
+const byPath = ({ entry }: { entry: string }) => entry.replace(/\.(mdx|md|json)$/, '')
 
 const faqItem = z.object({ q: z.string(), a: z.string() })
 
@@ -50,7 +50,7 @@ const tools = defineCollection({
 })
 
 const blog = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/blog', generateId: byPath }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog', generateId: byPath }),
   schema: z.object({
     ...seo,
     h1: z.string().optional(),

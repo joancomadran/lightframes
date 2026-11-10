@@ -1,3 +1,4 @@
+import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import { readFileSync } from 'node:fs'
@@ -63,6 +64,7 @@ export default defineConfig({
   build: { format: 'file' },
   integrations: [
     react(),
+    mdx(),
     sitemap({
       filter: (page) => !/\/404$/.test(page),
       serialize,
