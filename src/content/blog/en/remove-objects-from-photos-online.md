@@ -5,7 +5,7 @@ title: "How to Remove Objects from Photos Online (Free, No Upload)"
 description: "Remove objects, people and blemishes from photos online for free in your browser. Heal, Clone or AI Remove in Lightframes — no upload, no account."
 h1: "How do you remove objects from photos online for free without uploading them?"
 published: 2026-11-05
-author: Joan Comadran
+author: Lightframes
 tags: ["guides", "retouch"]
 tools: ["remove-objects", "background-remover", "raw-editor", "batch"]
 keywords:

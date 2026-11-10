@@ -11,6 +11,15 @@ const APP_ID = `${SITE.url}/#app`
 // Same @id as the Person node on joancomadran.dev, so both sites describe one entity
 const AUTHOR_ID = `${SITE.author.url}/#person`
 
+/** Author and publisher on articles: the project, with no personal profile. */
+export function publishingOrganization(): Node {
+  return {
+    '@type': 'Organization',
+    name: SITE.name,
+    url: SITE.url,
+  }
+}
+
 export function organization(): Node {
   return {
     '@type': 'Organization',
@@ -19,7 +28,6 @@ export function organization(): Node {
     url: SITE.url,
     logo: absoluteUrl('/pwa-512x512.png'),
     sameAs: [SITE.github],
-    founder: { '@id': AUTHOR_ID },
   }
 }
 
@@ -46,7 +54,8 @@ export function website(lang: Lang): Node {
 }
 
 /** Structured data for the editor app (home, tool pages, key landings). */
-export function softwareApplication(lang: Lang, featureList: string[]): Node {
+export function softwareApplication(lang: Lang, featureList: string[], authorNode?: Node): Node {
+  const credit = authorNode ?? { '@id': AUTHOR_ID }
   return {
     '@type': 'SoftwareApplication',
     '@id': APP_ID,
@@ -64,8 +73,8 @@ export function softwareApplication(lang: Lang, featureList: string[]): Node {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
     license: SITE.license,
     codeRepository: SITE.github,
-    author: { '@id': AUTHOR_ID },
-    creator: { '@id': AUTHOR_ID },
+    author: credit,
+    creator: credit,
     screenshot: absoluteUrl('/site/shots/editor.jpg'),
     featureList,
     publisher: { '@id': ORG_ID },
@@ -157,8 +166,8 @@ export function blogPosting(opts: {
     dateModified: (opts.updated ?? opts.published).toISOString(),
     image: absoluteUrl(opts.image),
     keywords: opts.keywords.join(', ') || undefined,
-    author: { '@id': AUTHOR_ID },
-    publisher: { '@id': ORG_ID },
+    author: publishingOrganization(),
+    publisher: publishingOrganization(),
   }
 }
 

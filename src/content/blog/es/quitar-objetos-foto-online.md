@@ -5,7 +5,7 @@ title: "Cómo quitar objetos de una foto online gratis (sin subirla)"
 description: "Quita objetos, personas y manchas de tus fotos online y gratis en el navegador. Corrector, clonar o borrado con IA en Lightframes, sin subir la foto."
 h1: "¿Cómo quitar objetos de una foto online gratis sin subir la imagen?"
 published: 2026-11-05
-author: Joan Comadran
+author: Lightframes
 tags: ["guias", "retoque"]
 tools: ["remove-objects", "background-remover", "raw-editor", "batch"]
 keywords:

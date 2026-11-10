@@ -12,11 +12,9 @@ Lightframes es un editor de fotos gratuito que funciona entero en tu navegador. 
 
 ## ¿Quién está detrás de Lightframes?
 
-Lightframes lo desarrolla y lo mantiene **Joan Comadran**, desarrollador independiente. Es un proyecto personal, no el producto de una empresa: no hay equipo, ni inversores, ni departamento comercial.
+Lightframes es un proyecto personal independiente, no el producto de una empresa: no hay equipo, ni inversores, ni departamento comercial.
 
-<!-- TODO: añadir una línea breve y comprobable sobre Joan (dónde vive, relación con la fotografía o el desarrollo, enlace a web o perfil) si quiere. Solo datos verificables. -->
-
-Las fotos de ejemplo que trae el editor son de Joan, reveladas a partir de sus propios RAW.
+Las fotos de ejemplo que trae el editor se revelaron a partir de archivos RAW incluidos con el proyecto.
 
 ## ¿Por qué existe?
 
@@ -54,7 +52,7 @@ Mantener la web cuesta dinero y desarrollarla lleva tiempo, así que Lightframes
 
 - **Un pequeño espacio publicitario en la app, siempre señalizado.** Ahora mismo muestra tarjetas de afiliado con material fotográfico.
 - **Enlaces de afiliado.** La [página de equipo](/es/equipo) y esas tarjetas enlazan a productos de Amazon.es. Si compras algo a través de ellos, Lightframes se lleva una pequeña comisión sin que a ti te cueste más. Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables.
-- **Donaciones voluntarias.** Si el editor te ahorra tiempo, puedes [invitar a Joan a un café](https://buymeacoffee.com/devcoma).
+- **Donaciones voluntarias.** Si el editor te ahorra tiempo, puedes [apoyar el proyecto](https://buymeacoffee.com/devcoma).
 
 Nada de esto tiene que ver con tus fotos. La web cuenta las visitas con Vercel Web Analytics, que no ve las imágenes que abres en el editor.
 
@@ -62,7 +60,7 @@ Nada de esto tiene que ver con tus fotos. La web cuenta las visitas con Vercel W
 
 ## ¿Es de código abierto?
 
-Sí. Todo el código está en GitHub, en [github.com/joancomadran/lightframes](https://github.com/joancomadran/lightframes), con licencia MIT. Puedes ver exactamente qué hace la app con tus archivos, montar tu propia copia o construir sobre ella. La excepción son las fotos de ejemplo del repositorio: son © del autor y no están cubiertas por la licencia MIT.
+Sí. Todo el código está en GitHub, en [github.com/joancomadran/lightframes](https://github.com/joancomadran/lightframes), con licencia MIT. Puedes ver exactamente qué hace la app con tus archivos, montar tu propia copia o construir sobre ella. La excepción son las fotos de ejemplo del repositorio: no están cubiertas por la licencia MIT.
 
 Una estrella en el repositorio ayuda a que más gente descubra el proyecto.
 
@@ -74,6 +72,6 @@ La mejor vía es GitHub:
 - **¿Tienes una idea?** Abre una incidencia contando qué intentas hacer. Un ejemplo concreto ayuda más que el nombre de una función.
 - **¿Quieres aportar código?** Los pull requests son bienvenidos. Para algo más grande que un arreglo pequeño, abre antes una incidencia y acordáis el enfoque.
 
-<!-- TODO: añadir un email o formulario de contacto si Joan quiere publicarlo. -->
+<!-- TODO: añadir un email o formulario de contacto si hay que publicarlo. -->
 
 Todos los cambios de la app están en [novedades](/es/novedades).

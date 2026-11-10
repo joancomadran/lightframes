@@ -66,7 +66,6 @@ export const ui = {
       privacy: 'Privacy',
       cookies: 'Cookies',
       terms: 'Legal notice & terms',
-      madeBy: 'Made by',
       affiliate:
         'Some gear links are Amazon affiliate links: as an Amazon Associate, Lightframes earns from qualifying purchases.',
     },
@@ -86,7 +85,6 @@ export const ui = {
       rss: 'RSS feed',
     },
     post: {
-      by: 'By',
       published: 'Published',
       updated: 'Updated',
       tryIt: 'Try it in Lightframes',
@@ -179,7 +177,6 @@ export const ui = {
       privacy: 'Privacidad',
       cookies: 'Cookies',
       terms: 'Aviso legal',
-      madeBy: 'Hecho por',
       affiliate:
         'Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables.',
     },
@@ -200,7 +197,6 @@ export const ui = {
       rss: 'Feed RSS',
     },
     post: {
-      by: 'Por',
       published: 'Publicado',
       updated: 'Actualizado',
       tryIt: 'Pruébalo en Lightframes',

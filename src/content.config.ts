@@ -56,7 +56,7 @@ const blog = defineCollection({
     h1: z.string().optional(),
     published: z.coerce.date(),
     updated: z.coerce.date().optional(),
-    author: z.string().default('Joan Comadran'),
+    author: z.string().default('Lightframes'),
     tags: z.array(z.string()).default([]),
     /** Tool keys this post links to; rendered as "Try it" cards. */
     tools: z.array(z.string()).default([]),

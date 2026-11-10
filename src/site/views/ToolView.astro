@@ -8,7 +8,7 @@ import { absoluteUrl } from '../config'
 import { entryAlternates, entryPath, getTools, type Tool } from '../content'
 import { formatDate, href, langOf, ui } from '../i18n'
 import Base from '../layouts/Base.astro'
-import { breadcrumbs, faqPage, howTo, webApplication, webPage } from '../schema'
+import { breadcrumbs, faqPage, howTo, publishingOrganization, webApplication, webPage } from '../schema'
 
 interface Props {
   tool: Tool
@@ -43,7 +43,7 @@ const crumbs = [
   schema={[
     webPage({ url, name: data.h1, description: data.description, lang, updated: data.updated }),
     breadcrumbs(crumbs),
-    webApplication(lang, tools.map((other) => other.data.label)),
+    webApplication(lang, tools.map((other) => other.data.label), publishingOrganization()),
     ...(data.steps.length ? [howTo(url, data.h1, data.steps)] : []),
     ...(data.faq.length ? [faqPage(url, data.faq)] : []),
   ]}

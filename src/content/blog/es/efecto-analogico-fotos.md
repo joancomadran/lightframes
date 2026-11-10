@@ -5,7 +5,7 @@ title: "Cómo dar efecto analógico a tus fotos"
 description: "Consigue un efecto analógico de verdad en tus fotos digitales: negros lavados, luces suaves, color de carrete y grano. Paso a paso, gratis y en el navegador."
 h1: "Cómo dar a tus fotos digitales un efecto analógico, de carrete"
 published: 2026-10-22
-author: Joan Comadran
+author: Lightframes
 tags: ["film", "guias"]
 tools: ["presets", "lut", "raw-editor", "batch"]
 keywords:

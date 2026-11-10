@@ -5,7 +5,7 @@ title: "Free Lightroom Alternatives Compared Honestly"
 description: "Free Lightroom alternatives for RAW and XMP presets: Lightframes in your browser, plus darktable, RawTherapee and Photopea. Honest pros, cons and who each fits."
 h1: "Free Lightroom alternatives for RAW editing and presets"
 published: 2026-10-29
-author: Joan Comadran
+author: Lightframes
 tags: ["guides", "presets", "raw"]
 tools: ["raw-editor", "presets", "lut", "batch", "raw-to-jpg", "remove-objects", "carousel", "collage"]
 keywords:

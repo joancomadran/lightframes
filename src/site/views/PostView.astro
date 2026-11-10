@@ -4,7 +4,7 @@ import Breadcrumbs from '../components/Breadcrumbs.astro'
 import FaqList from '../components/FaqList.astro'
 import ToolList from '../components/ToolList.astro'
 import { SITE, absoluteUrl } from '../config'
-import { entryAlternates, entryPath, pagePath, type Post } from '../content'
+import { entryAlternates, entryPath, type Post } from '../content'
 import { formatDate, href, langOf, ui } from '../i18n'
 import Base from '../layouts/Base.astro'
 import { blogPosting, breadcrumbs, faqPage } from '../schema'
@@ -26,7 +26,6 @@ const crumbs = [
   { name: t.blog, path: href('blog', lang) },
   { name: headline, path },
 ]
-const aboutPath = await pagePath('about', lang)
 const url = absoluteUrl(path)
 ---
 
@@ -59,8 +58,7 @@ const url = absoluteUrl(path)
     <header class="page-head">
       <h1>{headline}</h1>
       <p class="meta">
-        {t.post.by} <a href={aboutPath} rel="author">{data.author}</a>
-        {', '}
+        {t.post.published}{' '}
         <time datetime={data.published.toISOString()}>{formatDate(data.published, lang)}</time>
         {
           data.updated && (
