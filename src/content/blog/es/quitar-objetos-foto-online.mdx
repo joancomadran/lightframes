@@ -30,7 +30,11 @@ faq:
     a: "Sí. La eliminación de manchas funciona en JPEG, PNG y RAW de cámara abiertos en Lightframes, en la misma sesión que exposición y color. En la página de [editor RAW](/es/herramientas/editor-fotos-raw) y en la guía de [editar RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador) tienes más detalle de formatos."
 ---
 
-**Puedes quitar objetos de una foto online gratis sin subirla** abriendo [Lightframes](/editor), yendo a la pestaña **Retouch** y pintando encima de lo que quieras eliminar con **Heal** (corrector), **Clone** (clonar) o **Remove** (borrado con IA). Todo el flujo — abrir archivo, retocar, revelar y exportar — ocurre en el navegador; **la foto no se sube a ningún servidor**. Los controles paso a paso están en [borrar objetos de una foto](/es/herramientas/borrar-objetos-foto).
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Puedes quitar objetos de una foto online gratis sin subirla** abriendo [Lightframes](/es/editor), yendo a la pestaña **Retouch** y pintando encima de lo que quieras eliminar con **Heal** (corrector), **Clone** (clonar) o **Remove** (borrado con IA). Todo el flujo — abrir archivo, retocar, revelar y exportar — ocurre en el navegador; **la foto no se sube a ningún servidor**. Los controles paso a paso están en [borrar objetos de una foto](/es/herramientas/borrar-objetos-foto).
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
 
 ## ¿Cuándo conviene Corrector, clonar o Remove?
 
@@ -54,7 +58,7 @@ En **Remove**, la primera vez que eliges el modo se descarga el modelo **una sol
 
 La interfaz del editor está en inglés; los nombres de abajo son los que verás en pantalla.
 
-1. **Abre el editor** en [/editor](/editor) y pulsa **Open** (o **Open photos**). Valen JPEG, PNG y RAW de cámara; en RAW las manchas siguen siendo pasos editables hasta exportar ([editor RAW](/es/herramientas/editor-fotos-raw)).
+1. **Abre el editor** en [/es/editor](/es/editor) y pulsa **Open** (o **Open photos**). Valen JPEG, PNG y RAW de cámara; en RAW las manchas siguen siendo pasos editables hasta exportar ([editor RAW](/es/herramientas/editor-fotos-raw)).
 2. **Entra en la pestaña Retouch.** En **Spot removal**, elige **Heal**, **Clone** o **Remove**.
 3. **Ajusta Size, Feather y Opacity** antes de pintar. **Size** es el radio del pincel (0,2–10 como porcentaje del lado largo). **Feather** suaviza el borde (30 % por defecto). **Opacity** controla cuánto tapa el arreglo el original (5–100 %).
 4. **Pinta encima de lo que quieras quitar.** Un clic para un punto pequeño o arrastra para un trazo. Con **Remove**, espera a que termine cada mancha antes de abrir otra zona grande: se procesan en orden.
@@ -100,4 +104,6 @@ Lightroom y Camera Raw tienen sus propias herramientas de saneamiento en flujos 
 
 Las entradas del bloque faq de esta página cubren gratuidad, subida de archivos, elección de modo, borrar personas, **Remove** sin conexión tras la caché del modelo y soporte RAW. Para atajos y detalle de la herramienta, mira [borrar objetos de una foto](/es/herramientas/borrar-objetos-foto).
 
-¿Lo pruebas? [Abre el editor](/editor), carga una foto, entra en **Retouch** y pinta una distracción con **Heal** o **Remove**.
+¿Lo pruebas? [Abre el editor](/es/editor), carga una foto, entra en **Retouch** y pinta una distracción con **Heal** o **Remove**.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />

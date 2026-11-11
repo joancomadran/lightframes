@@ -19,9 +19,13 @@ keywords:
   - photopea raw online
 ---
 
-**En resumen:** si quieres **aplicar presets `.xmp` o LUTs `.cube` de Lightroom sin instalar nada** y que tus **RAW no se suban a un servidor**, abre [Lightframes](/editor) en el navegador de un ordenador — o la guía [usar presets XMP sin Lightroom](/es/presets-xmp-sin-lightroom). Para un **catálogo RAW de escritorio con ajustes locales modulares**, **darktable** y **RawTherapee** (gratis, GPLv3) van más lejos, pero **no leen presets de revelado de Lightroom**. **Photopea** edita por **capas** en el navegador y abre muchos RAW con ajustes básicos, pero **no sustituye un flujo de presets XMP**. La app **gratis de Lightroom para móvil** cubre captura y edición básica; el **revelado RAW, los ajustes selectivos, el lote y los presets sincronizados** están en planes de pago, según la [FAQ de Lightroom móvil de Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**En resumen:** si quieres **aplicar presets `.xmp` o LUTs `.cube` de Lightroom sin instalar nada** y que tus **RAW no se suban a un servidor**, abre [Lightframes](/es/editor) en el navegador de un ordenador — o la guía [usar presets XMP sin Lightroom](/es/presets-xmp-sin-lightroom). Para un **catálogo RAW de escritorio con ajustes locales modulares**, **darktable** y **RawTherapee** (gratis, GPLv3) van más lejos, pero **no leen presets de revelado de Lightroom**. **Photopea** edita por **capas** en el navegador y abre muchos RAW con ajustes básicos, pero **no sustituye un flujo de presets XMP**. La app **gratis de Lightroom para móvil** cubre captura y edición básica; el **revelado RAW, los ajustes selectivos, el lote y los presets sincronizados** están en planes de pago, según la [FAQ de Lightroom móvil de Adobe](https://helpx.adobe.com/mobile-apps/help/lightroom-mobile-faq.html).
 
 **Lightframes es un editor de fotos gratis y open source (MIT) que funciona entero en el navegador.** Las fotos se procesan en tu dispositivo y no se suben.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
 
 Para un editor cada vez, usa las comparativas: [Lightframes o darktable](/es/comparar/lightframes-vs-darktable), [Lightframes o Photopea](/es/comparar/lightframes-vs-photopea) y [Lightframes o Lightroom](/es/comparar/lightframes-vs-lightroom). Por equipo: [Chromebook](/es/para/chromebook), [Mac](/es/para/mac), [Linux](/es/para/linux) e [iPad](/es/para/ipad). Esta guía sigue siendo el resumen.
 
@@ -103,7 +107,7 @@ Si lo que buscas es **usar tus `.xmp` comprados en el portátil sin pagar Lightr
 
 ## Cómo cambiar: tus presets Lightroom (`.xmp`) sin Lightroom
 
-1. **Elige un editor que importe revelado XMP.** En Lightframes, abre el [editor](/editor), **Presets → Import** y elige el `.xmp` (o un `.cube`). Detalle en [presets para fotos](/es/herramientas/presets-fotos).
+1. **Elige un editor que importe revelado XMP.** En Lightframes, abre el [editor](/es/editor), **Presets → Import** y elige el `.xmp` (o un `.cube`). Detalle en [presets para fotos](/es/herramientas/presets-fotos).
 2. **Parte de una foto representativa.** Aplica el preset, ajusta la **intensidad** y corrige **exposición y balance de blancos** en cada toma.
 3. **Extiende el estilo a la sesión.** **Ctrl/Cmd+C**, selecciona el resto en la tira, **Ctrl/Cmd+V** y marca solo los grupos que quieras (por ejemplo **Tone curve** y **HSL**, no **Crop**). Exporta en ZIP desde [editar por lotes](/es/herramientas/editar-fotos-por-lotes).
 4. **Copia de seguridad.** Descarga tus presets como JSON por si borras datos del navegador.
@@ -131,4 +135,6 @@ Lightframes funciona en navegadores móviles, pero los RAW grandes van mejor en 
 **¿Qué elijo si solo disparo JPEG con presets comprados?**
 Lightframes: importa `.xmp`, intensidad, pega en la carpeta, exporta. Photopea si también necesitas **capas y PSD**. darktable/RawTherapee si montas un **archivo de escritorio** y recreas looks con estilos o LUTs nativos.
 
-¿Lo pruebas? [Abre Lightframes](/editor), importa un `.xmp` en **Presets** y mira la guía de [presets para fotos](/es/herramientas/presets-fotos).
+¿Lo pruebas? [Abre Lightframes](/es/editor), importa un `.xmp` en **Presets** y mira la guía de [presets para fotos](/es/herramientas/presets-fotos).
+
+<EditorCta lang="es" label="Abrir el editor gratis" />

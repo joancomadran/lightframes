@@ -39,12 +39,14 @@ faq:
     a: "Exports are developed from the full-resolution sensor data, up to 8192 px on the long edge. You can also choose a smaller long edge or a fixed social-media size."
   - q: "Is there a cost or a watermark?"
     a: "No. Lightframes is free and open source under the MIT license, and it adds no watermark unless you turn one on yourself in the export dialog."
-updated: 2026-10-20
+updated: 2026-11-11
 ---
 
 ## What this RAW editor is and who it's for
 
 Lightframes is a free RAW photo editor that runs entirely in a web browser, built for photographers who want to develop camera files without installing software, signing up or sending their pictures to a cloud service. It suits a quick edit on a borrowed laptop, a look at a card of files while travelling, or a full editing session on your own computer. The code is open source under the MIT license.
+
+If you would rather install a desktop RAW catalogue, see [free Lightroom alternatives](/blog/free-lightroom-alternatives): it compares Lightframes with darktable, RawTherapee and Photopea.
 
 ## How RAW decoding works, and why nothing is uploaded
 

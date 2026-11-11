@@ -1,10 +1,11 @@
 ---
 key: film-look
 slug: efecto-analogico-fotos
-title: "Cómo dar efecto analógico a tus fotos"
-description: "Consigue un efecto analógico de verdad en tus fotos digitales: negros lavados, luces suaves, color de carrete y grano. Paso a paso, gratis y en el navegador."
+title: "Efecto analógico gratis en el navegador"
+description: "Da un efecto analógico a tus fotos gratis en el navegador. No se sube nada. Negros lavados, grano, o un look de película del pack gratis de presets y LUTs."
 h1: "Cómo dar a tus fotos digitales un efecto analógico, de carrete"
 published: 2026-10-22
+updated: 2026-11-11
 author: Lightframes
 tags: ["film", "guias"]
 tools: ["presets", "lut", "raw-editor", "batch"]
@@ -18,7 +19,11 @@ keywords:
   - efecto carrete fotos
 ---
 
-**En resumen:** el aspecto de carrete sale de cuatro cambios, por este orden: levantar los negros para que nada sea negro puro, suavizar las luces, mover el color (sombras y luces más cálidas, verdes y azules más apagados, algo menos de saturación) y añadir un grano fino. En [Lightframes](/editor) eso está en la pestaña **Curve** (o la curva **Matte**), en **Adjust**, en **Color** y en **Effects → Grain**. Si quieres ir rápido, aplica el filtro **Warm Film**, **Japan Film** o **Analog Dreamy** y bájale la intensidad. Es gratis y la foto no sale de tu dispositivo.
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**En resumen:** el aspecto de carrete sale de cuatro cambios, por este orden: levantar los negros para que nada sea negro puro, suavizar las luces, mover el color (sombras y luces más cálidas, verdes y azules más apagados, algo menos de saturación) y añadir un grano fino. En [Lightframes](/es/editor) eso está en la pestaña **Curve** (o la curva **Matte**), en **Adjust**, en **Color** y en **Effects → Grain**. Si quieres ir rápido, aplica el filtro **Warm Film**, **Japan Film** o **Analog Dreamy** y bájale la intensidad. Es gratis y la foto no sale de tu dispositivo.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
 
 ## ¿Qué hace que una foto parezca de carrete?
 
@@ -38,7 +43,7 @@ Cada paso de abajo corresponde a una fila. Sigue este orden: el tono cambia cóm
 
 ## ¿Cómo se consigue el efecto analógico en Lightframes, paso a paso?
 
-Abre el [editor](/editor), pulsa **Open** y elige una foto. Lo ideal es partir de un RAW, porque tiene más margen en luces y color (lo contamos en [cómo editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador)), pero también vale un JPEG o un PNG. La interfaz está en inglés, así que te dejamos los nombres tal como aparecen en pantalla.
+Abre el [editor](/es/editor), pulsa **Open** y elige una foto. Lo ideal es partir de un RAW, porque tiene más margen en luces y color (lo contamos en [cómo editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador)), pero también vale un JPEG o un PNG. La interfaz está en inglés, así que te dejamos los nombres tal como aparecen en pantalla.
 
 1. **Ajusta la exposición base.** En **Adjust → Light**, deja bien el brillo con **Exposure** antes de nada. Un efecto de carrete sobre una foto oscura y subexpuesta solo queda sucio.
 2. **Baja el contraste.** Lleva **Contrast** a algún punto entre −10 y −30. Los filtros de película que trae la app se mueven por ahí: Warm Film usa −10 y Japan Film llega a −40.
@@ -64,6 +69,8 @@ Si no quieres montar el estilo desde cero, en la pestaña **Presets** hay filtro
 - **B&W Matte:** blanco y negro con los negros levantados y un grano más gordo.
 
 Haz clic en un filtro y baja **Intensity**; muchas fotos quedan mejor entre el 50% y el 80%. El filtro sustituye los ajustes de tono y color, así que aplícalo primero y retoca después. El recorte y los retoques se mantienen.
+
+El [pack gratis de presets y LUTs](/es/presets-luts-gratis) incluye ocho looks en CC0, cada uno como `.xmp` y `.cube`. Rosa desvanecido es el de película desvaída: sombras rosadas y piel cremosa. Importa el archivo en **Presets → Import**, o abre ese look desde la página del pack. La foto no se sube.
 
 Si tienes LUTs de emulación de película, importa el archivo `.cube` desde **Presets → Import**. La LUT se aplica después del resto de ajustes, de modo que la exposición y el balance de blancos le sirven de punto de partida. En [aplicar una LUT a una foto](/es/herramientas/aplicar-lut-foto) tienes qué archivos funcionan.
 
@@ -96,4 +103,6 @@ Sí, el editor funciona en móviles y tabletas, y los filtros de película y el 
 **¿Es gratis? ¿Se sube mi foto a algún sitio?**
 Es gratis, sin cuenta, y no se sube nada: la foto se edita y se exporta dentro de tu navegador. Lightframes es código abierto con licencia MIT ([GitHub](https://github.com/joancomadran/lightframes)).
 
-¿Lo pruebas? [Abre el editor](/editor), carga una foto y empieza por la curva **Matte**.
+¿Lo pruebas? [Abre el editor](/es/editor), carga una foto y empieza por la curva **Matte**.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />

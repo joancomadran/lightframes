@@ -1,10 +1,11 @@
 ---
 key: film-look
 slug: make-photos-look-like-film
-title: "How to Make Digital Photos Look Like Film"
-description: "Give digital photos a real film look for free: lift the blacks, soften highlights, shift colours, add grain. A step-by-step recipe that runs in your browser."
+title: "Free Film Look in Your Browser — No Upload"
+description: "Make photos look like film for free in your browser. Nothing is uploaded. Lift the blacks, add grain, or start from the free presets and LUTs pack."
 h1: "How to make digital photos look like film"
 published: 2026-10-22
+updated: 2026-11-11
 author: Lightframes
 tags: ["film", "guides"]
 tools: ["presets", "lut", "raw-editor", "batch"]
@@ -18,7 +19,11 @@ keywords:
   - faded film look
 ---
 
+import EditorCta from '../../../site/components/EditorCta.astro'
+
 **Short answer:** a film look comes from four changes, in this order: lift the blacks so nothing is pure black, soften the highlights, shift the colours (warmer shadows and highlights, calmer greens and blues, a bit less saturation) and add fine grain. In [Lightframes](/editor) that's the **Curve** tab (or the **Matte** curve), **Adjust**, **Color** and **Effects → Grain**. For a one-click start, apply the built-in **Warm Film**, **Japan Film** or **Analog Dreamy** filter and lower its intensity. It's free, and the photo never leaves your device.
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
 
 ## What actually makes a photo look like film?
 
@@ -65,6 +70,8 @@ If you'd rather not build the look from scratch, the **Presets** tab includes re
 
 Click a filter, then drag **Intensity** down; many photos look best between 50% and 80%. A filter replaces the tone and colour sliders, so apply it first and fine-tune afterwards. Your crop and retouching stay as they are.
 
+The [free presets and LUTs pack](/free-presets-luts) is eight CC0 looks, each as an `.xmp` and a `.cube`. Rose Fade is the faded-film one: pink shadows and creamy skin tones. Import either file under **Presets → Import**, or open that look from the pack page. The photo is not uploaded.
+
 If you own film-emulation LUTs, import the `.cube` file under **Presets → Import**. The LUT is applied after your other edits, so exposure and white balance act as its input. See [apply a LUT to a photo](/tools/apply-lut-to-photo) for which files work.
 
 ## How do you keep the look consistent across a whole set?
@@ -97,3 +104,5 @@ Yes, the editor works on phones and tablets, and the film filters and grain work
 It's free, with no account, and nothing is uploaded: the photo is edited and exported inside your browser. Lightframes is open source under the MIT licence ([GitHub](https://github.com/joancomadran/lightframes)).
 
 Ready to try it? [Open the editor](/editor), load a photo and start with the **Matte** curve.
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
