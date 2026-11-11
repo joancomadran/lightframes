@@ -18,19 +18,19 @@ keywords:
   - "convertir cr2 a jpg"
   - "convertir raw a jpg por lotes"
 steps:
-  - name: "Abre tus archivos RAW"
-    text: "Entra en el editor y pulsa Open en la barra superior para elegir uno o varios RAW, o Folder en la tira de miniaturas para cargar una carpeta o una tarjeta entera. La interfaz está en inglés."
-  - name: "Si quieres, corrige la foto antes"
-    text: "Pulsa Auto en la pestaña Adjust o ajusta tú la exposición y el balance de blancos. Si solo quieres convertir, sáltate este paso: el RAW se revela con el balance de blancos de la cámara."
-  - name: "Selecciona las fotos que vas a convertir"
-    text: "Para convertir más de un archivo, pulsa Ctrl/Cmd+A para seleccionar todas las fotos de la tira, o elige algunas con Ctrl/Cmd-clic y Mayús-clic."
-  - name: "Elige JPEG al exportar"
-    text: "Pulsa Export. Deja Size en Original para mantener la resolución completa, pon Format en JPEG y elige la calidad (92 % por defecto). Si quieres conservar los nombres originales, cambia el patrón de nombre a {name}."
-  - name: "Descarga los JPG"
-    text: "Confirma la exportación. Una sola foto se descarga como JPG; varias se descargan juntas en un único archivo ZIP."
+  - name: "Abre los archivos"
+    text: "Entra en el editor y pulsa Open para elegir uno o varios RAW. En Chrome, Edge o Brave, Folder en la tira de miniaturas carga la tarjeta entera. Los botones están en inglés."
+  - name: "Ajusta"
+    text: "Pulsa Auto, o corrige la exposición y el balance de blancos. Si solo quieres convertir, sáltate este paso: la exportación usa el balance de blancos de la cámara."
+  - name: "Exporta el JPG"
+    text: "Pulsa Export, deja Size en Original, pon Format en JPEG (92 % por defecto) y confirma. Una foto se descarga como JPG. Pon el patrón de nombre en {name} para conservar el original."
+  - name: "Por lotes"
+    text: "Pulsa Ctrl/Cmd+A para seleccionar la tira y exporta una sola vez. Todos los archivos usan los mismos ajustes y los JPG se descargan en un ZIP."
 faq:
   - q: "¿Qué formatos RAW puedo convertir a JPG?"
     a: "Canon .cr3 y .cr2, Sony .arw, Nikon .nef y .nrw, .dng, Fujifilm .raf, Olympus / OM System .orf, Panasonic .rw2, Pentax .pef y Samsung .srw. La lectura la hace LibRaw compilado a WebAssembly, así que la compatibilidad con cada modelo de cámara depende de lo que soporte esa librería."
+  - q: "¿Cómo abrir un NEF o un CR3 sin programas?"
+    a: "Abre el archivo en el editor de Lightframes, en www.lightframes.si/es/editor?intent=raw. No instalas nada y el archivo no se sube. La versión de LibRaw incluida decodifica NEF, NRW, CR3 y CR2 en el navegador, y el mismo editor abre el resto de extensiones de esta página. Exporta en JPEG cuando quieras el JPG."
   - q: "¿Tengo que subir mis RAW para convertirlos?"
     a: "No. El RAW se lee, se revela y se codifica en JPG dentro de tu navegador, en tu propio dispositivo. Tus fotos no se envían a ningún servidor y no necesitas cuenta."
   - q: "¿El JPG sale a resolución completa?"
@@ -45,7 +45,7 @@ faq:
     a: "No exactamente. Lightframes revela todos los RAW con un mismo revelado base neutro y el balance de blancos de la cámara, sin los estilos de imagen del fabricante ni correcciones de objetivo. Si buscas otro resultado, ajusta los controles antes de exportar."
   - q: "¿Se modifica el archivo RAW original?"
     a: "No. La conversión crea un JPG nuevo; el RAW de tu disco no se toca."
-updated: 2026-10-20
+updated: 2026-11-11
 ---
 
 ## Qué significa convertir RAW a JPG con Lightframes
@@ -66,29 +66,29 @@ Todo ocurre dentro de la pestaña del navegador:
 
 Si LibRaw no puede revelar un archivo concreto, Lightframes usa el JPEG a tamaño completo que la cámara guardó dentro del RAW, en lugar de dar error. Después de la primera visita, la aplicación queda guardada en el navegador y la conversión funciona también sin conexión; incluso puedes instalarla como app (PWA).
 
-## De RAW a JPG según la marca de tu cámara
+## Formatos que abre este conversor
 
-Todos estos formatos se convierten igual; lo que cambia es la cámara que los genera.
+El editor abre las extensiones de esta tabla y las decodifica con la versión de LibRaw compilada a WebAssembly que lleva la aplicación. Si la cámara o la compresión son más nuevas que esa versión, la exportación usa el JPEG a tamaño completo guardado dentro del RAW, cuando la cámara lo incluyó. Cualquier otra extensión RAW no se abre.
 
-### CR3 y CR2 a JPG (Canon)
+| Origen | Extensiones | Guía |
+| --- | --- | --- |
+| Canon | `.cr2`, `.cr3` | [CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg) |
+| Nikon | `.nef`, `.nrw` | [NEF a JPG](/es/herramientas/convertir-nef-a-jpg) |
+| Sony | `.arw` | [ARW a JPG](/es/herramientas/convertir-arw-a-jpg) |
+| DNG (cámaras, móviles y drones) | `.dng` | [DNG a JPG](/es/herramientas/convertir-dng-a-jpg) |
+| Fujifilm | `.raf` | En esta página |
+| Olympus / OM System | `.orf` | En esta página |
+| Panasonic | `.rw2` | En esta página |
+| Pentax | `.pef` | En esta página |
+| Samsung | `.srw` | En esta página |
 
-CR3 es el formato RAW de las cámaras Canon que han salido desde 2018, incluida la gama EOS R sin espejo; CR2 es el formato anterior de las réflex EOS. Los dos se abren en Lightframes. El CR3 tiene su propia guía con más detalle: [convertir CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg).
+CR3 es el RAW de Canon desde 2018, incluida la gama EOS R; CR2 es el de las réflex EOS anteriores. Nikon escribe NEF en las cámaras de objetivos intercambiables y NRW en algunas Coolpix. Las Sony Alpha usan ARW. DNG es un contenedor abierto que usan algunas marcas y muchos móviles y drones. En tamaño Original, un sensor de más de 8192 px se reduce a 8192 px en el lado largo.
 
-### ARW a JPG (Sony)
+## Frente a un conversor de escritorio
 
-Las cámaras Sony Alpha guardan los RAW como `.arw`. Ábrelos, selecciónalos y expórtalos en JPEG; la conversión usa todos los datos del sensor. Los archivos de muy alta resolución se reducen a 8192 px en el lado largo. Más detalle en [convertir ARW a JPG](/es/herramientas/convertir-arw-a-jpg).
+Un conversor de escritorio — el programa de la marca, Lightroom o darktable — se instala en el ordenador, puede usar más memoria y suele aplicar el perfil de color y la corrección de objetivo de esa marca. Lightframes no se instala y convierte sin subir archivos: el revelado y el JPEG se quedan en la pestaña del navegador.
 
-### NEF y NRW a JPG (Nikon)
-
-Nikon usa `.nef` en sus cámaras de objetivos intercambiables y `.nrw` en algunas compactas Coolpix. Ambos se revelan a partir del sensor, como cualquier otro RAW. Más detalle en [convertir NEF a JPG](/es/herramientas/convertir-nef-a-jpg).
-
-### DNG a JPG
-
-DNG es un formato RAW con especificación pública que usan varios fabricantes de cámaras y muchos móviles y drones. La mayoría de DNG se revelan sin problema; si un archivo usa una compresión que el decodificador incluido no lee, Lightframes recurre a su vista previa incrustada. Los DNG de móvil y de dron tienen su propia página: [convertir DNG a JPG](/es/herramientas/convertir-dng-a-jpg).
-
-### RAF, ORF, RW2, PEF y SRW a JPG
-
-Los `.raf` de Fujifilm, `.orf` de Olympus / OM System, `.rw2` de Panasonic, `.pef` de Pentax y `.srw` de Samsung se convierten exactamente igual.
+Un archivo muy grande, o muchos abiertos a la vez, puede agotar la memoria del navegador y la exportación falla. Cada RAW se revela de uno en uno. El lado largo se queda en 8192 px, y el revelado es una base neutra, sin el estilo de imagen del fabricante. La comparación más larga de programas de escritorio está en [alternativas gratis a Lightroom](/es/blog/alternativas-gratis-a-lightroom).
 
 ## Opciones de exportación del JPG
 
@@ -110,7 +110,7 @@ Una conversión directa te da un JPG fiel y neutro. Merece la pena editar antes 
 - **Dominante de color:** usa el cuentagotas del balance de blancos sobre algo neutro.
 - **Mismo estilo en toda la serie:** aplica un [preset](/es/herramientas/presets-fotos) o pega una misma edición en toda la selección con la [edición por lotes](/es/herramientas/editar-fotos-por-lotes).
 
-Tienes todos los controles explicados en el [editor de fotos RAW](/es/herramientas/editor-fotos-raw).
+Tienes todos los controles explicados en el [editor de fotos RAW](/es/herramientas/editor-fotos-raw), o [abre el editor](/es/editor?intent=raw) con tus archivos. Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
 
 ## Limitaciones
 

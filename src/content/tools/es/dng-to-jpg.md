@@ -18,17 +18,17 @@ keywords:
   - "dng dron a jpg"
   - "convertir dng a jpg por lotes"
 steps:
-  - name: "Abre tus archivos DNG"
-    text: "Entra en el editor y pulsa Open para elegir tus .dng, o Folder en la tira de miniaturas para cargar una carpeta entera. La interfaz está en inglés."
-  - name: "Ajusta si lo necesitas"
-    text: "Pulsa Auto en la pestaña Adjust o corrige la exposición y el balance de blancos. Si solo quieres convertir, déjalo todo como está."
-  - name: "Selecciona las fotos que vas a convertir"
-    text: "Pulsa Ctrl/Cmd+A para seleccionar todas las fotos de la tira, o elige algunas con Ctrl/Cmd-clic."
-  - name: "Exporta en JPEG"
-    text: "Pulsa Export, deja Size en Original, elige JPEG y la calidad, y confirma. Una foto se descarga como JPG; varias, en un único ZIP."
+  - name: "Abre los archivos"
+    text: "Entra en el editor y pulsa Open para elegir tus .dng. En Chrome, Edge o Brave, Folder en la tira de miniaturas carga la carpeta. Los botones están en inglés."
+  - name: "Ajusta"
+    text: "Pulsa Auto en la pestaña Adjust, o corrige la exposición y el balance de blancos. Déjalo todo como está si solo quieres convertir."
+  - name: "Exporta el JPG"
+    text: "Pulsa Export, deja Size en Original, elige JPEG y la calidad, y confirma. Una foto se descarga como JPG."
+  - name: "Por lotes"
+    text: "Pulsa Ctrl/Cmd+A para seleccionar la tira y exporta una sola vez. Los JPG se descargan juntos en un ZIP."
 faq:
   - q: "¿Cómo convierto un DNG a JPG gratis?"
-    a: "Abre el DNG en Lightframes, en www.lightframes.si/editor, pulsa Export, elige JPEG y confirma. El archivo se revela en tu navegador y se guarda como JPG a resolución completa, sin cuenta, sin marca de agua y sin subirlo."
+    a: "Abre el DNG en Lightframes, en www.lightframes.si/es/editor, pulsa Export, elige JPEG y confirma. El archivo se revela en tu navegador y se guarda como JPG a resolución completa, sin cuenta, sin marca de agua y sin subirlo."
   - q: "¿Puedo convertir los DNG de mi móvil?"
     a: "Sí. Los móviles que disparan en RAW, como los iPhone, Pixel y Galaxy recientes, guardan archivos DNG, y se abren como cualquier otro DNG. Lightframes también funciona en el navegador del móvil, aunque los lotes grandes van más rápido en un ordenador."
   - q: "¿Puedo convertir los DNG de un dron?"
@@ -41,7 +41,7 @@ faq:
     a: "El JPEG o HEIC del móvil lleva su propio procesado: mapeo de tonos, enfoque y reducción de ruido. Un DNG está más cerca de la captura en bruto, así que parte más plano. Pulsa Auto o aplica un preset antes de exportar para conseguir un resultado acabado."
   - q: "¿Y si un DNG no se abre bien?"
     a: "Algunos móviles recientes guardan DNG con tipos de compresión más nuevos que el decodificador incluido puede no leer. En ese caso Lightframes exporta la vista previa JPEG a tamaño completo que va dentro del DNG, en vez de fallar."
-updated: 2026-10-27
+updated: 2026-11-11
 ---
 
 ## Qué es un archivo DNG
@@ -49,6 +49,22 @@ updated: 2026-10-27
 DNG (Digital Negative) es un formato RAW con especificación pública. En lugar de ser un formato ligado a una marca, describe los datos del sensor y cómo revelarlos en un documento abierto, así que cualquier programa puede leerlo. Algunas cámaras lo usan de serie (Leica, Pentax y Ricoh, entre otras), la mayoría de los móviles que disparan en RAW lo usan, y muchos drones también. Como cualquier RAW, un DNG guarda más detalle que un JPEG, pero casi ninguna web, app de mensajería ni servicio de impresión lo acepta, por eso pasarlo a JPG suele ser el primer paso.
 
 Lightframes es un editor de fotos gratuito y de código abierto que funciona en el navegador. Abre archivos DNG, los revela en tu propio dispositivo y exporta JPG a resolución completa, sin subir nada y sin instalar programas.
+
+## Formatos que abre el editor
+
+El DNG es una fila de esta tabla. El editor abre todas estas extensiones y las decodifica con la versión de LibRaw compilada a WebAssembly que lleva la aplicación. Si la cámara o la compresión son más nuevas que esa versión, la exportación usa el JPEG a tamaño completo guardado dentro del archivo, cuando existe. Cualquier otra extensión RAW no se abre.
+
+| Origen | Extensiones | Guía |
+| --- | --- | --- |
+| DNG (cámaras, móviles y drones) | `.dng` | Esta página |
+| Canon | `.cr2`, `.cr3` | [CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg) |
+| Nikon | `.nef`, `.nrw` | [NEF a JPG](/es/herramientas/convertir-nef-a-jpg) |
+| Sony | `.arw` | [ARW a JPG](/es/herramientas/convertir-arw-a-jpg) |
+| Fujifilm | `.raf` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Olympus / OM System | `.orf` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Panasonic | `.rw2` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Pentax | `.pef` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Samsung | `.srw` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
 
 ## Cómo se convierte un DNG en el navegador
 
@@ -79,6 +95,12 @@ Los DNG de móviles y drones suelen ser más pequeños y con más ruido que los 
 
 Para conservar los nombres originales, cambia el patrón de nombre a `{name}` en vez del `{name}-edited` que viene por defecto.
 
+## Frente a un conversor de escritorio
+
+Lightroom y darktable se instalan en el ordenador y pueden usar más memoria. Lightframes no se instala y convierte sin subir archivos: el revelado y el JPEG se quedan en la pestaña del navegador.
+
+Un DNG muy grande, o muchos abiertos a la vez, puede agotar la memoria del navegador y la exportación falla. Cada archivo se revela de uno en uno. El lado largo se queda en 8192 px, y no se reproduce el mapeo de tonos del móvil. La comparación más larga de programas de escritorio está en [alternativas gratis a Lightroom](/es/blog/alternativas-gratis-a-lightroom).
+
 ## Limitaciones
 
 - **Procesado del dispositivo.** No se reproducen el mapeo de tonos, la fusión de varias tomas ni el enfoque que aplican los móviles a sus propias fotos.
@@ -86,4 +108,4 @@ Para conservar los nombres originales, cambia el patrón de nombre a `{name}` en
 - **Metadatos.** Los datos EXIF (fecha, cámara, objetivo, GPS) no se copian al JPG.
 - **Compresiones nuevas.** Los DNG que la versión de LibRaw incluida no puede leer usan la vista previa incrustada.
 
-Los formatos de marca tienen su propia página: [CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg), [NEF a JPG](/es/herramientas/convertir-nef-a-jpg) y [ARW a JPG](/es/herramientas/convertir-arw-a-jpg). El resto de formatos los tienes en el [conversor de RAW a JPG](/es/herramientas/convertir-raw-a-jpg) y, si además de convertir quieres editar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw).
+Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).

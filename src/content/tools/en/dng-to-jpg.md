@@ -18,14 +18,14 @@ keywords:
   - "drone dng to jpg"
   - "dng to jpg batch"
 steps:
-  - name: "Open your DNG files"
-    text: "Open the editor and click Open to choose your .dng files, or Folder in the filmstrip to load a whole folder."
-  - name: "Adjust if you want"
-    text: "Press Auto in the Adjust tab, or set exposure and white balance. For a straight conversion, leave everything as it is."
-  - name: "Select every photo to convert"
-    text: "Press Ctrl/Cmd+A to select all photos in the filmstrip, or Ctrl/Cmd-click to choose some."
-  - name: "Export as JPEG"
-    text: "Click Export, keep Size on Original, choose JPEG and a quality, and confirm. One photo downloads as a JPG; several download as one ZIP."
+  - name: "Open the files"
+    text: "Open the editor and click Open to choose .dng files. In Chrome, Edge or Brave, Folder in the filmstrip loads the folder."
+  - name: "Adjust"
+    text: "Press Auto in the Adjust tab, or set exposure and white balance. Leave the sliders alone for a straight conversion."
+  - name: "Export JPG"
+    text: "Click Export, keep Size on Original, choose JPEG and a quality, and confirm. One photo downloads as a JPG."
+  - name: "Batch"
+    text: "Press Ctrl/Cmd+A to select the filmstrip and export once. The JPGs download together as one ZIP."
 faq:
   - q: "How do I convert a DNG to JPG for free?"
     a: "Open the DNG in Lightframes at www.lightframes.si/editor, click Export, choose JPEG and confirm. The file is developed in your browser and saved as a full-resolution JPG, with no account, watermark or upload."
@@ -41,7 +41,7 @@ faq:
     a: "The phone's JPEG or HEIC includes its own processing, such as tone mapping, sharpening and noise reduction. A DNG is closer to the raw capture, so it starts flatter. Press Auto or apply a preset before exporting to get a finished look."
   - q: "What if a DNG doesn't open properly?"
     a: "Some recent phones save DNGs with newer compression types that the bundled decoder may not read. In that case Lightframes exports the full-size JPEG preview stored inside the DNG instead of failing."
-updated: 2026-10-27
+updated: 2026-11-11
 ---
 
 ## What a DNG file is
@@ -49,6 +49,22 @@ updated: 2026-10-27
 DNG (Digital Negative) is an openly documented RAW format. Instead of a format tied to one brand, it describes the sensor data and how to develop it in a published specification, so any software can read it. Some cameras save DNG natively (Leica, Pentax and Ricoh among them), most phones that shoot RAW use it, and so do many drones. Like any RAW file, a DNG holds more detail than a JPEG but is rarely accepted by websites, chat apps or print services, which is why converting to JPG is often the first step.
 
 Lightframes is a free, open-source photo editor that runs in your browser. It opens DNG files, develops them on your own device and exports full-resolution JPGs, without uploading anything and without installing software.
+
+## Formats the editor opens
+
+DNG is one row of this table. The editor opens every extension here and decodes it with the LibRaw build compiled to WebAssembly that ships with the app. If a camera or a compression is newer than that build, the export uses the full-size JPEG stored inside the file, when one was saved. Any other RAW extension is not opened.
+
+| Source | Extensions | Guide |
+| --- | --- | --- |
+| DNG (cameras, phones, drones) | `.dng` | This page |
+| Canon | `.cr2`, `.cr3` | [CR3 to JPG](/tools/cr3-to-jpg) |
+| Nikon | `.nef`, `.nrw` | [NEF to JPG](/tools/nef-to-jpg) |
+| Sony | `.arw` | [ARW to JPG](/tools/arw-to-jpg) |
+| Fujifilm | `.raf` | [RAW to JPG](/tools/raw-to-jpg) |
+| Olympus / OM System | `.orf` | [RAW to JPG](/tools/raw-to-jpg) |
+| Panasonic | `.rw2` | [RAW to JPG](/tools/raw-to-jpg) |
+| Pentax | `.pef` | [RAW to JPG](/tools/raw-to-jpg) |
+| Samsung | `.srw` | [RAW to JPG](/tools/raw-to-jpg) |
 
 ## How DNG conversion works in the browser
 
@@ -79,6 +95,12 @@ Phone and drone DNGs are often smaller and noisier than those from a dedicated c
 
 To keep the original file names, set the file name pattern to `{name}` instead of the default `{name}-edited`.
 
+## Compared with a desktop converter
+
+Lightroom and darktable install on the computer and can use more memory. Lightframes does not install. No uploads: decoding and the JPEG stay in the browser tab.
+
+A very large DNG, or many open at once, can run out of browser memory and the export fails. Each file is developed one after another. The long edge stops at 8192 px, and phone tone-mapping is not reproduced. A longer look at desktop apps is in [free Lightroom alternatives](/blog/free-lightroom-alternatives).
+
 ## Limitations
 
 - **Device processing.** The tone mapping, multi-frame merging and sharpening that phones apply to their own photos are not reproduced.
@@ -86,4 +108,4 @@ To keep the original file names, set the file name pattern to `{name}` instead o
 - **Metadata.** EXIF information (date, camera, lens, GPS) is not copied into the JPG.
 - **Newer compression.** DNGs the bundled LibRaw can't read fall back to the embedded preview.
 
-Brand formats have their own pages: [CR3 to JPG](/tools/cr3-to-jpg), [NEF to JPG](/tools/nef-to-jpg) and [ARW to JPG](/tools/arw-to-jpg). Every other format is covered in the [RAW to JPG converter](/tools/raw-to-jpg), and to edit rather than just convert, see the [RAW photo editor](/tools/raw-photo-editor).
+To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).

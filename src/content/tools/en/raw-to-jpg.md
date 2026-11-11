@@ -19,19 +19,19 @@ keywords:
   - "raf to jpg"
   - "batch convert raw to jpg"
 steps:
-  - name: "Open your RAW files"
-    text: "Open the editor and click Open in the toolbar to pick one or more RAW files, or click Folder in the filmstrip to load a whole card or directory."
-  - name: "Optionally fix the photo first"
-    text: "Press Auto in the Adjust tab or set exposure and white balance yourself. If you just want a straight conversion, skip this step: the RAW is developed with the camera's white balance."
-  - name: "Select the photos to convert"
-    text: "To convert more than one file, press Ctrl/Cmd+A to select every photo in the filmstrip, or Ctrl/Cmd-click and Shift-click to pick some."
-  - name: "Choose JPEG in Export"
-    text: "Click Export. Leave Size on Original for full resolution, set Format to JPEG and choose a quality (92% by default). Change the file name pattern to {name} if you want to keep the original names."
-  - name: "Download the JPGs"
-    text: "Confirm the export. A single photo downloads as a JPG; several photos download together as one ZIP file."
+  - name: "Open the files"
+    text: "Open the editor and click Open to pick one or more RAW files. In Chrome, Edge or Brave, Folder in the filmstrip loads a whole card."
+  - name: "Adjust"
+    text: "Press Auto, or set exposure and white balance. Skip this for a straight conversion: export uses the camera white balance."
+  - name: "Export JPG"
+    text: "Click Export, leave Size on Original, set Format to JPEG (92% by default) and confirm. One photo downloads as a JPG. Set the file name pattern to {name} to keep the original name."
+  - name: "Batch"
+    text: "Press Ctrl/Cmd+A to select the filmstrip, then export once. Every file uses the same settings and the JPGs download as one ZIP."
 faq:
   - q: "Which RAW formats can I convert to JPG?"
     a: "Canon .cr3 and .cr2, Sony .arw, Nikon .nef and .nrw, .dng, Fujifilm .raf, Olympus / OM System .orf, Panasonic .rw2, Pentax .pef and Samsung .srw. Decoding is done by LibRaw compiled to WebAssembly, so support for a specific camera model follows what that library can read."
+  - q: "How do I open a NEF or CR3 without software?"
+    a: "Open the file in the Lightframes editor at www.lightframes.si/editor?intent=raw. Nothing is installed and the file is not uploaded. The bundled LibRaw build decodes NEF, NRW, CR3 and CR2 in the browser, and the same editor opens the other extensions listed on this page. Export as JPEG when you want a JPG."
   - q: "Are my RAW files uploaded to convert them?"
     a: "No. The RAW is read, developed and encoded to JPG inside your browser on your own device. Your photos are not sent to a server and there is no account."
   - q: "Is the JPG full resolution?"
@@ -46,7 +46,7 @@ faq:
     a: "Not exactly. Lightframes develops every RAW with the same neutral base rendering and the camera's white balance, without the manufacturer's picture styles or lens corrections. Use the sliders before exporting if you want a different look."
   - q: "Is the original RAW file changed?"
     a: "No. Converting creates a new JPG file; the RAW on your disk is never modified."
-updated: 2026-10-20
+updated: 2026-11-11
 ---
 
 ## What converting RAW to JPG in Lightframes means
@@ -65,29 +65,29 @@ Every step happens in the browser tab:
 
 If LibRaw cannot develop a particular file, Lightframes uses the full-size JPEG the camera embedded in the RAW instead of failing. After the first visit the app is cached, so converting also works offline, and you can install it as an app (PWA).
 
-## RAW to JPG by camera format
+## Formats the converter opens
 
-All the formats below are converted the same way. The differences are in the cameras that write them.
+The editor opens the extensions in this table and decodes them with the LibRaw build compiled to WebAssembly that ships with the app. If a camera or a compression is newer than that build, the export uses the full-size JPEG stored inside the RAW, when the camera saved one. Any other RAW extension is not opened.
 
-### CR3 and CR2 to JPG (Canon)
+| Source | Extensions | Guide |
+| --- | --- | --- |
+| Canon | `.cr2`, `.cr3` | [CR3 to JPG](/tools/cr3-to-jpg) |
+| Nikon | `.nef`, `.nrw` | [NEF to JPG](/tools/nef-to-jpg) |
+| Sony | `.arw` | [ARW to JPG](/tools/arw-to-jpg) |
+| DNG (cameras, phones, drones) | `.dng` | [DNG to JPG](/tools/dng-to-jpg) |
+| Fujifilm | `.raf` | On this page |
+| Olympus / OM System | `.orf` | On this page |
+| Panasonic | `.rw2` | On this page |
+| Pentax | `.pef` | On this page |
+| Samsung | `.srw` | On this page |
 
-CR3 is the RAW format of Canon cameras released since 2018, including the EOS R mirrorless range; CR2 is the older format used by earlier EOS DSLRs. Both open in Lightframes. CR3 has its own page with more detail: [convert CR3 to JPG](/tools/cr3-to-jpg).
+CR3 is Canon's RAW from 2018 on, including the EOS R range; CR2 is the older EOS DSLR format. Nikon writes NEF on interchangeable-lens cameras and NRW on some Coolpix compacts. Sony Alpha cameras use ARW. DNG is an open container used by some camera makers and by many phones and drones. At Original size, a sensor wider than 8192 px is scaled to 8192 px on the long edge.
 
-### ARW to JPG (Sony)
+## Compared with a desktop converter
 
-Sony Alpha cameras save RAW as `.arw`. Open the files, select them and export as JPEG; the conversion uses the full sensor data. Very high-resolution files are scaled to 8192 px on the long edge. More detail: [convert ARW to JPG](/tools/arw-to-jpg).
+A desktop converter — the camera maker's app, Lightroom or darktable — installs on the computer, can use more memory, and usually applies that brand's colour profile and lens corrections. Lightframes does not install. No uploads: decoding and the JPEG stay in the browser tab.
 
-### NEF and NRW to JPG (Nikon)
-
-Nikon writes `.nef` on its interchangeable-lens cameras and `.nrw` on some Coolpix compacts. Both are converted from the sensor data like any other RAW. More detail: [convert NEF to JPG](/tools/nef-to-jpg).
-
-### DNG to JPG
-
-DNG is an openly documented RAW format used by several camera makers and by many phones and drones. Most DNG files develop normally; if a file uses a compression the bundled decoder can't read, Lightframes falls back to its embedded preview. Phone and drone DNGs have their own page: [convert DNG to JPG](/tools/dng-to-jpg).
-
-### RAF, ORF, RW2, PEF and SRW to JPG
-
-Fujifilm `.raf`, Olympus / OM System `.orf`, Panasonic `.rw2`, Pentax `.pef` and Samsung `.srw` files are converted the same way.
+A very large file, or many open at once, can run out of browser memory and the export fails. Each RAW is developed one after another. The long edge stops at 8192 px, and the rendering is a neutral base, without the manufacturer's picture style. A longer look at desktop apps is in [free Lightroom alternatives](/blog/free-lightroom-alternatives).
 
 ## Export settings for the JPG
 
@@ -109,7 +109,7 @@ A plain conversion gives you a faithful, neutral JPG. Editing first is worth it 
 - **Wrong colour cast:** use the white balance picker on something neutral.
 - **A consistent look for a set:** apply a [preset](/tools/photo-presets) or paste one edit across the whole selection with the [batch editor](/tools/batch-photo-editor).
 
-For the full list of controls, see the [RAW photo editor](/tools/raw-photo-editor).
+For the full list of controls, see the [RAW photo editor](/tools/raw-photo-editor), or [open the editor](/editor?intent=raw) with your files. How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
 
 ## Limitations
 
