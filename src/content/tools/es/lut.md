@@ -46,7 +46,7 @@ updated: 2026-11-08
 
 ## Qué significa aplicar un LUT en Lightframes
 
-Un LUT (tabla de consulta, *look-up table*) es un archivo que asigna a cada color de entrada un color de salida, y aplicarlo da a una foto una gradación de color completa de un solo paso. Lightframes lee LUT 3D en el formato `.cube`, el mismo de muchos packs de emulación de película y estilos cinematográficos, y te deja aplicarlos a fotografías, también a archivos RAW. Es útil si ya tienes LUT comprados, si haces vídeo y quieres fotos con el mismo color, o si buscas una gradación coherente en toda una serie. El editor es gratuito, de código abierto y funciona en el navegador.
+Un LUT (tabla de consulta, *look-up table*) es un archivo que asigna a cada color de entrada un color de salida, y aplicarlo da a una foto una gradación de color completa de un solo paso. Lightframes lee LUT 3D en el formato `.cube`, el mismo de muchos packs de emulación de película y estilos cinematográficos, y te deja aplicarlos a fotografías, también a archivos RAW. Es útil si ya tienes LUT comprados, si haces vídeo y quieres fotos con el mismo color, o si buscas una gradación coherente en toda una serie. El editor es gratuito, de código abierto y funciona en el navegador. Si quieres el formato en sí — qué significan `LUT_3D_SIZE` y la tabla RGB, y en qué se diferencia un `.cube` de un preset de Lightroom — lee [qué es un LUT .cube y cómo usarlo en fotos](/es/blog/que-es-un-lut-cube).
 
 La interfaz del editor está en inglés; los nombres de botones de esta guía son los que verás en pantalla.
 
