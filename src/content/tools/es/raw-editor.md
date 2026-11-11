@@ -1,14 +1,17 @@
 ---
 key: raw-editor
 slug: editor-fotos-raw
-title: "Editor de fotos RAW online gratis"
-description: "Edita fotos RAW online gratis: abre archivos ARW, CR2, CR3, NEF, DNG, RAF, ORF o RW2 en el navegador, sin subirlos, sin registro, y la edición funciona sin conexión tras la primera visita."
-h1: "Editar fotos RAW online, gratis y sin subirlas"
-lead: "Lightframes abre archivos RAW de cámara (ARW, CR2, CR3, NEF, DNG, RAF, ORF, RW2 y más) directamente en el navegador y los revela en tu propio dispositivo. Es gratis, no pide registro y tus fotos nunca se suben a ningún servidor."
+title: "Abrir RAW y NEF online, sin subir"
+description: "Edita RAW online y abre archivos NEF sin programas. LibRaw lee ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF y SRW en tu navegador, sin subir archivos."
+h1: "Abrir y editar un RAW o un NEF online, sin subir archivos"
+lead: "Para abrir un RAW o un archivo NEF sin programas, y para editar RAW online, Lightframes lo hace en el navegador. Sin subir archivos: LibRaw lee en tu dispositivo .arw, .cr2, .cr3, .nef, .nrw, .dng, .raf, .orf, .rw2, .pef y .srw, y la exportación sale en JPEG, PNG o WebP. Es gratis y no pide registro."
 label: "Editor RAW"
-summary: "Abre y revela archivos RAW (ARW, CR3, NEF, DNG…) en el navegador. Gratis, privado y sin subir nada."
+summary: "Abre y revela RAW y NEF (ARW, CR3, DNG…) en el navegador. Gratis y sin subir archivos."
 order: 1
 keywords:
+  - "abrir raw"
+  - "abrir archivos nef"
+  - "editar raw online"
   - "editar fotos raw online"
   - "editor raw online gratis"
   - "abrir archivo arw online"
@@ -26,6 +29,8 @@ steps:
   - name: "Exporta en JPEG, PNG o WebP"
     text: "Pulsa Export, elige tamaño y formato y confirma. El RAW se revela de nuevo a resolución completa y se descarga en tu equipo."
 faq:
+  - q: "¿Cómo abro un RAW/NEF sin programas?"
+    a: "En el navegador, sin instalar nada. Abre Lightframes, pulsa Open y elige el archivo. LibRaw, compilado a WebAssembly, lee en tu dispositivo .arw, .cr2, .cr3, .nef, .nrw, .dng, .raf, .orf, .rw2, .pef y .srw (NEF y NRW son de Nikon), además de JPEG y PNG, sin subir archivos. Si LibRaw no puede revelar un modelo concreto, el editor usa el JPEG incrustado. La interfaz está en inglés."
   - q: "¿Qué formatos RAW puedo abrir?"
     a: "Lightframes abre archivos .arw, .cr2, .cr3, .nef, .nrw, .dng, .raf, .orf, .rw2, .pef y .srw, además de JPEG y PNG. La lectura la hace LibRaw compilado a WebAssembly, así que la compatibilidad depende de lo que soporte esa librería."
   - q: "¿Se suben mis archivos RAW a algún servidor?"
@@ -43,7 +48,7 @@ updated: 2026-11-11
 
 ## Qué es este editor RAW y para quién es
 
-Lightframes es un editor de fotos RAW gratuito que funciona entero en el navegador. Está pensado para fotógrafos que quieren revelar sus archivos de cámara sin instalar programas, sin crearse una cuenta y sin mandar sus fotos a la nube. Sirve para un retoque rápido desde un portátil prestado, para revisar una tarjeta de viaje o para una sesión de edición completa en tu ordenador. El código es abierto, con licencia MIT.
+Abre un RAW o un NEF sin programas y edítalo online: Lightframes revela el archivo en el navegador con LibRaw, sin subir archivos y sin cuenta. Sirve para un retoque rápido desde un portátil prestado, para revisar una tarjeta de viaje o para una sesión de edición completa. El código es abierto, con licencia MIT.
 
 Si prefieres instalar un catálogo RAW de escritorio, mira [alternativas gratis a Lightroom](/es/blog/alternativas-gratis-a-lightroom): compara Lightframes con darktable, RawTherapee y Photopea.
 
