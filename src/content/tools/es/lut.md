@@ -79,7 +79,7 @@ Las fotos pueden ser JPEG, PNG o cualquier RAW compatible, y se exportan en JPEG
 No hace falta tener un pack de LUTs propio para probar una gradación en Lightframes. **Coastal Mist** (en español, *Bruma costera*) es un `.cube` 3D del [pack gratis de presets y LUTs](/es/presets-luts-gratis), publicado bajo CC0; puedes bajar solo el LUT y usarlo en cualquier foto.
 
 1. **Descarga el LUT.** Guarda [coastal-mist.cube](/downloads/free-presets-pack/coastal-mist/coastal-mist.cube) (33×33×33, [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/)).
-2. **Abre una foto** en el [editor](/editor) con **Open** o **Folder**: JPEG, PNG o un [archivo RAW](/es/herramientas/editor-fotos-raw).
+2. **Abre una foto** en el [editor](/es/editor) con **Open** o **Folder**: JPEG, PNG o un [archivo RAW](/es/herramientas/editor-fotos-raw).
 3. **Impórtalo.** En la pestaña **Presets**, pulsa **Import** y elige `coastal-mist.cube`. Aparecerá en **My presets** como *Coastal Mist* (nombre del `TITLE` del archivo).
 4. **Aplícalo y regula la intensidad.** Pulsa el preset y mueve **Intensity** (bajo **Applied**) entre 0 y 100 %. Coastal Mist aclara sombras con un tono frío; en un JPEG sRGB normal, suele bastar con 60–80 % antes de retocar la exposición.
 5. **Compara y exporta.** Pulsa **\\** para ver el antes y el después. Cuando te convenza, **Export** y elige JPEG, PNG o WebP.

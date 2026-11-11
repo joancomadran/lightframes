@@ -88,4 +88,4 @@ El modelo de Remove es rápido y privado, pero no hace milagros. Trabaja sobre u
 
 Heal y Clone solo pueden copiar lo que ya hay en el encuadre. En una foto muy cargada sin zonas limpias cerca, quizá tengas que probar varios orígenes o pasarte a Remove.
 
-La primera vez que usas Remove necesitas conexión para descargar el modelo de Hugging Face; tus fotos no salen de tu dispositivo. Después funciona sin internet. Si tienes dudas sobre privacidad, formatos o cómo instalar la app, consulta las [preguntas frecuentes](/es/preguntas-frecuentes), o [abre el editor](/editor) y pruébalo con tu propia foto.
+La primera vez que usas Remove necesitas conexión para descargar el modelo de Hugging Face; tus fotos no salen de tu dispositivo. Después funciona sin internet. Si tienes dudas sobre privacidad, formatos o cómo instalar la app, consulta las [preguntas frecuentes](/es/preguntas-frecuentes), o [abre el editor](/es/editor) y pruébalo con tu propia foto.

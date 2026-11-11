@@ -85,4 +85,4 @@ Algunos ejemplos, con Size en Original:
 
 Un ampliador predice detalle; no puede recuperar lo que la cámara nunca captó. Una cara diminuta y movida no se convierte en un retrato nítido, y un texto ilegible no pasa a leerse. El modelo está entrenado para fotos en general, así que en texturas muy finas, como hojas o pelo, puede dar un ligero aspecto de pintura.
 
-La velocidad depende de tu dispositivo. Con WebGPU en un ordenador reciente va rápido; con el procesador, o en un móvil, una ampliación 4× grande puede tardar, y en equipos antiguos el navegador puede quedarse sin memoria. La primera vez necesitas conexión para descargar el modelo. ¿Más dudas? Consulta las [preguntas frecuentes](/es/preguntas-frecuentes) o [abre el editor](/editor).
+La velocidad depende de tu dispositivo. Con WebGPU en un ordenador reciente va rápido; con el procesador, o en un móvil, una ampliación 4× grande puede tardar, y en equipos antiguos el navegador puede quedarse sin memoria. La primera vez necesitas conexión para descargar el modelo. ¿Más dudas? Consulta las [preguntas frecuentes](/es/preguntas-frecuentes) o [abre el editor](/es/editor).

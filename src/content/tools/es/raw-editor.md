@@ -38,12 +38,14 @@ faq:
     a: "La exportación se revela desde los datos completos del sensor, hasta 8192 px en el lado largo. También puedes elegir un tamaño menor o un formato fijo para redes sociales."
   - q: "¿El editor está en español?"
     a: "La interfaz del editor está en inglés, pero es muy visual: los nombres de los controles (Exposure, Contrast, Highlights…) son los habituales en cualquier programa de revelado."
-updated: 2026-10-20
+updated: 2026-11-11
 ---
 
 ## Qué es este editor RAW y para quién es
 
 Lightframes es un editor de fotos RAW gratuito que funciona entero en el navegador. Está pensado para fotógrafos que quieren revelar sus archivos de cámara sin instalar programas, sin crearse una cuenta y sin mandar sus fotos a la nube. Sirve para un retoque rápido desde un portátil prestado, para revisar una tarjeta de viaje o para una sesión de edición completa en tu ordenador. El código es abierto, con licencia MIT.
+
+Si prefieres instalar un catálogo RAW de escritorio, mira [alternativas gratis a Lightroom](/es/blog/alternativas-gratis-a-lightroom): compara Lightframes con darktable, RawTherapee y Photopea.
 
 Ten en cuenta que la interfaz del editor está en inglés; en los pasos de arriba usamos los nombres tal como aparecen en pantalla.
 
