@@ -1,0 +1,103 @@
+---
+key: cube-lut
+slug: que-es-un-lut-cube
+title: "Qué es un LUT .cube y cómo usarlo en fotos"
+description: "Un archivo .cube es un LUT 3D: una tabla de colores RGB. Qué es LUT_3D_SIZE, en qué se diferencia de un preset XMP y cómo usarlo en fotos. No se sube nada."
+h1: "Qué es un LUT .cube y cómo usarlo en fotos"
+faq:
+  - q: "¿Qué es un LUT .cube?"
+    a: "Un LUT .cube es una tabla de consulta 3D en texto plano. LUT_3D_SIZE indica cuántos pasos tiene el cubo en rojo, verde y azul; Lightframes acepta un entero de 2 a 128. Cada línea de datos es una muestra de rojo, verde y azul de salida. El rojo cambia más rápido, luego el verde y después el azul. El editor interpola entre esas muestras para recolorear la foto. Los .cube 1D se rechazan."
+  - q: "¿Puedo usar un LUT .cube en una foto?"
+    a: "Sí. Abre un JPEG, PNG o RAW en Lightframes, entra en Presets, pulsa Import y elige el .cube. Pasa a ser un preset con el nombre de la línea TITLE o, si no hay, del archivo. Pulsa el preset y pon Intensity entre 0 y 100 %. La foto se revela primero y el LUT se aplica a esos colores de 8 bits. No se sube nada. El editor no exporta ni genera archivos .cube."
+  - q: "¿LUT o preset?"
+    a: "Un LUT es un mapa de color fijo: de un RGB de entrada a un RGB de salida. Un preset .xmp de Lightroom o Camera Raw es una lista de ajustes de revelado. Lightframes importa los dos. El .cube se guarda como un preset cuya apariencia es la tabla de color. El .xmp se traduce a controles como exposición, curvas, HSL, gradación de color y grano; los perfiles de cámara, las correcciones de lente y las máscaras no se importan. Usa un .cube si el look viene vendido como LUT, y un .xmp si quieres esos ajustes como controles que aún puedes mover. Lightroom y Camera Raw son marcas de Adobe. Lightframes no está afiliado a Adobe."
+  - q: "¿Puedo aplicar un LUT a muchas fotos a la vez?"
+    a: "Sí. Selecciona las fotos en la tira y pulsa el preset del LUT. Todas lo reciben con la Intensity que haya en ese momento. Mover Intensity después solo cambia la foto que estás viendo. También puedes copiar los ajustes y pegar solo el grupo Look (LUT), que deja el resto de ajustes de cada foto, y exportar la selección en un único ZIP. Aplicar el preset sustituye tono, color y máscaras locales por los del preset (neutros, en un .cube sin más) y conserva recorte, giro, retoque y fondo. Un segundo preset con LUT sustituye al primero."
+  - q: "¿Dónde consigo LUTs .cube gratis?"
+    a: "El pack de presets y LUTs gratis de Lightframes es CC0 e incluye ocho looks, cada uno en .cube y en .xmp. Coastal Mist es un .cube de 33×33×33 (TITLE \"Coastal Mist\") de ese pack. Se importa desde Presets → Import. La página de descarga es https://www.lightframes.si/es/presets-luts-gratis y el archivo es https://www.lightframes.si/downloads/free-presets-pack/coastal-mist/coastal-mist.cube."
+published: 2026-11-11
+author: Lightframes
+tags: ["luts", "guias"]
+tools: ["lut", "presets", "batch"]
+keywords:
+  - qué es un lut cube
+  - qué es un archivo cube
+  - lut_3d_size
+  - usar lut cube en fotos
+  - aplicar lut a una foto
+  - lut o preset de lightroom
+  - luts cube gratis
+  - lut 3d para fotos
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Un LUT `.cube` es una tabla de consulta 3D en un archivo de texto:** anota un rojo, un verde y un azul de salida para puntos repartidos por el cubo de color, y el programa rellena los colores intermedios. En [Lightframes](/es/editor) importas ese archivo como preset y lo mezclas del 0 al 100 %. No se sube nada.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
+
+La interfaz del editor está en inglés. Los nombres de botones de esta guía son los que verás en pantalla.
+
+## ¿Qué significan LUT_3D_SIZE y la tabla de valores RGB?
+
+`LUT_3D_SIZE` es un entero: los pasos a lo largo de cada eje del cubo. Un tamaño 33 son 33 pasos de rojo, 33 de verde y 33 de azul, o sea 33 × 33 × 33 muestras: 35.937 colores. Lightframes acepta un tamaño **de 2 a 128**. Un cubo pequeño es más tosco; en los packs lo habitual es 17, 33 o 65. El pack gratis de más abajo usa 33.
+
+Después de esa línea, cada fila son tres números: el rojo, el verde y el azul **de salida** de un punto de la retícula, casi siempre entre 0 y 1. El archivo recorre el cubo con el **rojo cambiando más rápido, luego el verde y después el azul**. Los comentarios (`#` o `//`) se ignoran. Un `TITLE "…"` opcional pasa a ser el nombre del preset. Si el archivo trae `DOMAIN_MIN` y `DOMAIN_MAX`, esos rangos se reescalan a 0–1 antes de usar la tabla.
+
+El número de muestras tiene que coincidir con el tamaño. Un cubo de 33 puntos con filas de más o de menos se rechaza, igual que un archivo 1D (`LUT_1D_SIZE`). No se leen otros formatos: `.3dl`, `.look`, `.csp`.
+
+Al aplicarlo, el editor no encaja cada píxel en la muestra más cercana. **Interpola** entre los ocho puntos que lo rodean (interpolación trilineal) y mezcla ese resultado con el color original. Intensity al 0 % deja la foto igual; al 100 % es la tabla entera.
+
+## ¿Dónde se usan los LUT .cube?
+
+El mismo archivo aparece en tres sitios:
+
+- **Gradación de vídeo.** Un look hecho en un programa de color se pasa a menudo como `.cube` para que otra línea de tiempo lleve el mismo color.
+- **Perfiles log de cámara.** Un LUT de conversión espera metraje log plano (S-Log, V-Log, Log-C y similares) y lo lleva hacia Rec.709. En una foto normal, o en un RAW ya revelado, esa tabla queda con un contraste exagerado, porque la entrada no era log.
+- **Looks de foto.** Las emulaciones de película y los packs "cinemáticos" se venden muchas veces como `.cube` pensados para fotos que ya están en un rango estándar (sRGB o Rec.709). Ese es el LUT para el que sirve este editor.
+
+## ¿En qué se diferencia un LUT de un preset XMP de Lightroom?
+
+Resuelven cosas distintas, y Lightframes importa los dos.
+
+| | **LUT `.cube`** | **Preset `.xmp` de Lightroom / Camera Raw** |
+| --- | --- | --- |
+| Qué guarda | Una tabla de color: RGB de entrada → RGB de salida | Ajustes de revelado (exposición, curva, HSL, gradación, grano y similares) |
+| Qué puedes seguir editando | La fuerza de toda la tabla, más los controles que pongas alrededor | Los controles traducidos, uno a uno |
+| Qué no puede llevar | Recorte, máscaras, correcciones de lente, perfil de cámara | No se importan perfiles de cámara, correcciones de lente ni máscaras |
+| Cuándo usarlo | Un look comprado o exportado como `.cube`, también una gradación que ya usas en vídeo | Un preset cuya receta quieres como controles, incluidos los packs vendidos en `.xmp` |
+
+Un LUT es un mapa de color ya cerrado. Un preset XMP es una lista de instrucciones. Si el pack trae los dos, el `.cube` aplica la tabla y el `.xmp` aplica la receta de controles; no son el mismo proceso. Los pasos para los `.xmp`, y qué ajustes se conservan, están en [usar presets XMP sin Lightroom](/es/presets-xmp-sin-lightroom).
+
+Lightroom y Camera Raw son marcas de Adobe. Lightframes es independiente y no está afiliado a Adobe.
+
+## ¿Cómo se aplica un .cube a las fotos en Lightframes?
+
+La página corta, con los nombres de los controles, es [aplicar un LUT a una foto](/es/herramientas/aplicar-lut-foto). Aquí va el mismo camino, con el formato del archivo y el lote.
+
+1. **Abre el editor** en [/es/editor](/es/editor). Para un LUT grande o una tanda de RAW es más cómodo un navegador Chromium reciente (Chrome, Edge, Brave) en el ordenador.
+2. **Abre las fotos.** Pulsa **Open** y elige JPEG, PNG o RAW. Si mantienes **Option/Alt** al hacer clic, eliges una carpeta. Los archivos entran en la tira de miniaturas.
+3. **Importa el `.cube`.** Abre la pestaña **Presets**, pulsa **Import** y elige el archivo. Aparece en **My presets**, con el nombre del `TITLE` o, si no hay título, el del archivo. La tabla se lee en el navegador y se guarda con tus presets en el almacenamiento del propio navegador (IndexedDB). No se sube nada.
+4. **Aplícalo y regula la fuerza.** Pulsa el preset. **Intensity**, bajo **Applied**, va del 0 al 100 %. Esa mezcla es el único control de fuerza; no hay un control aparte de "cantidad de LUT".
+5. **Deja la exposición y el balance de blancos para cuando la fuerza ya te convenza.** Esos controles, más el contraste, las curvas, el HSL, la gradación de color y las máscaras locales, se aplican **antes** del LUT, así que cambian lo que ve la tabla. El grano, el enfoque, la viñeta, la textura, la claridad, **Dehaze** y la reducción de ruido van **después**.
+6. **Ten en cuenta qué sustituye el clic.** Aplicar el preset escribe en la foto el tono, el color y las máscaras locales del preset. Un `.cube` a secas tiene los controles en neutro y no trae máscaras, así que esos ajustes se borran. Se conservan el recorte, el giro, el retoque y el fondo. Si más tarde mueves **Intensity**, el preset se vuelve a aplicar: afina después de fijar la fuerza, o guarda la combinación (escribe un nombre en *Save current edits as…*). Un LUT por foto: otro preset con LUT sustituye al anterior.
+7. **Compara y exporta.** Pulsa **\\** para el antes y el después. **Ctrl/Cmd+E** exporta JPEG, PNG o WebP. El archivo original no se modifica.
+
+### El mismo LUT en muchas fotos
+
+Selecciona las fotos en la tira y pulsa el preset del LUT. Todas reciben ese preset con la Intensity que haya **en ese clic**. Si después mueves **Intensity**, solo cambia la foto en pantalla; cada una guarda su propia fuerza.
+
+Si los fotogramas ya tienen su propia exposición, no vuelvas a aplicar el preset a todos. Edita una foto, copia sus ajustes (**Ctrl/Cmd+C**) y pégalos (**Ctrl/Cmd+V**) con solo **Look (LUT)** marcado. Eso copia la tabla y su mezcla, y deja el resto de grupos como estaban. Al exportar la selección, los archivos bajan en un único ZIP. La página de [editar fotos por lotes](/es/herramientas/editar-fotos-por-lotes) explica la copia, el pegado y el ZIP.
+
+### Pruébalo con Coastal Mist
+
+No hace falta un pack de pago. **Coastal Mist** (en español, *Bruma costera*) es un `.cube` de 33×33×33 del [pack gratis de presets y LUTs](/es/presets-luts-gratis), con licencia CC0 (`TITLE "Coastal Mist"`). Descarga [coastal-mist.cube](/downloads/free-presets-pack/coastal-mist/coastal-mist.cube) e impórtalo igual. Aclara las sombras y las enfría; en un JPEG sRGB normal suele bastar un 60–80 % antes de tocar la exposición. El pack tiene ocho looks, cada uno en `.cube` y en `.xmp`.
+
+## Qué no hace el editor
+
+- **No** exporta un `.cube` y **no** genera uno a partir de tus controles. El preset que descargas es un JSON de Lightframes, y ese JSON puede incluir los datos del LUT para volver a importarlo aquí.
+- **No** lee `.cube` 1D, ni `.3dl`, `.look` o `.csp`.
+- Aplica la tabla a la **imagen revelada de 8 bits**, no a los datos lineales del sensor. Un RAW se revela primero; el LUT corre después sobre ese resultado, en la vista previa y en la exportación a resolución completa.
+- Un LUT de conversión log no sirve para una foto normal. Usa un LUT hecho para fotos en Rec.709 o sRGB.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />

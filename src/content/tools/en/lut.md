@@ -46,7 +46,7 @@ updated: 2026-11-08
 
 ## What applying a LUT in Lightframes means
 
-A LUT (look-up table) is a file that maps every input colour to an output colour, and applying one gives a photo a ready-made colour grade in one step. Lightframes reads 3D LUTs in the common `.cube` format, the same files often sold or shared as film emulations and cinematic looks, and lets you apply them to still photos, including camera RAW files. It is for photographers who already own LUTs, video creators who want matching stills, and anyone who wants a consistent grade across a set. The editor is free, open source and runs in the browser.
+A LUT (look-up table) is a file that maps every input colour to an output colour, and applying one gives a photo a ready-made colour grade in one step. Lightframes reads 3D LUTs in the common `.cube` format, the same files often sold or shared as film emulations and cinematic looks, and lets you apply them to still photos, including camera RAW files. It is for photographers who already own LUTs, video creators who want matching stills, and anyone who wants a consistent grade across a set. The editor is free, open source and runs in the browser. For what `LUT_3D_SIZE` and the RGB table mean, and how a `.cube` differs from a Lightroom preset, read [what a .cube LUT is and how to use it on photos](/blog/what-is-a-cube-lut).
 
 ## How it works, and why it stays on your device
 
