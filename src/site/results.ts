@@ -227,10 +227,3 @@ export function resultExamples(lang: Lang): ResultExample[] {
 export function exampleForTool(toolKey: string, lang: Lang): ResultExample | undefined {
   return resultExamples(lang).find((example) => example.toolKey === toolKey)
 }
-
-/** The adjusted sample used as the hero result. Same file as the develop “after”. */
-export function heroResult(lang: Lang): Still {
-  const example = exampleForTool('raw-to-jpg', lang)!
-  const after = example.shots[1]!
-  return { ...after, label: lang === 'es' ? 'Resultado' : 'Result', priority: true }
-}

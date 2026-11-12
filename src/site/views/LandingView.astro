@@ -6,7 +6,7 @@ import { SITE, absoluteUrl } from '../config'
 import { entryPath, getFaq, getPosts, getTools } from '../content'
 import { editorPath, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
 import { landing } from '../landing'
-import { heroResult, resultExamples } from '../results'
+import { resultExamples } from '../results'
 import { xmpLandingPath } from '../xmpLanding'
 import Base from '../layouts/Base.astro'
 import { faqPage, publishingOrganization, videoObject, webApplication, webPage } from '../schema'
@@ -24,7 +24,6 @@ const allTools = await getTools(lang)
 const tools = allTools.filter((tool) => tool.data.featured)
 const faq = (await getFaq(lang)).slice(0, 6)
 const posts = (await getPosts(lang)).slice(0, 3)
-const hero = heroResult(lang)
 const examples = resultExamples(lang)
 ---
 
@@ -56,7 +55,7 @@ const examples = resultExamples(lang)
     if (matchMedia('(display-mode: standalone)').matches) location.replace(editorHref)
   </script>
 
-  <link slot="head" rel="preload" as="image" href={hero.avif} type="image/avif" fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" href="/video/promo-poster.jpg" type="image/jpeg" fetchpriority="high" />
 
   <section class="hero wrap">
     <div class="hero__text">
@@ -75,13 +74,7 @@ const examples = resultExamples(lang)
       </p>
     </div>
 
-    <div class="hero__result">
-      <BeforeAfter shots={[{ ...hero, alt: c.heroAlt }]} caption={c.heroCaption} />
-    </div>
-  </section>
-
-  <section class="wrap promo-band" aria-label={c.video.label}>
-    <figure class="promo">
+    <figure class="promo hero__video">
       <video
         class="promo__video"
         src="/video/promo.mp4"

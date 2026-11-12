@@ -502,7 +502,7 @@ a {
     margin-top: 0;
   }
 
-  .hero__result {
+  .hero__video {
     order: 4;
   }
 
@@ -528,14 +528,6 @@ a {
     gap: 56px;
     padding-block: 64px 48px;
   }
-
-  .hero__result .ba__shot {
-    flex-basis: 100%;
-  }
-}
-
-.promo-band {
-  padding-bottom: clamp(8px, 2vw, 24px);
 }
 
 /* Before / after stills. Same idea as the free-presets pack: labeled frames in a row. */
