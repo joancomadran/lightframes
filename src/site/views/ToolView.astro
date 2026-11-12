@@ -1,5 +1,6 @@
 ---
 import { render } from 'astro:content'
+import BeforeAfter from '../components/BeforeAfter.astro'
 import Breadcrumbs from '../components/Breadcrumbs.astro'
 import EditorCta from '../components/EditorCta.astro'
 import FaqList from '../components/FaqList.astro'
@@ -8,6 +9,7 @@ import { absoluteUrl } from '../config'
 import { entryAlternates, entryPath, getTools, type Tool } from '../content'
 import { formatDate, href, langOf, ui } from '../i18n'
 import Base from '../layouts/Base.astro'
+import { exampleForTool } from '../results'
 import { breadcrumbs, faqPage, howTo, publishingOrganization, webApplication, webPage } from '../schema'
 
 interface Props {
@@ -25,6 +27,7 @@ const tools = await getTools(lang)
 const related = tools.filter((other) => other.data.featured && other.id !== tool.id).slice(0, 4)
 const editorQuery =
   data.key === 'raw-to-jpg' || data.key.endsWith('-to-jpg') ? '?intent=raw' : undefined
+const example = exampleForTool(data.key, lang)
 const crumbs = [
   { name: t.home, path: href('home', lang) },
   { name: t.tools, path: href('tools', lang) },
@@ -55,6 +58,15 @@ const crumbs = [
       <p class="lead">{data.lead}</p>
       <EditorCta lang={lang} editorQuery={editorQuery} />
     </header>
+
+    {
+      example && (
+        <section class="section-block" aria-labelledby="example-title">
+          <h2 id="example-title">{lang === 'es' ? 'Un ejemplo real' : 'A real example'}</h2>
+          <BeforeAfter shots={example.shots} caption={example.caption} />
+        </section>
+      )
+    }
 
     {
       data.steps.length > 0 && (

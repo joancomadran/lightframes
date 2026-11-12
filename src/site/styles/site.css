@@ -415,6 +415,21 @@ a {
   margin-top: 32px;
 }
 
+.hero__promise {
+  margin: 14px 0 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+/* The label is the whole offer, so it can wrap instead of overflowing a narrow screen. */
+.hero .button--large {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.25;
+  padding-block: 12px;
+  max-width: 100%;
+}
+
 .facts {
   display: flex;
   flex-wrap: wrap;
@@ -460,13 +475,132 @@ a {
   }
 }
 
+@media (max-width: 999px) {
+  /* Tagline, the editor button and the result stay on the first screen; the lead follows. */
+  .hero {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 28px;
+  }
+
+  .hero__text {
+    display: contents;
+  }
+
+  .hero h1 {
+    order: 1;
+  }
+
+  .hero__actions {
+    order: 2;
+    margin-top: 0;
+  }
+
+  .hero__promise {
+    order: 3;
+    margin-top: 0;
+  }
+
+  .hero__result {
+    order: 4;
+  }
+
+  .hero .lead {
+    order: 5;
+    margin-top: 0;
+  }
+
+  .hero .facts {
+    order: 6;
+    margin-top: 0;
+  }
+
+  .hero__aside {
+    order: 7;
+  }
+}
+
 @media (min-width: 1000px) {
   .hero {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     align-items: center;
     gap: 56px;
-    padding-block: 64px 104px;
+    padding-block: 64px 48px;
   }
+
+  .hero__result .ba__shot {
+    flex-basis: 100%;
+  }
+}
+
+.promo-band {
+  padding-bottom: clamp(8px, 2vw, 24px);
+}
+
+/* Before / after stills. Same idea as the free-presets pack: labeled frames in a row. */
+
+.ba__frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ba__shot {
+  margin: 0;
+  flex: 1 1 200px;
+  min-width: min(100%, 200px);
+}
+
+.ba__shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-panel);
+}
+
+.ba__shot--alpha img {
+  background-color: #121816;
+  background-image:
+    linear-gradient(45deg, #243028 25%, transparent 25%),
+    linear-gradient(-45deg, #243028 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #243028 75%),
+    linear-gradient(-45deg, transparent 75%, #243028 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+}
+
+.ba__shot figcaption {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.ba__note {
+  margin-top: 12px;
+  max-width: 72ch;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.ba-block + .ba-block {
+  margin-top: 48px;
+}
+
+.ba-block h3 {
+  margin-bottom: 12px;
+}
+
+.ba-block h3 a {
+  color: inherit;
+  text-underline-offset: 3px;
 }
 
 /* Promo video */

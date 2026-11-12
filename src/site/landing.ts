@@ -13,6 +13,14 @@ export const landing = {
     h1: 'The open-source photo editor that stays on your device',
     lead: 'Apply your own presets, Lightroom XMP files and .cube LUTs across a whole shoot, then export an Instagram-ready carousel. It all runs in the browser. Nothing is uploaded.',
     secondary: 'How it works',
+    cta: 'Open the editor — no sign-up',
+    promise: 'No uploads. It runs in this tab.',
+    heroCaption: 'twelve-apostles.jpg after exposure, colour and clarity. The before is with the examples below.',
+    heroAlt: 'Twelve Apostles sea stacks after exposure and colour adjustments in Lightframes',
+    results: {
+      h2: 'Before and after, from the sample photos',
+      lead: 'These are the sample photos shipped with the editor, processed with the same code. Nothing here is a mockup.',
+    },
     facts: ['Free and open source', 'Presets, XMP and LUTs', 'Nothing uploaded'],
     video: {
       label: 'Lightframes in action: editing, presets, batch export, AI tools and collages',
@@ -68,6 +76,14 @@ export const landing = {
     h1: 'El editor de fotos open source que se queda en tu dispositivo',
     lead: 'Aplica tus presets, archivos XMP de Lightroom y LUTs .cube a toda una sesión y exporta un carrusel listo para Instagram. Todo ocurre en el navegador. No se sube nada.',
     secondary: 'Cómo funciona',
+    cta: 'Abrir el editor — sin registro',
+    promise: 'Sin subir archivos. Se ejecuta en esta pestaña.',
+    heroCaption: 'twelve-apostles.jpg tras exposición, color y claridad. El antes está con los ejemplos de abajo.',
+    heroAlt: 'Los stacks de los Twelve Apostles tras ajustar exposición y color en Lightframes',
+    results: {
+      h2: 'Antes y después, con las fotos de ejemplo',
+      lead: 'Son las fotos de ejemplo que trae el editor, procesadas con el mismo código. No hay maquetas.',
+    },
     facts: ['Gratis y de código abierto', 'Presets, XMP y LUTs', 'Sin subir nada'],
     video: {
       label: 'Lightframes en acción: edición, presets, exportación por lotes, herramientas de IA y collages',

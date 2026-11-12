@@ -1,10 +1,12 @@
 ---
+import BeforeAfter from '../components/BeforeAfter.astro'
 import FaqList from '../components/FaqList.astro'
 import ToolList from '../components/ToolList.astro'
 import { SITE, absoluteUrl } from '../config'
 import { entryPath, getFaq, getPosts, getTools } from '../content'
 import { editorPath, formatDate, href, sectionAlternates, ui, type Lang } from '../i18n'
 import { landing } from '../landing'
+import { heroResult, resultExamples } from '../results'
 import { xmpLandingPath } from '../xmpLanding'
 import Base from '../layouts/Base.astro'
 import { faqPage, publishingOrganization, videoObject, webApplication, webPage } from '../schema'
@@ -22,6 +24,8 @@ const allTools = await getTools(lang)
 const tools = allTools.filter((tool) => tool.data.featured)
 const faq = (await getFaq(lang)).slice(0, 6)
 const posts = (await getPosts(lang)).slice(0, 3)
+const hero = heroResult(lang)
+const examples = resultExamples(lang)
 ---
 
 <Base
@@ -52,14 +56,17 @@ const posts = (await getPosts(lang)).slice(0, 3)
     if (matchMedia('(display-mode: standalone)').matches) location.replace(editorHref)
   </script>
 
+  <link slot="head" rel="preload" as="image" href={hero.avif} type="image/avif" fetchpriority="high" />
+
   <section class="hero wrap">
     <div class="hero__text">
       <h1>{c.h1}</h1>
       <p class="lead">{c.lead}</p>
       <div class="hero__actions">
-        <a class="button button--primary button--large" href={editorPath(lang)}>{t.openEditor}</a>
+        <a class="button button--primary button--large" href={editorPath(lang)}>{c.cta}</a>
         <a class="button button--ghost button--large" href="#how">{c.secondary}</a>
       </div>
+      <p class="hero__promise">{c.promise}</p>
       <ul class="facts">
         {c.facts.map((fact) => <li>{fact}</li>)}
       </ul>
@@ -68,6 +75,12 @@ const posts = (await getPosts(lang)).slice(0, 3)
       </p>
     </div>
 
+    <div class="hero__result">
+      <BeforeAfter shots={[{ ...hero, alt: c.heroAlt }]} caption={c.heroCaption} />
+    </div>
+  </section>
+
+  <section class="wrap promo-band" aria-label={c.video.label}>
     <figure class="promo">
       <video
         class="promo__video"
@@ -86,6 +99,23 @@ const posts = (await getPosts(lang)).slice(0, 3)
       ></video>
       <figcaption>{c.video.caption}</figcaption>
     </figure>
+  </section>
+
+  <section class="wrap section" aria-labelledby="results-title">
+    <header class="section__head">
+      <h2 id="results-title">{c.results.h2}</h2>
+      <p>{c.results.lead}</p>
+    </header>
+    {
+      examples.map((example) => (
+        <article class="ba-block">
+          <h3>
+            <a href={example.href}>{example.title}</a>
+          </h3>
+          <BeforeAfter shots={example.shots} caption={example.caption} />
+        </article>
+      ))
+    }
   </section>
 
   <section class="band" aria-labelledby="privacy-title">
