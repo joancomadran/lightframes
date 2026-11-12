@@ -1,0 +1,156 @@
+---
+key: browser-onnx
+slug: ia-en-el-navegador-editar-fotos
+title: "IA en el navegador para editar fotos"
+description: "IA en el navegador para editar fotos con ONNX Runtime Web (IS-Net, Real-ESRGAN y MI-GAN). Tus fotos se quedan en tu dispositivo y no se sube nada."
+h1: "¿Cómo edita Lightframes las fotos con IA dentro del navegador?"
+faq:
+  - q: "¿La foto se sube a algún servidor cuando uso la IA?"
+    a: "No. No se sube nada. La página entrega los píxeles a un Web Worker con postMessage. Lo único que se descarga son los modelos: IS-Net y Real-ESRGAN desde /models/ de este sitio, y MI-GAN desde una URL fijada de Hugging Face la primera vez que borras un objeto. La imagen no va en esa petición. Tus fotos se quedan en tu dispositivo."
+  - q: "¿Usa WebGPU o solo la CPU?"
+    a: "Quitar el fondo y borrar objetos cargan onnxruntime-web/wasm (1.30.0) y crean la sesión con el proveedor wasm, en un solo hilo, porque la página no está aislada entre orígenes y WASM no puede usar hilos. Ampliar carga onnxruntime-web/webgpu en otro worker y prueba webgpu si existe navigator.gpu. Si esa sesión no arranca, pasa a wasm. No hay más proveedores en el código."
+  - q: "¿De dónde sale cada archivo de modelo?"
+    a: "El recorte de fondo y la ampliación usan rutas del mismo origen: /models/isnet-general-use-int8.onnx y /models/realesr-general-x4v3.onnx. En este sitio las sirve lightframes.si. Borrar objetos usa https://huggingface.co/andraniksargsyan/migan/resolve/406830d0fa60666da0071c342ad2fbc8f30c5c64/migan_pipeline_v2.onnx. Cada archivo se compara con un SHA-256 de src/lib/aiModels.ts y, si coincide, se guarda en Cache Storage, en la caché lightframes-models."
+  - q: "¿Qué licencias tienen los modelos?"
+    a: "IS-Net general use (DIS, Xuebin Qin y colegas) es Apache-2.0. El archivo que se sirve es una cuantización dinámica a enteros de 8 bits de la publicación de rembg. Real-ESRGAN general x4v3 es BSD-3-Clause (Xintao Wang, 2021); la exportación ONNX es de Qualcomm AI Hub, también BSD-3-Clause, con los pesos externos unidos al .onnx y sin cambiarlos. MI-GAN (Picsart AI Research) es MIT y no está en el repositorio. El detalle está en public/models/NOTICE.md. Lightframes, el programa, es MIT."
+  - q: "¿Por qué la primera vez tarda, y qué pasa en un móvil?"
+    a: "La primera vez que usas una herramienta se descarga su modelo y se comprueba el hash. Después se reutiliza Cache Storage si los bytes siguen coincidiendo. El repositorio no publica tiempos: la ampliación va en un hilo WASM salvo que arranque la sesión WebGPU. La imagen ampliada tiene tope de 8192 px en el lado largo y de 40.000.000 de píxeles. La segmentación siempre prepara una entrada de 1024×1024. En un dispositivo con menos memoria hay menos sitio para el modelo y para esa salida; el código no trata el móvil aparte."
+published: 2026-11-12
+author: Lightframes
+tags: ["guias", "ia"]
+tools: ["background-remover", "upscaler", "remove-objects"]
+keywords:
+  - IA en el navegador para editar fotos
+  - modelos ONNX en el navegador
+  - quitar fondo con IA sin subir la foto
+  - ampliar foto Real-ESRGAN navegador
+  - borrar objetos MI-GAN en local
+  - ONNX Runtime Web fotos
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**La IA con la que editas en Lightframes no sale del navegador.** Quitar el fondo, ampliar y borrar un objeto cargan un modelo ONNX y hacen la inferencia en un Web Worker, con ONNX Runtime Web. Los píxeles se los pasa la propia página. No se sube nada: tus fotos se quedan en tu dispositivo. El editor es gratis y el código es [MIT](https://github.com/joancomadran/lightframes). Si partes de un RAW, el revelado también es local; el recorrido está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
+
+La interfaz del editor está en inglés. Si más abajo aparece un nombre de control, es el que verás en pantalla.
+
+## Tres trabajos, tres archivos
+
+El registro está en `MODELS`, dentro de [`src/lib/aiModels.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/aiModels.ts). Una ruta que empieza por `/models/` se resuelve contra el origen de la página. La de inpainting es absoluta y se queda en Hugging Face.
+
+```ts
+export const MODELS: Record<ModelId, { url: string; sha256: string }> = {
+  inpaint: {
+    url: 'https://huggingface.co/andraniksargsyan/migan/resolve/406830d0fa60666da0071c342ad2fbc8f30c5c64/migan_pipeline_v2.onnx',
+    sha256: '6f1f3530a1a2324b19752018ce756088b07973cda8d7d890034ace5c8a48c40b',
+  },
+  segment: {
+    url: '/models/isnet-general-use-int8.onnx',
+    sha256: '1143d3d61145ed4cf5c6651bc1388af49bdd9d0f4db3b7d7dbe07170efeaecac',
+  },
+  upscale: {
+    url: '/models/realesr-general-x4v3.onnx',
+    sha256: 'c6f13f8866203bc2aae3977eae6bce546b861e9e14e39682c03b17c9d6698c48',
+  },
+}
+```
+
+| Para qué | Modelo | Tensor de entrada | De dónde se baja |
+| --- | --- | --- | --- |
+| [Quitar el fondo](/es/herramientas/quitar-fondo-foto) y máscaras de sujeto | IS-Net general use, int8 | `input_image`, float32 `[1, 3, 1024, 1024]` | `/models/isnet-general-use-int8.onnx`, en este mismo sitio |
+| [Ampliar al exportar](/es/herramientas/ampliar-foto-ia) (2× o 4×) | Real-ESRGAN general x4v3 | `image`, float32 `[1, 3, 128, 128]` | `/models/realesr-general-x4v3.onnx`, en este mismo sitio |
+| [Borrar un objeto](/es/herramientas/borrar-objetos-foto) (Remove) | Export «pipeline» de MI-GAN | `image` y `mask`, uint8, del tamaño del recorte | Hugging Face, revisión `406830d0fa60666da0071c342ad2fbc8f30c5c64` |
+
+En [lightframes.si](https://www.lightframes.si) los dos archivos de `/models/` los sirve el propio sitio. En el repositorio pesan 45.314.968 bytes (`isnet-general-use-int8.onnx`) y 4.994.683 bytes (`realesr-general-x4v3.onnx`). MI-GAN no está en el repositorio, así que aquí no se dice cuánto ocupa. La descarga arranca al elegir la herramienta: Background o una máscara de sujeto preparan `segment`, un trazo en modo Remove prepara `inpaint`, y marcar 2× o 4× en el diálogo de exportación prepara `upscale`.
+
+## Dos workers: WebGPU solo al ampliar
+
+[`src/lib/ai.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/ai.ts) abre dos workers de tipo módulo. Fondo y borrado comparten `ai.worker.ts`, que importa `onnxruntime-web/wasm`. Ampliar usa `upscale.worker.ts`, que importa `onnxruntime-web/webgpu`: el runtime con WebGPU solo se pide si amplías. Los dos fijan `ort.env.wasm.numThreads = 1`. El comentario del worker de CPU lo explica: sin aislamiento entre orígenes, WASM no tiene hilos.
+
+El worker de CPU pide siempre WASM:
+
+```ts
+ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] })
+```
+
+El de ampliación prueba WebGPU y, si no hay GPU usable, WASM. No hay más lista.
+
+```ts
+async function createSession(bytes: ArrayBuffer): Promise<ort.InferenceSession> {
+  if ('gpu' in navigator) {
+    try {
+      return await ort.InferenceSession.create(bytes, { executionProviders: ['webgpu'] })
+    } catch {
+      // No usable adapter: fall through to the CPU.
+    }
+  }
+  return ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] })
+}
+```
+
+Los búferes de píxeles se transfieren al worker (no se copian) y el resultado vuelve igual, transferido. Si crear la sesión falla, se olvida la promesa para que el siguiente intento pueda repetirlo.
+
+## La caché y el SHA-256
+
+`loadModel` abre la caché `lightframes-models` de Cache Storage. Si esa URL ya está guardada, calcula el SHA-256 con `crypto.subtle.digest('SHA-256')` y lo compara con el hexadecimal de `MODELS`. Si no cuadra, borra la entrada. Si no hay copia válida, hace `fetch`, va informando de bytes leídos y de `content-length`, y rechaza el archivo cuando el hash no coincide (el error es `Model download is corrupted`). Si coincide, lo vuelve a guardar en la caché. Si `caches.open` falla, la inferencia usa igual los bytes recién bajados; simplemente no quedan guardados.
+
+En esa petición no va la foto. La descarga de Hugging Face es una descarga normal del archivo del modelo. Cuando la copia en caché coincide con el hash, `loadModel` la devuelve sin volver a pedirla.
+
+## Quitar el fondo: un cuadrado de 1024
+
+IS-Net calcula la máscara del sujeto una vez por foto, y la vista previa y la exportación reutilizan esa máscara. `sourceSquare` estira el encuadre a 1024×1024 (`SEGMENT_SIZE`). Si el origen es un canvas, lo dibuja en ese cuadrado. Si es un RAW lineal, muestrea el cuadrado y lo pasa a sRGB de 8 bits.
+
+El worker busca el máximo de los canales RGB (como mínimo 1) y escribe planos NCHW en float32, sin alfa:
+
+```ts
+input[k] = rgba[i]! / peak - 0.5
+input[plane + k] = rgba[i + 1]! / peak - 0.5
+input[plane * 2 + k] = rgba[i + 2]! / peak - 0.5
+```
+
+El tensor entra por `session.inputNames[0]`. En el archivo ese nombre es `input_image`. La salida float (`output_image`, leída como `outputNames[0]`) se normaliza de mínimo a máximo y pasa a un byte de alfa por píxel. `cleanCutout` tira las regiones conexas más pequeñas que el 3 % de la mayor (`SPECK_RATIO`) y deja un margen suave de 12 píxeles (`SUBJECT_MARGIN`) alrededor de lo que se conserva. Al pintar, esa máscara se recoloca según la orientación y el recorte: por eso un solo resultado de 1024 vale para cualquier tamaño de vista previa.
+
+El cuadrado fijo tiene un coste: un encuadre muy apaisado o muy vertical se remuestrea antes de que la red lo vea.
+
+## Ampliar: teselas de 128 y un ×4
+
+Real-ESRGAN general x4v3, la exportación ONNX de Qualcomm AI Hub, solo acepta una tesela fija. En [`upscale.worker.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/upscale.worker.ts) están `TILE = 128`, `PAD = 8` y `SCALE = 4`. Cada tesela es RGB de 0 a 1 (el byte dividido por 255), float32 `[1, 3, 128, 128]`; el alfa se ignora. La sesión devuelve `upscaled_image`, float32 `[1, 3, 512, 512]`.
+
+Las teselas avanzan de `128 − 2×8` píxeles en `128 − 2×8` (112). La última queda pegada al borde. Si un lado mide 128 o menos, hay una sola tesela y los píxeles del borde se repiten para rellenarla. El solape de 8 píxeles existe para poder descartar la costura, donde a la red le falta contexto: cada tesela se queda con la zona central, y la primera y la última se quedan también con el borde exterior.
+
+Si pides menos de ×4, el worker no monta un bitmap completo a ×4. Muestrea la tesela ×4 directamente al tamaño pedido. Por debajo de ×4, cada píxel de salida promedia una rejilla pequeña de esas muestras (`subs` llega como mucho a 3). El comentario del worker lo dice así: en memoria solo hace falta guardar la imagen final.
+
+[`upscale.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/upscale.ts) hace esto al exportar, no en cada movimiento de un control. `upscaleFactor` coge el 2× o el 4× que pediste y lo limita por el lado largo de la exportación, por 8192 px (`MAX_OUTPUT_EDGE`) y por 40.000.000 de píxeles (`MAX_OUTPUT_PIXELS`). Por debajo de 1,1 ni se intenta. Después se mezcla un 20 % de un reescalado suave del original (`TEXTURE_MIX = 0,2`): la red limpia tanto ruido que la piel puede quedar cerosa. Si algún píxel de origen era transparente, el modelo escribe alfa opaco igualmente, y el alfa original se amplía y se aplica con `destination-in`.
+
+## Borrar un objeto: el pipeline de MI-GAN
+
+Cómo elegir entre Heal, Clone y Remove está en [quitar objetos de una foto online](/es/blog/quitar-objetos-foto-online). El modelo es la entrada `inpaint` de arriba.
+
+La exportación «pipeline» de MI-GAN, descrita al principio de `aiModels.ts`, recibe el recorte y una máscara del hueco, hace por su cuenta el recorte y el cambio de tamaño a 512, mezcla y devuelve una imagen del mismo tamaño que la entrada:
+
+- `image`: uint8 `[1, 3, H, W]`, RGB en planos
+- `mask`: uint8 `[1, 1, H, W]`, 255 = conservar, 0 = rellenar
+- `result`: uint8 `[1, 3, H, W]`
+
+La app no manda la foto entera cuando basta un alrededor. `inpaint.ts` recorta alrededor del trazo y deja el lado largo en `PATCH_EDGE` como máximo (1024), porque la red trabaja a 512 de todos modos. `holeMask` rellena la máscara de 255 y escribe 0 donde ha pasado el pincel. Los trazos van de uno en uno y en orden, así que un trazo posterior ve los rellenos anteriores. Lo que se pega es ese parche; el archivo original no se modifica.
+
+## Licencias
+
+El registro está en [`public/models/NOTICE.md`](https://github.com/joancomadran/lightframes/blob/main/public/models/NOTICE.md):
+
+- **IS-Net general use**, de DIS (Xuebin Qin y colegas), licencia Apache 2.0. Los pesos que se sirven se cuantizaron de forma dinámica a enteros de 8 bits con ONNX Runtime (`quantize_dynamic`, `QUInt8`, por canal). El archivo de origen es el `isnet-general-use.onnx` de las publicaciones de rembg.
+- **Real-ESRGAN general x4v3**, copyright de Xintao Wang, 2021, BSD-3-Clause. El grafo ONNX es la exportación de Qualcomm AI Hub (BSD-3-Clause, versión v0.64.0, precisión float). Lightframes unió el archivo externo de pesos dentro del `.onnx` y no tocó los pesos. El texto de la licencia es `public/models/LICENSE-realesrgan.txt`.
+- **MI-GAN**, de Picsart AI Research, MIT para el código y para los pesos. Se descarga en el momento de usarlo, desde el archivo fijado de Hugging Face, y no vive en `public/models/`.
+
+Lightframes es MIT. La licencia de cada modelo es otra cosa.
+
+## Lo que el código no promete
+
+- **La primera vez se descarga un modelo.** Fondo y ampliación salen de `/models/` en el origen de la página. Borrar objetos sale de Hugging Face. Hasta que ese archivo está en caché y el hash cuadra, hace falta red. Usar el modelo sin red empieza cuando esa entrada de caché ya existe.
+- **La velocidad depende del navegador y del equipo.** WebGPU solo entra si existe `navigator.gpu` y `InferenceSession.create` con `webgpu` funciona. Si no, el mismo modelo va en un hilo WASM. En el repositorio no hay tiempos publicados.
+- **La memoria tiene topes en el código, no una medida por móvil.** Al ampliar se guarda la imagen RGBA final, y no se pasa de 8192 px en el lado largo ni de 40.000.000 de píxeles, para quedarse en lo que un navegador puede sostener. La segmentación reserva una entrada float32 de 1024×1024×3. En un equipo con menos RAM hay menos sitio para el modelo y para esos búferes. El código no tiene un camino distinto para el teléfono.
+- **Las redes tienen forma fija.** IS-Net ve un cuadrado estirado. Real-ESRGAN ve 128×128. El pipeline de MI-GAN lleva su recorte a 512. Eso es la forma del grafo, no una nota de calidad.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
