@@ -48,7 +48,7 @@ const SUBJECT_MARGIN = 12
  * foliage): keep the solid regions of subject size, plus a soft margin
  * around them, and clear everything else.
  */
-function cleanCutout(alpha: Uint8ClampedArray, n: number): Uint8ClampedArray<ArrayBuffer> {
+export function cleanCutout(alpha: Uint8ClampedArray, n: number): Uint8ClampedArray<ArrayBuffer> {
   const labels = new Int32Array(n * n).fill(-1)
   const sizes: number[] = []
   const stack = new Int32Array(n * n)

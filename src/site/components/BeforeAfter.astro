@@ -1,0 +1,39 @@
+---
+/**
+ * Side-by-side stills, same pattern as the free-presets pack: a figure, a
+ * caption under it, several of them in a row.
+ */
+import type { Still } from '../results'
+
+interface Props {
+  shots: Still[]
+  caption?: string
+}
+
+const { shots, caption } = Astro.props
+---
+
+<div class="ba">
+  <div class="ba__frames">
+    {
+      shots.map((shot) => (
+        <figure class:list={['ba__shot', shot.transparent && 'ba__shot--alpha']}>
+          <picture>
+            <source srcset={shot.avif} type="image/avif" />
+            <img
+              src={shot.src}
+              width={shot.width}
+              height={shot.height}
+              alt={shot.alt}
+              loading={shot.priority ? 'eager' : 'lazy'}
+              decoding={shot.priority ? 'sync' : 'async'}
+              fetchpriority={shot.priority ? 'high' : undefined}
+            />
+          </picture>
+          <figcaption>{shot.label}</figcaption>
+        </figure>
+      ))
+    }
+  </div>
+  {caption && <p class="ba__note">{caption}</p>}
+</div>
