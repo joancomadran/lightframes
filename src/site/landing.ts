@@ -15,8 +15,6 @@ export const landing = {
     secondary: 'How it works',
     cta: 'Open the editor — no sign-up',
     promise: 'No uploads. It runs in this tab.',
-    heroCaption: 'twelve-apostles.jpg after exposure, colour and clarity. The before is with the examples below.',
-    heroAlt: 'Twelve Apostles sea stacks after exposure and colour adjustments in Lightframes',
     results: {
       h2: 'Before and after, from the sample photos',
       lead: 'These are the sample photos shipped with the editor, processed with the same code. Nothing here is a mockup.',
@@ -78,8 +76,6 @@ export const landing = {
     secondary: 'Cómo funciona',
     cta: 'Abrir el editor — sin registro',
     promise: 'Sin subir archivos. Se ejecuta en esta pestaña.',
-    heroCaption: 'twelve-apostles.jpg tras exposición, color y claridad. El antes está con los ejemplos de abajo.',
-    heroAlt: 'Los stacks de los Twelve Apostles tras ajustar exposición y color en Lightframes',
     results: {
       h2: 'Antes y después, con las fotos de ejemplo',
       lead: 'Son las fotos de ejemplo que trae el editor, procesadas con el mismo código. No hay maquetas.',
