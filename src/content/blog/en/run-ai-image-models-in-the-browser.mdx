@@ -1,0 +1,154 @@
+---
+key: browser-onnx
+slug: run-ai-image-models-in-the-browser
+title: "Run AI models in the browser"
+description: "Run AI models in the browser with an ONNX Runtime Web image model (IS-Net, Real-ESRGAN, MI-GAN). Your photos stay on your device; nothing is uploaded."
+h1: "How do you run AI image models in the browser?"
+faq:
+  - q: "Are photos uploaded when the AI runs?"
+    a: "No. Nothing is uploaded. The page passes pixel buffers to a Web Worker with postMessage. The only fetches are model files: IS-Net and Real-ESRGAN from this site's /models/, and MI-GAN from a pinned Hugging Face URL the first time you remove an object. The image is not part of those requests. Your photos stay on your device."
+  - q: "Which ONNX Runtime Web execution providers are used?"
+    a: "Inpainting and segmentation load onnxruntime-web/wasm (1.30.0) and create the session with executionProviders set to wasm. WASM is limited to one thread because the page is not cross-origin isolated. Upscaling loads onnxruntime-web/webgpu in a separate worker and tries webgpu when navigator.gpu exists. If that session cannot be created, it uses wasm. No other provider is configured."
+  - q: "Where is each model downloaded from?"
+    a: "Background removal and upscaling use same-origin paths /models/isnet-general-use-int8.onnx and /models/realesr-general-x4v3.onnx, so on this site they come from lightframes.si. Object removal uses https://huggingface.co/andraniksargsyan/migan/resolve/406830d0fa60666da0071c342ad2fbc8f30c5c64/migan_pipeline_v2.onnx. Each file is checked against a SHA-256 in src/lib/aiModels.ts and, when the hash matches, stored in the Cache Storage cache named lightframes-models."
+  - q: "What licences cover the models?"
+    a: "IS-Net general use (DIS, Xuebin Qin et al.) is Apache-2.0. The file here is an int8 dynamic quantization of the rembg release. Real-ESRGAN general x4v3 is BSD-3-Clause (Xintao Wang, 2021); the ONNX export is Qualcomm AI Hub's, also BSD-3-Clause, with the external weights merged into the .onnx and no change to the weights. MI-GAN (Picsart AI Research) is MIT and is not stored in the repo. See public/models/NOTICE.md. Lightframes itself is MIT."
+  - q: "Why can the first use take a while, and what limits the size?"
+    a: "The first use of a tool downloads that model and checks the hash. A later run reuses Cache Storage when the stored bytes still match. The project publishes no speed figures: upscaling is one WASM thread unless the WebGPU session starts. The upscaled image is capped at 8192 px on the long edge and 40,000,000 pixels. Segmentation always builds a 1024×1024 input. Devices with less memory have less room for the model file and that output."
+published: 2026-11-12
+author: Lightframes
+tags: ["guides", "ai"]
+tools: ["background-remover", "upscaler", "remove-objects"]
+keywords:
+  - run AI models in the browser
+  - ONNX Runtime Web image model
+  - in-browser background removal IS-Net
+  - Real-ESRGAN browser upscale
+  - MI-GAN inpainting browser
+  - on-device photo AI no upload
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Lightframes runs its image models in the browser with ONNX Runtime Web.** [Background removal](/tools/background-remover), the [AI image upscaler](/tools/ai-image-upscaler) and [object removal](/tools/remove-objects-from-photos) each create a local ONNX session inside a Web Worker. The photo is handed to that worker as pixels. Nothing is uploaded, and your photos stay on your device. The editor is free and [MIT-licensed](https://github.com/joancomadran/lightframes). The same on-device path runs after a RAW decode; that pipeline is covered in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
+
+## Which model does each tool load?
+
+The registry is `MODELS` in [`src/lib/aiModels.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/aiModels.ts). Relative URLs are resolved against the worker's origin, so `/models/…` is this site. The inpaint URL is absolute, so it stays on Hugging Face.
+
+```ts
+export const MODELS: Record<ModelId, { url: string; sha256: string }> = {
+  inpaint: {
+    url: 'https://huggingface.co/andraniksargsyan/migan/resolve/406830d0fa60666da0071c342ad2fbc8f30c5c64/migan_pipeline_v2.onnx',
+    sha256: '6f1f3530a1a2324b19752018ce756088b07973cda8d7d890034ace5c8a48c40b',
+  },
+  segment: {
+    url: '/models/isnet-general-use-int8.onnx',
+    sha256: '1143d3d61145ed4cf5c6651bc1388af49bdd9d0f4db3b7d7dbe07170efeaecac',
+  },
+  upscale: {
+    url: '/models/realesr-general-x4v3.onnx',
+    sha256: 'c6f13f8866203bc2aae3977eae6bce546b861e9e14e39682c03b17c9d6698c48',
+  },
+}
+```
+
+| Tool | Model | Input the session sees | Where the bytes come from |
+| --- | --- | --- | --- |
+| Background removal, and subject masks | IS-Net general use, int8 | `input_image`, float32 `[1, 3, 1024, 1024]` | `/models/isnet-general-use-int8.onnx` on this origin |
+| Upscale at export (2× or 4×) | Real-ESRGAN general x4v3 | `image`, float32 `[1, 3, 128, 128]` | `/models/realesr-general-x4v3.onnx` on this origin |
+| Object removal (Remove) | MI-GAN pipeline export | `image` and `mask`, uint8, the size of the crop | Hugging Face, revision `406830d0fa60666da0071c342ad2fbc8f30c5c64` |
+
+On [lightframes.si](https://www.lightframes.si) the two `/models/` files are served by the site itself. The files in the repository are 45,314,968 bytes (`isnet-general-use-int8.onnx`) and 4,994,683 bytes (`realesr-general-x4v3.onnx`). MI-GAN is not in the repository, so this post does not state its size. The download starts when you open the matching control: Background or a subject mask preloads `segment`, a Remove stroke preloads `inpaint`, and choosing 2× or 4× in the export dialog preloads `upscale`.
+
+## Two workers, and only WebGPU or WASM
+
+[`src/lib/ai.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/ai.ts) keeps two module workers. Inpaint and segment share `ai.worker.ts`, which imports `onnxruntime-web/wasm`. Upscale uses `upscale.worker.ts`, which imports `onnxruntime-web/webgpu`, so that build is fetched only if you upscale. Both set `ort.env.wasm.numThreads = 1`. The comment in the CPU worker says why: there is no cross-origin isolation, so WASM threads are not available.
+
+The CPU worker always asks for WASM:
+
+```ts
+ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] })
+```
+
+The upscale worker tries WebGPU, then WASM. That is the whole provider list.
+
+```ts
+async function createSession(bytes: ArrayBuffer): Promise<ort.InferenceSession> {
+  if ('gpu' in navigator) {
+    try {
+      return await ort.InferenceSession.create(bytes, { executionProviders: ['webgpu'] })
+    } catch {
+      // No usable adapter: fall through to the CPU.
+    }
+  }
+  return ort.InferenceSession.create(bytes, { executionProviders: ['wasm'] })
+}
+```
+
+Pixel buffers are transferred, not copied, into the worker, and the result buffer is transferred back. A failed session is dropped so the next attempt can create it again.
+
+## Cache Storage and a SHA-256 check
+
+`loadModel` opens the Cache Storage cache `lightframes-models`. If that URL is already stored, the bytes are hashed with `crypto.subtle.digest('SHA-256')` and compared with the hex digest in `MODELS`. A mismatch deletes the entry. Otherwise the worker `fetch`es the URL, reports loaded and total bytes while reading the body, and refuses the buffer when the hash does not match (`Model download is corrupted`). A matching download is put back into the cache. If `caches.open` throws, inference still uses the bytes it just downloaded; they are simply not stored.
+
+The image never goes on that request. A Hugging Face fetch is still a normal browser download of the model file. Once a cached copy matches, `loadModel` returns it without fetching again.
+
+## Background removal: a 1024 square
+
+IS-Net's salient-object mask is computed once per photo and reused by the preview and the export. `sourceSquare` stretches the frame to 1024×1024 (`SEGMENT_SIZE`). A canvas source is drawn into that square. A linear RAW buffer is sampled into the square and encoded to 8-bit sRGB.
+
+The worker then finds the peak RGB value (at least 1) and writes planar NCHW floats, dropping alpha:
+
+```ts
+input[k] = rgba[i]! / peak - 0.5
+input[plane + k] = rgba[i + 1]! / peak - 0.5
+input[plane * 2 + k] = rgba[i + 2]! / peak - 0.5
+```
+
+The tensor is passed under `session.inputNames[0]` (the file names that input `input_image`). The float output (`output_image`, read as `outputNames[0]`) is min–max scaled to a byte of alpha per pixel. `cleanCutout` then drops connected regions smaller than 3% of the largest one (`SPECK_RATIO`) and keeps a soft 12-pixel margin (`SUBJECT_MARGIN`) around what remains. At render time that mask is mapped through orientation and crop, which is why one 1024 result serves every preview size.
+
+A fixed square is a real constraint: a very wide or very tall frame is resampled before the network sees it.
+
+## Upscaling: 128×128 tiles, ×4
+
+Real-ESRGAN general x4v3, the Qualcomm AI Hub ONNX export, takes a fixed tile. [`upscale.worker.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/upscale.worker.ts) sets `TILE = 128`, `PAD = 8` and `SCALE = 4`. Each tile is RGB in 0–1 (`byte / 255`), float32 `[1, 3, 128, 128]`, alpha ignored. The session returns `upscaled_image`, float32 `[1, 3, 512, 512]`.
+
+Tiles step by `128 − 2×8` (112) pixels. The last tile is flush with the end of the edge. A side shorter than or equal to 128 is one tile, with edge pixels repeated to fill it. Overlap exists so the seam, where the network has less context, can be thrown away: each tile keeps the output whose centres fall in its middle, and the first and last tiles also keep the outer edge.
+
+If you asked for less than ×4, the worker does not build a full ×4 bitmap. It samples the ×4 tile straight into the requested size. Below ×4, each output pixel averages a small grid of those samples (`subs` is at most 3). The comment in the worker says memory then only has to hold the final image.
+
+[`upscale.ts`](https://github.com/joancomadran/lightframes/blob/main/src/lib/upscale.ts) runs this at export, not on every slider move. `upscaleFactor` takes the 2× or 4× you asked for and caps it by the export long edge, by 8192 px (`MAX_OUTPUT_EDGE`) and by 40,000,000 pixels (`MAX_OUTPUT_PIXELS`). A factor under 1.1 is skipped. After the model, 20% of a smooth resize of the original is mixed back (`TEXTURE_MIX = 0.2`), because the network denoises hard and skin can look waxy. If any source pixel was transparent, the model still writes opaque alpha, and the original alpha is scaled up and applied with `destination-in`.
+
+## Object removal: the MI-GAN pipeline
+
+The practical steps for Heal, Clone and Remove are in [remove objects from photos online](/blog/remove-objects-from-photos-online). The model path is the `inpaint` entry above.
+
+MI-GAN's pipeline export, documented at the top of `aiModels.ts`, takes the whole crop plus a hole mask, does its own crop and resize to 512, blends, and returns an image the size of the input:
+
+- `image`: uint8 `[1, 3, H, W]`, RGB, planar
+- `mask`: uint8 `[1, 1, H, W]`, 255 = keep, 0 = fill
+- `result`: uint8 `[1, 3, H, W]`
+
+The app does not send the full photo when a smaller context is enough. `inpaint.ts` crops around the stroke, with the long side at most `PATCH_EDGE` (1024), because the network works at 512 anyway. `holeMask` fills the mask with 255 and writes 0 where the brush landed. Spots run one at a time, in order, so a later stroke sees earlier fills. The patch is what gets pasted; the original file is not modified.
+
+## Licences
+
+[`public/models/NOTICE.md`](https://github.com/joancomadran/lightframes/blob/main/public/models/NOTICE.md) is the record:
+
+- **IS-Net general use**, from DIS (Xuebin Qin et al.), Apache License 2.0. The weights shipped here were dynamically quantized to 8-bit integers with ONNX Runtime (`quantize_dynamic`, `QUInt8`, per channel). The source weights came from the rembg release of `isnet-general-use.onnx`.
+- **Real-ESRGAN general x4v3**, Copyright (c) 2021, Xintao Wang, BSD-3-Clause. The ONNX graph is Qualcomm AI Hub's export (BSD-3-Clause, release v0.64.0, float). Lightframes merged the external weights file into the `.onnx` and did not change the weights. The licence text is `public/models/LICENSE-realesrgan.txt`.
+- **MI-GAN**, Picsart AI Research, MIT for the code and the weights. It is downloaded at runtime from the pinned Hugging Face file, not stored under `public/models/`.
+
+Lightframes is MIT. The model licences are not the same thing as the app licence.
+
+## What this does not promise
+
+- **The first use downloads a model.** Segment and upscale come from `/models/` on the page origin. Object removal comes from Hugging Face. Until that file is cached with a matching hash, the tool needs the network. Offline use of a model starts after that cache entry exists.
+- **Speed depends on the browser and the device.** WebGPU is used only when `navigator.gpu` is present and `InferenceSession.create` with `webgpu` succeeds. Otherwise the same model runs on one WASM thread. This repository does not publish timings.
+- **Memory is bounded in code, not measured per phone.** The upscaler keeps the final RGBA image and refuses to grow past 8192 px on the long edge or 40,000,000 pixels, so the result stays within what browsers can hold. Segmentation allocates a 1024×1024×3 float32 input. A device with less RAM has less room for the model and those buffers. The code does not special-case phones.
+- **The networks have fixed shapes.** IS-Net sees a stretched square. Real-ESRGAN sees 128×128. MI-GAN's pipeline resizes its crop to 512. Those are properties of the graphs, not quality scores.
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
