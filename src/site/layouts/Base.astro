@@ -3,6 +3,7 @@
 import '@fontsource-variable/bricolage-grotesque/opsz.css'
 import '@fontsource-variable/figtree'
 import Analytics from '@vercel/analytics/astro'
+import { analyticsPathClient } from '../analyticsPath'
 import Footer from '../components/Footer.astro'
 import Header from '../components/Header.astro'
 import StarLink from '../components/StarLink.astro'
@@ -109,6 +110,7 @@ const ogImageAlt = ogImage === SITE.ogImage ? t.ogImageAlt : pageTitle
     <Footer lang={lang} />
     <StarLink label={t.starGithub} floating />
     <Analytics />
+    <script is:inline set:html={analyticsPathClient}></script>
     <script>
       // The control stays in the corner. On short screens it would sit on a button or the
       // video's own controls, so lift it just clear of those and leave it otherwise.
