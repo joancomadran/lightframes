@@ -1,0 +1,140 @@
+---
+/**
+ * Draggable before/after split. Same read as the editor preview: the original
+ * stays on the left of the line, the result on the right, and the handle tracks
+ * the pointer. No network and no extra packages — the stills are the ones already
+ * shipped in public/site/results/.
+ */
+import type { Still } from '../results'
+
+interface Props {
+  before: Still
+  after: Still
+  /** Accessible name for the handle, in the page language. */
+  label: string
+}
+
+const { before, after, label } = Astro.props
+const ratio = `${before.width} / ${before.height}`
+---
+
+<div
+  class:list={['compare', after.transparent && 'compare--alpha']}
+  data-compare
+  style={`--pos: 50%; --ratio: ${ratio};`}
+>
+  <div class="compare__frame">
+    <picture class="compare__layer compare__layer--before">
+      <source srcset={before.avif} type="image/avif" />
+      <img
+        src={before.src}
+        width={before.width}
+        height={before.height}
+        alt={before.alt}
+        draggable="false"
+        loading={before.priority ? 'eager' : 'lazy'}
+        decoding={before.priority ? 'sync' : 'async'}
+      />
+    </picture>
+    <picture class="compare__layer compare__layer--after">
+      <source srcset={after.avif} type="image/avif" />
+      <img
+        src={after.src}
+        width={after.width}
+        height={after.height}
+        alt={after.alt}
+        draggable="false"
+        loading={after.priority ? 'eager' : 'lazy'}
+        decoding={after.priority ? 'sync' : 'async'}
+      />
+    </picture>
+  </div>
+  <div
+    class="compare__handle"
+    data-compare-handle
+    role="slider"
+    tabindex="0"
+    aria-label={label}
+    aria-orientation="horizontal"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="50"
+    aria-valuetext={`${before.label} 50%, ${after.label} 50%`}
+    data-before={before.label}
+    data-after={after.label}
+  >
+    <span class="compare__label compare__label--before">{before.label}</span>
+    <span class="compare__label compare__label--after">{after.label}</span>
+    <span class="compare__grip" aria-hidden="true"></span>
+  </div>
+</div>
+
+<script>
+  const KEY_STEP = 2
+  const PAGE_STEP = 10
+
+  function setPos(root: HTMLElement, percent: number) {
+    const pct = Math.min(100, Math.max(0, percent))
+    root.style.setProperty('--pos', `${pct}%`)
+    const handle = root.querySelector<HTMLElement>('[data-compare-handle]')
+    if (!handle) return
+    const rounded = Math.round(pct)
+    const before = handle.dataset.before ?? ''
+    const after = handle.dataset.after ?? ''
+    handle.setAttribute('aria-valuenow', String(rounded))
+    handle.setAttribute('aria-valuetext', `${before} ${rounded}%, ${after} ${100 - rounded}%`)
+  }
+
+  function pointerPercent(root: HTMLElement, clientX: number) {
+    const rect = root.getBoundingClientRect()
+    if (rect.width <= 0) return 50
+    return ((clientX - rect.left) / rect.width) * 100
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-compare]')) {
+    const handle = root.querySelector<HTMLElement>('[data-compare-handle]')
+    if (!handle) continue
+
+    handle.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return
+      handle.setPointerCapture(event.pointerId)
+      setPos(root, pointerPercent(root, event.clientX))
+    })
+
+    handle.addEventListener('pointermove', (event) => {
+      if (!handle.hasPointerCapture(event.pointerId)) return
+      setPos(root, pointerPercent(root, event.clientX))
+    })
+
+    handle.addEventListener('keydown', (event) => {
+      const current = Number(handle.getAttribute('aria-valuenow') ?? '50')
+      let next: number | null = null
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowDown':
+          next = current - (event.shiftKey ? PAGE_STEP : KEY_STEP)
+          break
+        case 'ArrowRight':
+        case 'ArrowUp':
+          next = current + (event.shiftKey ? PAGE_STEP : KEY_STEP)
+          break
+        case 'PageDown':
+          next = current - PAGE_STEP
+          break
+        case 'PageUp':
+          next = current + PAGE_STEP
+          break
+        case 'Home':
+          next = 0
+          break
+        case 'End':
+          next = 100
+          break
+        default:
+          return
+      }
+      event.preventDefault()
+      setPos(root, next)
+    })
+  }
+</script>

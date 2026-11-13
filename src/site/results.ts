@@ -47,6 +47,11 @@ export interface ResultExample {
   title: string
   caption: string
   shots: Still[]
+  /**
+   * Home before/after showcase. Tool pages still pick the example up through
+   * `exampleForTool`, so `false` only hides it on `/` and `/es`.
+   */
+  home?: boolean
 }
 
 const PATHS: Record<Lang, Record<string, string>> = {
@@ -130,6 +135,9 @@ export function resultExamples(lang: Lang): ResultExample[] {
     {
       toolKey: 'remove-objects',
       href: href['remove-objects'],
+      // The heal still reads as a smudge at landing size, so the home showcase skips it.
+      // The remove-objects tool pages keep this pair, including the still files.
+      home: false,
       title: en ? 'Person healed out' : 'Persona eliminada con el parche',
       caption: en
         ? 'A crop of public/samples/pagoda.jpg. After is one Heal spot on the person standing on the gravel: brush radius about 53 px on the long edge, copying gravel from 110 px left and 70 px up, then blended by the editor’s Heal code. The brush also reaches the second person, who stands against the eaves, so that edge stays soft. An inpaint of these figures filled the hole with leaves, so this still is the Heal result.'

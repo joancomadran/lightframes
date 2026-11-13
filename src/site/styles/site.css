@@ -586,8 +586,185 @@ a {
   margin-top: 48px;
 }
 
+.ba-grid {
+  display: grid;
+  gap: 40px 24px;
+}
+
+.ba-grid > .ba-block + .ba-block {
+  margin-top: 0;
+}
+
+.ba-stack {
+  margin-top: 48px;
+}
+
+@media (min-width: 860px) {
+  .ba-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .ba-block--lead {
+    grid-column: 1 / -1;
+  }
+}
+
 .ba-block h3 {
   margin-bottom: 12px;
+}
+
+/* Landing compare handle. Mirrors the editor split divider (src/index.css .split-divider):
+   white line, round grip, before on the left of the line and after on the right. */
+
+.compare {
+  --pos: 50%;
+  position: relative;
+  aspect-ratio: var(--ratio, 3 / 2);
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-panel);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.compare__frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.compare--alpha .compare__frame {
+  background-color: #121816;
+  background-image:
+    linear-gradient(45deg, #243028 25%, transparent 25%),
+    linear-gradient(-45deg, #243028 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #243028 75%),
+    linear-gradient(-45deg, transparent 75%, #243028 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+}
+
+.compare__layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: block;
+}
+
+.compare__layer--before {
+  /* 1px under the after layer so a subpixel seam never shows the page background. */
+  clip-path: inset(0 calc(100% - var(--pos) - 1px) 0 0);
+}
+
+.compare__layer--after {
+  clip-path: inset(0 0 0 var(--pos));
+}
+
+.compare__layer img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.compare__handle {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: var(--pos);
+  width: 44px;
+  margin: 0;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.compare__handle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.compare__handle:focus {
+  outline: none;
+}
+
+.compare__handle:focus-visible .compare__grip {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.compare__grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+
+.compare__grip::before {
+  content: '‹ ›';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #222;
+  letter-spacing: 0.1em;
+}
+
+.compare__label {
+  position: absolute;
+  top: 0.6rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(12, 16, 14, 0.7);
+  font-family: var(--font-ui);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.compare__label--before {
+  right: calc(50% + 20px);
+}
+
+.compare__label--after {
+  left: calc(50% + 20px);
 }
 
 .ba-block h3 a {
