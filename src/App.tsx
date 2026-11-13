@@ -30,6 +30,7 @@ import { Toast } from './components/Toast'
 import { ToneCurvePanel } from './components/ToneCurvePanel'
 import { Toolbar } from './components/Toolbar'
 import { PANELS, useEditorSession, type PanelId } from './hooks/useEditorSession'
+import { useEditorLang } from './hooks/useEditorLang'
 import { PHONE_QUERY, useMediaQuery } from './hooks/useMediaQuery'
 import { useSheetSwipe } from './hooks/useSheetSwipe'
 import type { StudioApi, StudioFormat } from './hooks/useStudio'
@@ -38,6 +39,7 @@ import { createCollageDoc, type CollageDoc } from './lib/collage'
 import { trackToolUsed } from './lib/analytics'
 import { aspectRatioFor, fitCropInImage, type FrameSize } from './lib/crop'
 import type { ClippingStats, HistogramBins } from './lib/histogram'
+import { isSamplePhoto } from './lib/files'
 import { isRawFile } from './lib/rawDecode'
 import { DEFAULT_EDITS, type HealSpot, type LiquifyStroke } from './types/edits'
 
@@ -54,6 +56,7 @@ function loadHistogramHidden(): boolean {
 }
 
 export default function App() {
+  const { copy } = useEditorLang()
   const [mode, setMode] = useState<AppMode>('edit')
   const modeRef = useRef(mode)
   useEffect(() => {
@@ -427,6 +430,9 @@ export default function App() {
               onFrameSize={setFrameSize}
               onOpen={() => session.handleOpen()}
               onOpenSamples={session.openSamples}
+              onOpenSample={(name) => {
+                if (isSamplePhoto(name)) void session.openSample(name)
+              }}
               cropOverlay={
                 canEdit && session.panelFocus === 'crop' && session.cropMode
                   ? {
@@ -517,15 +523,20 @@ export default function App() {
               overlay={histogramHidden ? null : histogramPanel}
               exit={
                 photoTool
-                  ? { label: `Close ${PANELS.find((p) => p.id === session.panelFocus)?.label ?? 'tool'}`, onExit: exitTool }
+                  ? {
+                      label: copy.panels.closeTool(
+                        copy.panels[session.panelFocus] ?? 'tool',
+                      ),
+                      onExit: exitTool,
+                    }
                   : null
               }
               action={{
                 kind: 'menu',
                 items: [
-                  ...PANELS.map(({ id, label }) => ({
+                  ...PANELS.map(({ id }) => ({
                     id,
-                    label,
+                    label: copy.panels[id],
                     icon: <PanelIcon id={id} size={18} />,
                     active: sheetOpen && id === session.panelFocus,
                     onSelect: () => selectPanel(id),
@@ -535,7 +546,7 @@ export default function App() {
                     ? [
                         {
                           id: 'histogram',
-                          label: 'Histogram',
+                          label: copy.panels.histogram,
                           icon: <HistogramIcon />,
                           extra: true,
                           onSelect: () => changeHistogramHidden(false),
@@ -550,21 +561,25 @@ export default function App() {
           {/* Phones show the tool sheet only once a tool is picked: until then the photo gets the whole screen. */}
           {(!phone || (canEdit && sheetOpen)) && (
           <aside
-            className={sheetSwipe.offset !== 0 ? 'sidebar sidebar--dragging' : 'sidebar'}
+            className={['sidebar', !canEdit && 'sidebar--idle', sheetSwipe.offset !== 0 && 'sidebar--dragging']
+              .filter(Boolean)
+              .join(' ')}
             style={sheetSwipe.offset ? { transform: `translateY(${sheetSwipe.offset}px)` } : undefined}
-            aria-label="Editor panels"
+            aria-label={copy.panels.editorPanels}
           >
             {phone && (
               <PhoneSheetHead
                 icon={<PanelIcon id={session.panelFocus} />}
-                title={PANELS.find((p) => p.id === session.panelFocus)?.label}
+                title={copy.panels[session.panelFocus]}
                 onClose={() => setSheetCollapsed(true)}
                 {...swipe}
               />
             )}
             {!phone && (
-            <div className="panel-tabs" role="tablist" aria-label="Panels" ref={tabsRef}>
-              {PANELS.map(({ id, label }, index) => (
+            <div className="panel-tabs" role="tablist" aria-label={copy.panels.tablist} ref={tabsRef}>
+              {PANELS.map(({ id }, index) => {
+                const label = copy.panels[id]
+                return (
                 <button
                   key={id}
                   type="button"
@@ -579,7 +594,7 @@ export default function App() {
                   <PanelIcon id={id} />
                   <span className="panel-tab__label">{label}</span>
                 </button>
-              ))}
+              )})}
             </div>
             )}
 
@@ -782,8 +797,8 @@ export default function App() {
 
       <ConfirmDialog
         open={clearOpen}
-        title="Clear workspace?"
-        confirmLabel={`Remove ${session.photos.length} photo${session.photos.length === 1 ? '' : 's'}`}
+        title={copy.confirm.clearTitle}
+        confirmLabel={copy.confirm.remove(session.photos.length)}
         onCancel={closeClear}
         onConfirm={() => {
           session.clearWorkspace()
@@ -793,10 +808,9 @@ export default function App() {
         }}
       >
         <p>
-          This removes all {session.photos.length} open photo{session.photos.length === 1 ? '' : 's'}, their
-          edits and the undo history. It can't be undone.
+          {copy.confirm.body(session.photos.length)}
         </p>
-        <p className="confirm__note">Your original files and your presets are not affected.</p>
+        <p className="confirm__note">{copy.confirm.note}</p>
       </ConfirmDialog>
 
       <Toast toast={session.toast} onDismiss={session.dismissToast} />

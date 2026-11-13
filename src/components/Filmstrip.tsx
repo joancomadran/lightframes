@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import type { FilmstripFilter } from '../hooks/useEditorSession'
 import type { PhotoSession } from '../types/edits'
 import { AdSlot } from './AdSlot'
@@ -16,16 +17,16 @@ type FilmstripProps = {
   onClear?: () => void
 }
 
-const FILTERS: { id: FilmstripFilter; label: string }[] = [
-  { id: 'all', label: 'All photos' },
-  { id: 'picks', label: 'Picks' },
-  { id: 'unflagged', label: 'Unflagged' },
-  { id: 'rejected', label: 'Rejected' },
-  { id: 'stars-1', label: '★ 1+' },
-  { id: 'stars-2', label: '★ 2+' },
-  { id: 'stars-3', label: '★ 3+' },
-  { id: 'stars-4', label: '★ 4+' },
-  { id: 'stars-5', label: '★ 5' },
+const FILTER_IDS: FilmstripFilter[] = [
+  'all',
+  'picks',
+  'unflagged',
+  'rejected',
+  'stars-1',
+  'stars-2',
+  'stars-3',
+  'stars-4',
+  'stars-5',
 ]
 
 /** Touch has no ⌘/Shift: a long press adds a photo to the selection instead. */
@@ -54,6 +55,19 @@ export function Filmstrip({
   onOpen,
   onClear,
 }: FilmstripProps) {
+  const { copy } = useEditorLang()
+  const strip = copy.filmstrip
+  const filterLabel: Record<FilmstripFilter, string> = {
+    all: strip.all,
+    picks: strip.picks,
+    unflagged: strip.unflagged,
+    rejected: strip.rejected,
+    'stars-1': '★ 1+',
+    'stars-2': '★ 2+',
+    'stars-3': '★ 3+',
+    'stars-4': '★ 4+',
+    'stars-5': '★ 5',
+  }
   const pressRef = useRef<{ id: string; timer: number; x: number; y: number; fired: boolean } | null>(null)
   const [layout, setLayout] = useState(loadLayout)
   const toggleLayout = () => {
@@ -80,18 +94,18 @@ export function Filmstrip({
       ]
         .filter(Boolean)
         .join(' ')}
-      aria-label="Filmstrip"
+      aria-label={strip.title}
     >
       <div className="filmstrip__header">
-        <span className="filmstrip__title">Filmstrip</span>
+        <span className="filmstrip__title">{strip.title}</span>
         <div className="filmstrip__actions">
           <button
             type="button"
             className="btn btn--ghost btn--sm"
-            title="Open a folder of images. Hold Option/Alt for the file picker."
+            title={strip.folderTitle}
             onClick={(e) => onOpen({ folder: !e.altKey })}
           >
-            Folder
+            {strip.folder}
           </button>
         </div>
       </div>
@@ -102,12 +116,12 @@ export function Filmstrip({
             className="field field--sm"
             value={filter}
             onChange={(e) => onFilterChange(e.target.value as FilmstripFilter)}
-            aria-label="Show photos"
-            title="Rate with 1–5, flag with P / X / U"
+            aria-label={strip.show}
+            title={strip.filterTitle}
           >
-            {FILTERS.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
+            {FILTER_IDS.map((id) => (
+              <option key={id} value={id}>
+                {filterLabel[id]}
               </option>
             ))}
           </select>
@@ -117,8 +131,8 @@ export function Filmstrip({
           <button
             type="button"
             className="btn btn--ghost btn--sm btn--icon filmstrip__layout"
-            title={layout === 'list' ? 'Show as 2-column grid' : 'Show as single column'}
-            aria-label={layout === 'list' ? 'Show as grid' : 'Show as list'}
+            title={layout === 'list' ? strip.gridTitle : strip.listTitle}
+            aria-label={layout === 'list' ? strip.grid : strip.list}
             aria-pressed={layout === 'grid'}
             onClick={toggleLayout}
           >
@@ -140,8 +154,8 @@ export function Filmstrip({
             <button
               type="button"
               className="btn btn--ghost btn--sm btn--icon filmstrip__clear"
-              title="Clear workspace"
-              aria-label="Clear workspace"
+              title={strip.clear}
+              aria-label={strip.clear}
               onClick={onClear}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -164,7 +178,7 @@ export function Filmstrip({
             <button
               type="button"
               className="filmstrip__add"
-              title="Open JPEG, PNG or RAW files"
+              title={strip.openTitle}
               onClick={() => onOpen()}
             >
               <span className="filmstrip__add-tile" aria-hidden="true">
@@ -172,12 +186,12 @@ export function Filmstrip({
                   <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </span>
-              <span className="filmstrip__add-label">Add photos</span>
+              <span className="filmstrip__add-label">{strip.addPhotos}</span>
             </button>
           </li>
         )}
         {totalCount > 0 && photos.length === 0 && (
-          <li className="filmstrip__empty">No photos match this filter</li>
+          <li className="filmstrip__empty">{strip.noMatch}</li>
         )}
         {photos.map((photo) => {
           const selected = selectedIds.includes(photo.id)

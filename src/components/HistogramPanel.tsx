@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { drawHistogram, type ClippingStats, type HistogramBins } from '../lib/histogram'
 
 type HistogramPanelProps = {
@@ -17,6 +18,7 @@ export function HistogramPanel({
   onToggleClipping,
   onHide,
 }: HistogramPanelProps) {
+  const { copy } = useEditorLang()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function HistogramPanel({
   return (
     <section
       className={onHide ? 'panel histogram-panel histogram-panel--floating' : 'panel histogram-panel'}
-      aria-label="Histogram"
+      aria-label={copy.panels.histogram}
     >
       <div className="histogram-frame">
         {onHide && (

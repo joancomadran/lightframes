@@ -7,6 +7,7 @@ import {
   type GradeZone,
   type GradeZoneId,
 } from '../types/edits'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { HslControls } from './HslPanel'
 import { Slider } from './Slider'
 
@@ -102,6 +103,7 @@ function ColorWheel({
 }
 
 function ColorGradingControls({ edits, disabled, onChange, onBegin, onCommit }: ColorPanelProps) {
+  const { copy } = useEditorLang()
   const [zoneId, setZoneId] = useState<GradeZoneId>('midtones')
   const grading = edits.colorGrading
   const zone = grading[zoneId]
@@ -111,7 +113,7 @@ function ColorGradingControls({ edits, disabled, onChange, onBegin, onCommit }: 
   return (
     <div className="adjust-group">
       <div className="adjust-group__header">
-        <h3 className="adjust-group__title">Color grading</h3>
+        <h3 className="adjust-group__title">{copy.panels.colorGrading}</h3>
         <button
           type="button"
           className="btn btn--ghost btn--sm"
@@ -229,8 +231,9 @@ function ColorGradingControls({ edits, disabled, onChange, onBegin, onCommit }: 
 }
 
 export function ColorPanel(props: ColorPanelProps) {
+  const { copy } = useEditorLang()
   return (
-    <section className="panel" aria-label="Color">
+    <section className="panel" aria-label={copy.panels.color}>
       <HslControls {...props} />
       <ColorGradingControls {...props} />
     </section>

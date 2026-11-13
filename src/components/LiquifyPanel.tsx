@@ -1,3 +1,4 @@
+import { useEditorLang } from '../hooks/useEditorLang'
 import type { LiquifyMode } from '../types/edits'
 import type { LiquifyTool } from './LiquifyOverlay'
 import { Slider } from './Slider'
@@ -30,12 +31,13 @@ const HINTS: Record<LiquifyMode, string> = {
 }
 
 export function LiquifyPanel({ strokeCount, disabled, tool, onToolChange, onClear, onSizePreview }: LiquifyPanelProps) {
+  const { copy } = useEditorLang()
   const change = (patch: Partial<LiquifyTool>) => onToolChange({ ...tool, ...patch })
 
   return (
-    <section className="panel" aria-label="Liquify">
+    <section className="panel" aria-label={copy.panels.liquify}>
       <div className="adjust-group__header heal-header">
-        <h3 className="adjust-group__title">Liquify</h3>
+        <h3 className="adjust-group__title">{copy.panels.liquify}</h3>
         {strokeCount > 0 && (
           <button type="button" className="btn btn--ghost btn--sm" disabled={disabled} onClick={onClear}>
             Reset all

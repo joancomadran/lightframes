@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { getAiStatus, preloadModel, subscribeAi, type AiStatus } from '../lib/ai'
 import type { HealMode, HealSpot } from '../types/edits'
 import type { HealTool } from './HealOverlay'
@@ -55,6 +56,7 @@ export function HealPanel({
   onBegin,
   onCommit,
 }: HealPanelProps) {
+  const { copy } = useEditorLang()
   const selected = spots.find((s) => s.id === selectedId) ?? null
   const inpaint = useSyncExternalStore(subscribeAi, () => getAiStatus('inpaint'))
   const inpaintText = statusText(inpaint)
@@ -106,9 +108,9 @@ export function HealPanel({
   }, [disabled, selectedId, selected, onSelect, onRemove, onNewSource, onToggleOutlines])
 
   return (
-    <section className="panel" aria-label="Spot removal">
+    <section className="panel" aria-label={copy.panels.spotRemoval}>
       <div className="adjust-group__header heal-header">
-        <h3 className="adjust-group__title">Spot removal</h3>
+        <h3 className="adjust-group__title">{copy.panels.spotRemoval}</h3>
         {spots.length > 0 && (
           <div className="btn-group heal-actions">
             <button

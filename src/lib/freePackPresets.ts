@@ -1,4 +1,5 @@
 import pack from '../data/free-pack-looks.json'
+import type { Lang } from '../site/i18n'
 import {
   DEFAULT_EDITS,
   cloneEdits,
@@ -58,4 +59,12 @@ export function isFreePackPreset(id: string): boolean {
 
 export function freePackPresetBySlug(slug: string): Preset | undefined {
   return FREE_PACK_PRESETS.find((p) => p.id === `freepack:${slug}`)
+}
+
+const FREE_PACK_NAME_ES = new Map(FREE_PACK_LOOKS.map((look) => [`freepack:${look.id}`, look.nameEs]))
+
+/** English look name on /editor; the pack's Spanish name on /es/editor. */
+export function freePackPresetLabel(preset: { id: string; name: string }, lang: Lang): string {
+  if (lang === 'es') return FREE_PACK_NAME_ES.get(preset.id) ?? preset.name
+  return preset.name
 }

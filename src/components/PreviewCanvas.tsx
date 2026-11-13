@@ -44,6 +44,8 @@ import {
   type LocalAdjustment,
 } from '../types/edits'
 import { COARSE_QUERY, useMediaQuery } from '../hooks/useMediaQuery'
+import { useEditorLang } from '../hooks/useEditorLang'
+import type { SamplePhoto } from '../lib/files'
 import { AppMark } from './AppMark'
 import { CropOverlay, type CropOverlayConfig } from './CropOverlay'
 import { DemoVideoDialog } from './DemoVideoDialog'
@@ -105,6 +107,8 @@ type PreviewCanvasProps = {
   onOpen?: () => void
   /** Secondary empty-state action: load the demo photos. */
   onOpenSamples?: () => void
+  /** Load one demo photo from its empty-state thumbnail. */
+  onOpenSample?: (name: SamplePhoto) => void
 }
 
 export type Size = { w: number; h: number }
@@ -203,7 +207,9 @@ export function PreviewCanvas({
   onFrameSize,
   onOpen,
   onOpenSamples,
+  onOpenSample,
 }: PreviewCanvasProps) {
+  const { copy } = useEditorLang()
   const coarsePointer = useMediaQuery(COARSE_QUERY)
   const rootRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -879,25 +885,22 @@ export function PreviewCanvas({
           <AppMark />
           <span className="preview__empty-name">Lightframes</span>
         </div>
-        <h1 className="preview__empty-title">The open-source photo editor that stays on your device</h1>
-        <p className="preview__empty-copy">
-          Free and open source. Custom presets and copy/paste edits, right in the browser. Your
-          photos are never uploaded — no account needed.
-        </p>
+        <h1 className="preview__empty-title">{copy.empty.title}</h1>
+        <p className="preview__empty-copy">{copy.empty.copy}</p>
         <ul className="preview__empty-features">
-          <li>JPEG, PNG &amp; camera RAW</li>
-          <li>Presets, XMP &amp; .cube LUTs</li>
-          <li>Batch edit &amp; export</li>
+          {copy.empty.features.map((feature) => (
+            <li key={feature}>{feature}</li>
+          ))}
         </ul>
         <div className="preview__empty-actions">
           {onOpen && (
             <button type="button" className="btn btn--accent btn--lg" onClick={onOpen}>
-              Open photos
+              {copy.empty.openPhotos}
             </button>
           )}
           {onOpenSamples && (
             <button type="button" className="btn btn--lg" onClick={onOpenSamples}>
-              Try sample photos
+              {copy.empty.trySamples}
             </button>
           )}
           <button
@@ -905,16 +908,33 @@ export function PreviewCanvas({
             className="btn btn--ghost btn--lg preview__empty-demo"
             onClick={() => setDemoOpen(true)}
           >
-            <span aria-hidden="true">▶</span> Watch demo
+            <span aria-hidden="true">▶</span> {copy.empty.watchDemo}
           </button>
         </div>
+        {onOpenSample && (
+          <ul className="preview__samples" aria-label={copy.empty.samplesLabel}>
+            {copy.empty.samples.map((sample) => (
+              <li key={sample.file}>
+                <button
+                  type="button"
+                  className="preview__sample"
+                  aria-label={copy.empty.openSample(sample.name)}
+                  onClick={() => onOpenSample(sample.file)}
+                >
+                  <img src={`/samples/${sample.file}`} alt="" width={240} height={160} draggable={false} />
+                  <span>{sample.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="preview__empty-note">
-          <PrivacyBadge label="Nothing uploaded" align="center" />
+          <PrivacyBadge label={copy.empty.nothingUploaded} align="center" />
           <InstallButton />
           <GithubStar />
           <DonateButton />
           <button type="button" className="gear-pill" onClick={() => setGearOpen(true)}>
-            Recommended gear
+            {copy.empty.recommendedGear}
           </button>
         </p>
         <DemoVideoDialog open={demoOpen} onClose={() => setDemoOpen(false)} />
@@ -947,13 +967,13 @@ export function PreviewCanvas({
       className={`preview preview--bg-${background}${fullscreen ? ' preview--fullscreen' : ''}`}
     >
       {developingRaw ? (
-        <div className="preview__badge">Developing RAW…</div>
+        <div className="preview__badge">{copy.preview.developingRaw}</div>
       ) : (
-        (compareMode || holdingBefore) && <div className="preview__badge">Before</div>
+        (compareMode || holdingBefore) && <div className="preview__badge">{copy.preview.before}</div>
       )}
       {onPickWhiteBalance && (
         <div className="preview__badge preview__badge--tool">
-          {coarsePointer ? 'Tap a neutral grey or white area' : 'Click a neutral grey or white area · Esc to cancel'}
+          {coarsePointer ? copy.preview.pickCoarse : copy.preview.pickFine}
         </div>
       )}
       <div
@@ -1019,8 +1039,8 @@ export function PreviewCanvas({
             }}
             onDoubleClick={(e) => e.stopPropagation()}
           >
-            <span className="split-divider__label split-divider__label--before">Before</span>
-            <span className="split-divider__label split-divider__label--after">After</span>
+            <span className="split-divider__label split-divider__label--before">{copy.preview.before}</span>
+            <span className="split-divider__label split-divider__label--after">{copy.preview.after}</span>
             <span className="split-divider__grip" aria-hidden="true" />
           </div>
         )}

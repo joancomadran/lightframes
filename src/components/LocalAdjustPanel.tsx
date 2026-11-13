@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { getAiStatus, preloadModel, subscribeAi } from '../lib/ai'
 import {
   DEFAULT_MASK_RANGE,
@@ -124,6 +125,7 @@ export function LocalAdjustPanel({
   onBegin,
   onCommit,
 }: LocalAdjustPanelProps) {
+  const { copy } = useEditorLang()
   const items = edits.localAdjustments
   // updateLocal opens the history step; a reset closes it once state has landed.
   const commitSoon = () => window.setTimeout(() => onCommit?.(), 0)
@@ -132,9 +134,9 @@ export function LocalAdjustPanel({
   const hasSubject = items.some((adj) => adj.type === 'subject')
 
   return (
-    <section className="panel" aria-label="Local adjustments">
+    <section className="panel" aria-label={copy.panels.localAdjustments}>
       <div className="adjust-group__header">
-        <h3 className="adjust-group__title">Masks</h3>
+        <h3 className="adjust-group__title">{copy.panels.masks}</h3>
         {items.length > 0 && (
           <button
             type="button"

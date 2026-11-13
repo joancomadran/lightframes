@@ -14,17 +14,21 @@ import {
 } from "../lib/analytics";
 import {
   downloadBlob,
+  fetchSampleImage,
   fetchSampleImages,
   makeThumbnail,
   openImages,
+  type SamplePhoto,
 } from "../lib/files";
 import { zipFiles } from "../lib/zip";
 import { BUILTIN_PRESETS, isBuiltinPreset } from "../lib/builtinPresets";
 import {
   FREE_PACK_PRESETS,
   freePackPresetBySlug,
+  freePackPresetLabel,
   isFreePackPreset,
 } from "../lib/freePackPresets";
+import { useEditorLang } from "./useEditorLang";
 import { setSourceKey } from "../lib/cutout";
 import { type RenderSource } from "../lib/imageProcessing";
 import {
@@ -211,6 +215,9 @@ function revokeAll(photos: PhotoSession[]) {
 export function useEditorSession({
   keyboard = true,
 }: { keyboard?: boolean } = {}) {
+  const { copy, lang } = useEditorLang();
+  const presetLabel = (preset: { id: string; name: string }) =>
+    freePackPresetLabel(preset, lang);
   // Other modes (the collage studio) turn the editor's shortcuts off.
   const keyboardRef = useRef(keyboard);
   useEffect(() => {
@@ -253,7 +260,7 @@ export function useEditorSession({
   } | null>(null);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteGroupIds, setPasteGroupIds] = useState(loadPasteGroups);
-  const [status, setStatus] = useState("Open images to begin");
+  const [status, setStatus] = useState(copy.status.openToBegin);
   const [compareMode, setCompareMode] = useState(false);
   const [splitMode, setSplitMode] = useState(false);
   // The split slider over the image is the main before/after view; it replaces a whole-image "Before".
@@ -357,7 +364,7 @@ export function useEditorSession({
       })
       .catch(() => {
         if (!cancelled)
-          setStatus("Could not load custom presets — nothing was overwritten");
+          setStatus(copy.status.presetsLoadFailed);
       });
     return () => {
       cancelled = true;
@@ -367,9 +374,7 @@ export function useEditorSession({
   useEffect(() => {
     if (!presetsLoaded) return;
     savePresets(presets).catch(() => {
-      setStatus(
-        "Could not save presets — export a backup from the Presets panel",
-      );
+      setStatus(copy.status.presetsSaveFailed);
     });
   }, [presets, presetsLoaded]);
 
@@ -392,9 +397,7 @@ export function useEditorSession({
           return;
         }
         const studio = unpackStudioState(snap.studio);
-        setStatus(
-          `Restoring ${snap.photos.length} image${snap.photos.length === 1 ? "" : "s"}…`,
-        );
+        setStatus(copy.status.restoring(snap.photos.length));
         const next: PhotoSession[] = [];
         for (const item of snap.photos) {
           const file =
@@ -427,11 +430,9 @@ export function useEditorSession({
         setSelectedIds(
           snap.selectedIds.filter((id) => next.some((p) => p.id === id)),
         );
-        setStatus(
-          `Restored ${next.length} image${next.length === 1 ? "" : "s"}`,
-        );
+        setStatus(copy.status.restored(next.length));
       } catch {
-        if (!cancelled) setStatus("Could not restore previous session");
+        if (!cancelled) setStatus(copy.status.restoreFailed);
       } finally {
         if (!cancelled) setSessionReady(true);
       }
@@ -545,7 +546,7 @@ export function useEditorSession({
     }
     applyEditsToPhoto(entry.photoId, entry.edits);
     setActiveId(entry.photoId);
-    setStatus("Undo");
+    setStatus(copy.status.undo);
     syncHistoryFlags();
   }, [applyEditsToPhoto, syncHistoryFlags]);
 
@@ -561,7 +562,7 @@ export function useEditorSession({
     }
     applyEditsToPhoto(entry.photoId, entry.edits);
     setActiveId(entry.photoId);
-    setStatus("Redo");
+    setStatus(copy.status.redo);
     syncHistoryFlags();
   }, [applyEditsToPhoto, syncHistoryFlags]);
 
@@ -570,8 +571,8 @@ export function useEditorSession({
       const rawCount = files.filter(isRawFile).length;
       setStatus(
         rawCount > 0
-          ? `Opening ${rawCount} RAW file${rawCount === 1 ? "" : "s"}…`
-          : "Loading images…",
+          ? copy.status.openingRaw(rawCount)
+          : copy.status.loadingImages,
       );
 
       // Keep imports sequential to avoid spiking memory with large RAW batches.
@@ -590,8 +591,8 @@ export function useEditorSession({
       if (next.length === 0) {
         setStatus(
           failures.length > 0
-            ? `Could not open ${failures.length} image${failures.length === 1 ? "" : "s"}`
-            : "No images were loaded",
+            ? copy.status.couldNotOpen(failures.length)
+            : copy.status.noneLoaded,
         );
         return [];
       }
@@ -606,13 +607,8 @@ export function useEditorSession({
       const focusId = next[0]?.id ?? null;
       setActiveId(focusId);
       setSelectedIds(focusId ? [focusId] : []);
-      const loadedStatus = append
-        ? `Added ${next.length} image${next.length === 1 ? "" : "s"}`
-        : `Loaded ${next.length} image${next.length === 1 ? "" : "s"}`;
       setStatus(
-        failures.length > 0
-          ? `${loadedStatus}; ${failures.length} failed`
-          : loadedStatus,
+        copy.status.loaded(next.length, failures.length, append),
       );
       const types = new Set(next.map((photo) => coarseFileType(photo.file)));
       trackPhotoLoaded(types.size === 1 ? [...types][0]! : "other");
@@ -625,12 +621,9 @@ export function useEditorSession({
     async (opts?: { folder?: boolean }): Promise<PhotoSession[]> => {
       const { files, unsupportedOnly } = await openImages(opts);
       if (unsupportedOnly) {
-        showToast(
-          "That file type isn't supported. Open a JPEG, PNG, or supported RAW.",
-          "error",
-        );
+        showToast(copy.status.unsupportedType, "error");
         if (photosRef.current.length === 0) {
-          setStatus("Open images to begin");
+          setStatus(copy.status.openToBegin);
         }
         return [];
       }
@@ -642,19 +635,35 @@ export function useEditorSession({
 
   /** First-visit demo: sample photos opened unedited, like a fresh RAW import. */
   const openSamples = useCallback(async () => {
-    setStatus("Loading sample photos…");
+    setStatus(copy.status.loadingSamples);
     let files: File[];
     try {
       files = await fetchSampleImages();
     } catch {
-      showToast("Could not load sample photos", "error");
-      setStatus("Open images to begin");
+      showToast(copy.status.samplesFailed, "error");
+      setStatus(copy.status.openToBegin);
       return;
     }
     const loaded = await loadFiles(files);
     if (loaded.length === 0) return;
-    showToast("Sample photos straight from RAW — try a preset or the sliders");
+    showToast(copy.status.samplesReady);
   }, [loadFiles, showToast]);
+
+  /** One demo photo, from a thumbnail on the empty state. */
+  const openSample = useCallback(
+    async (name: SamplePhoto) => {
+      setStatus(copy.status.loadingSamples);
+      try {
+        await loadFiles([await fetchSampleImage(name)]);
+      } catch {
+        showToast(copy.status.samplesFailed, "error");
+        if (photosRef.current.length === 0) {
+          setStatus(copy.status.openToBegin);
+        }
+      }
+    },
+    [loadFiles, showToast],
+  );
 
   /** Drop every open photo and its history; presets and the clipboard stay. */
   const clearWorkspace = useCallback(() => {
@@ -668,9 +677,7 @@ export function useEditorSession({
     syncHistoryFlags();
     presetBaseRef.current.clear();
     setAppliedPresets({});
-    setStatus(
-      `Cleared ${count} photo${count === 1 ? "" : "s"} from the workspace`,
-    );
+    setStatus(copy.status.cleared(count));
   }, [syncHistoryFlags]);
 
   const selectPhoto = useCallback(
@@ -711,7 +718,7 @@ export function useEditorSession({
   const selectAll = useCallback(() => {
     const ids = photosRef.current.map((p) => p.id);
     setSelectedIds(ids);
-    setStatus(`Selected ${ids.length}`);
+    setStatus(copy.status.selected(ids.length));
   }, []);
 
   const resetEdits = useCallback(() => {
@@ -738,7 +745,7 @@ export function useEditorSession({
     );
     presetBaseRef.current.delete(id);
     setAppliedPreset([id], null);
-    setStatus("Edits reset");
+    setStatus(copy.status.editsReset);
   }, [pushHistory, setAppliedPreset]);
 
   const applyPresetAtIntensity = useCallback(
@@ -772,7 +779,7 @@ export function useEditorSession({
       name: photo.name,
       edits: cloneEdits(photo.edits),
     });
-    setStatus(`Copied edits from ${photo.name}`);
+    setStatus(copy.status.copied(photo.name));
   }, []);
 
   /**
@@ -805,8 +812,8 @@ export function useEditorSession({
     if (plan.targets.length === 0) {
       setStatus(
         clipboard
-          ? "Select other photos to paste to"
-          : "Copy edits or select several photos first",
+          ? copy.status.pasteSelectTargets
+          : copy.status.pasteNeedSelection,
       );
       return;
     }
@@ -837,9 +844,7 @@ export function useEditorSession({
       );
       trackToolUsed("paste_edits");
       if (targets.length > 1) trackToolUsed("batch_apply");
-      setStatus(
-        `Pasted edits to ${targets.length} photo${targets.length === 1 ? "" : "s"}`,
-      );
+      setStatus(copy.status.pasted(targets.length));
     },
     [pushHistory],
   );
@@ -852,13 +857,14 @@ export function useEditorSession({
     // The saved preset is the photo's own look, so there is nothing to revert to
     presetBaseRef.current.delete(photo.id);
     setAppliedPreset([photo.id], preset.id);
-    setStatus(`Saved custom preset “${preset.name}”`);
+    setStatus(copy.status.savedPreset(preset.name));
   }, [setAppliedPreset]);
 
   const updateSelectedPreset = useCallback(() => {
     if (
       !selectedPresetId ||
       isBuiltinPreset(selectedPresetId) ||
+      isFreePackPreset(selectedPresetId) ||
       !activeIdRef.current
     )
       return;
@@ -881,11 +887,7 @@ export function useEditorSession({
       }),
     );
     setAppliedPreset([photo.id], selectedPresetId);
-    setStatus(
-      updatedName
-        ? `Updated “${updatedName}” with current edits`
-        : "Preset updated",
-    );
+    setStatus(copy.status.updatedPreset(updatedName));
   }, [selectedPresetId, setAppliedPreset]);
 
   const applyPreset = useCallback(
@@ -906,7 +908,9 @@ export function useEditorSession({
       }
       setAppliedPreset(targets, preset.id, intensityRef.current);
       applyPresetAtIntensity(preset, intensityRef.current, targets);
-      setStatus(`Applied “${preset.name}” to ${targets.length}`);
+      setStatus(
+        copy.status.applied(presetLabel(preset), targets.length),
+      );
       trackToolUsed("presets");
       if (targets.length > 1) trackToolUsed("batch_apply");
       trackPresetApplied(presetAnalyticsKind(preset.id));
@@ -946,7 +950,11 @@ export function useEditorSession({
       );
     }
     setAppliedPreset(targets, null);
-    setStatus(preset ? `Removed “${preset.name}”` : "Preset removed");
+    setStatus(
+      preset
+        ? copy.status.removedNamed(presetLabel(preset))
+        : copy.status.presetRemoved,
+    );
   }, [selectedPresetId, pushHistory, setAppliedPreset]);
 
   const setPresetIntensity = useCallback(
@@ -961,7 +969,7 @@ export function useEditorSession({
       setAppliedPreset([id], preset.id, next);
       applyPresetAtIntensity(preset, next, [id]);
       trackToolUsed("presets");
-      setStatus(`“${preset.name}” intensity ${next}%`);
+      setStatus(copy.status.intensity(presetLabel(preset), next));
     },
     [selectedPresetId, applyPresetAtIntensity, setAppliedPreset],
   );
@@ -973,21 +981,19 @@ export function useEditorSession({
         Object.entries(prev).filter(([, applied]) => applied.presetId !== id),
       ),
     );
-    setStatus("Preset removed");
+    setStatus(copy.status.presetRemoved);
   }, []);
 
   const exportPreset = useCallback((preset: Preset) => {
     downloadPresetJson(preset);
-    setStatus(`Exported “${preset.name}.json”`);
+    setStatus(copy.status.exportedPreset(preset.name));
   }, []);
 
   const exportAllPresets = useCallback(() => {
     const all = presetsRef.current;
     if (all.length === 0) return;
     downloadAllPresetsJson(all);
-    setStatus(
-      `Exported backup of ${all.length} preset${all.length === 1 ? "" : "s"}`,
-    );
+    setStatus(copy.status.exportedBackup(all.length));
   }, []);
 
   const importPreset = useCallback(async (file: File) => {
@@ -1001,15 +1007,15 @@ export function useEditorSession({
       if (imported.length === 1) {
         if (activeIdRef.current)
           setAppliedPreset([activeIdRef.current], imported[0]!.id);
-        setStatus(`Imported “${imported[0]!.name}”`);
+        setStatus(copy.status.importedOne(imported[0]!.name));
         trackPresetApplied("imported");
       } else {
         setStatus(
-          `Imported ${fresh.length} of ${imported.length} presets (rest already present)`,
+          copy.status.importedMany(fresh.length, imported.length),
         );
       }
     } catch {
-      setStatus("Could not import preset (JSON, XMP, or CUBE)");
+      setStatus(copy.status.importFailed);
     }
   }, [setAppliedPreset]);
 
@@ -1026,7 +1032,9 @@ export function useEditorSession({
       setExportOptions(options);
       setExportOpen(false);
       setStatus(
-        targets.length > 1 ? `Exporting ${targets.length}…` : "Exporting…",
+        targets.length > 1
+          ? copy.status.exportingMany(targets.length)
+          : copy.status.exporting,
       );
       try {
         // The export may change the extension (a transparent cutout saves as PNG): report what was written.
@@ -1039,8 +1047,8 @@ export function useEditorSession({
             targets.length > 1 ? ` (${index + 1}/${targets.length})` : "";
           setStatus(
             isRawFile(photo.file)
-              ? `Developing ${photo.name}…${step}`
-              : `Exporting ${photo.name}…${step}`,
+              ? copy.status.developingFile(photo.name, step)
+              : copy.status.exportingFile(photo.name, step),
           );
           const source = await loadExportSource(photo);
           const { blob, filename, upscaleSkipped } = await exportEditedImage(
@@ -1050,7 +1058,11 @@ export function useEditorSession({
             photo.name,
             (f) =>
               setStatus(
-                `Upscaling ${photo.name}… ${Math.round(f * 100)}%${step}`,
+                copy.status.upscaling(
+                  photo.name,
+                  Math.round(f * 100),
+                  step,
+                ),
               ),
           );
           written.push({ name: filename, data: blob });
@@ -1059,7 +1071,7 @@ export function useEditorSession({
         // One photo downloads as itself; several come as one ZIP instead of a burst of downloads.
         let saved = written[0]?.name ?? "";
         if (written.length > 1) {
-          setStatus(`Zipping ${written.length} files…`);
+          setStatus(copy.status.zipping(written.length));
           saved = `lightframes-${new Date().toISOString().slice(0, 10)}-${written.length}-photos.zip`;
           downloadBlob(await zipFiles(written), saved);
         } else if (written[0]) {
@@ -1067,19 +1079,23 @@ export function useEditorSession({
         }
         const exported =
           written.length === 1
-            ? `Exported ${saved}`
-            : `Exported ${written.length} photos as ${saved}`;
+            ? copy.status.exportedOne(saved)
+            : copy.status.exportedZip(written.length, saved);
         const message =
           skipped === 0
             ? exported
-            : `${exported} — not upscaled: ${skipped === targets.length ? "already" : `${skipped} were already`} at the size limit`;
+            : copy.status.notUpscaled(
+                exported,
+                skipped,
+                targets.length,
+              );
         setStatus(message);
         showToast(message);
         trackExportCompleted(written.length, options.format);
       } catch (error) {
         trackExportFailed(options.format, coarseExportReason(error));
-        setStatus("Export failed");
-        showToast("Export failed", "error");
+        setStatus(copy.status.exportFailed);
+        showToast(copy.status.exportFailed, "error");
       }
     },
     [showToast],
@@ -1114,7 +1130,9 @@ export function useEditorSession({
       );
       trackLocalTool(type);
       setPanelFocus("local");
-      setStatus(`Added ${preset?.name?.toLowerCase() ?? type} mask`);
+      setStatus(
+        copy.status.addedMask(preset?.name?.toLowerCase() ?? type),
+      );
     },
     [pushHistory],
   );
@@ -1185,7 +1203,11 @@ export function useEditorSession({
     setPhotos((prev) =>
       prev.map((p) => (targets.includes(p.id) ? { ...p, rating: value } : p)),
     );
-    setStatus(value === 0 ? "Rating cleared" : `Rated ${"★".repeat(value)}`);
+    setStatus(
+      value === 0
+        ? copy.status.ratingCleared
+        : copy.status.rated("★".repeat(value)),
+    );
   }, []);
 
   const setFlag = useCallback((flag: PhotoFlag | null) => {
@@ -1196,10 +1218,10 @@ export function useEditorSession({
     );
     setStatus(
       flag === "pick"
-        ? "Flagged as pick"
+        ? copy.status.flaggedPick
         : flag === "reject"
-          ? "Flagged as rejected"
-          : "Flag removed",
+          ? copy.status.flaggedReject
+          : copy.status.flagRemoved,
     );
   }, []);
 
@@ -1423,6 +1445,7 @@ export function useEditorSession({
     showToast,
     handleOpen,
     openSamples,
+    openSample,
     clearWorkspace,
     selectPhoto,
     selectAll,

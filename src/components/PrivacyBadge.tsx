@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 
 type PrivacyBadgeProps = {
   /** Shown next to the shield as a pill; icon-only when omitted. */
@@ -9,6 +10,7 @@ type PrivacyBadgeProps = {
 
 // Hover or focus reveals the note; touch devices toggle it with a tap.
 export function PrivacyBadge({ label, align = 'end' }: PrivacyBadgeProps) {
+  const { copy } = useEditorLang()
   const tipId = useId()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
@@ -63,8 +65,7 @@ export function PrivacyBadge({ label, align = 'end' }: PrivacyBadgeProps) {
         {label && <span>{label}</span>}
       </button>
       <span id={tipId} role="tooltip" className="privacy__tip">
-        Your photos never leave your device. Editing runs in your browser and nothing is uploaded.
-        The first time you remove an object, its AI model is downloaded from Hugging Face.
+        {copy.privacyNote}
       </span>
     </span>
   )

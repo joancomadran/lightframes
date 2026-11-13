@@ -1,5 +1,5 @@
 import type { PhotoSession } from '../types/edits'
-import type { CollageExportStrings } from '../hooks/useEditorLang'
+import { useEditorLang, type CollageExportStrings } from '../hooks/useEditorLang'
 import { PHOTO_MIME, SWATCH_COLORS, type StudioFormat, type useSlideExport } from '../hooks/useStudio'
 
 export function ExportStatus({
@@ -116,16 +116,17 @@ export function PhotoTray({
   onOpen: () => void
   pickTitle: string
 }) {
+  const { copy } = useEditorLang()
   return (
-    <aside className="filmstrip collage-tray" aria-label="Photos">
+    <aside className="filmstrip collage-tray" aria-label={copy.filmstrip.photos}>
       <div className="filmstrip__header">
-        <span className="filmstrip__title">Photos</span>
+        <span className="filmstrip__title">{copy.filmstrip.photos}</span>
         <button type="button" className="btn btn--ghost btn--sm" onClick={onOpen}>
-          Add
+          {copy.filmstrip.add}
         </button>
       </div>
       <ul className="filmstrip__list">
-        {photos.length === 0 && <li className="filmstrip__empty">Open photos to get started</li>}
+        {photos.length === 0 && <li className="filmstrip__empty">{copy.filmstrip.empty}</li>}
         {photos.map((photo) => {
           const used = usedIds.has(photo.id)
           return (

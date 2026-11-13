@@ -1,13 +1,8 @@
 import { useMemo, useState } from 'react'
+import { editorCopy, editorLangFromLocation, type EditorCopy } from '../lib/editorCopy'
 import { DEFAULT_LANG, ui, type Lang } from '../site/i18n'
 
-/** Editor copy follows the page route: English on /editor, Spanish on /es/editor. */
-export function editorLangFromLocation(pathname: string, htmlLang: string): Lang {
-  const lang = htmlLang.toLowerCase()
-  if (lang.startsWith('es')) return 'es'
-  if (lang.startsWith('en')) return 'en'
-  return pathname === '/es' || pathname.startsWith('/es/') ? 'es' : DEFAULT_LANG
-}
+export { editorLangFromLocation }
 
 function detectEditorLang(): Lang {
   if (typeof document === 'undefined') return DEFAULT_LANG
@@ -18,7 +13,10 @@ function detectEditorLang(): Lang {
 export function useEditorLang() {
   const [lang] = useState(detectEditorLang)
   const strings = useMemo(() => ui[lang].collageExport, [lang])
-  return { lang, strings }
+  const copy = useMemo(() => editorCopy(lang), [lang])
+  return { lang, strings, copy }
 }
+
+export type { EditorCopy }
 
 export type CollageExportStrings = (typeof ui)[Lang]['collageExport']

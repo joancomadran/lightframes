@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { preloadModel } from '../lib/ai'
 import {
   DEFAULT_EXPORT_OPTIONS,
@@ -25,12 +26,12 @@ type SizePreset = {
   frame: Omit<ExportFrame, 'background'> | null
 }
 
-const SIZE_PRESETS: SizePreset[] = [
-  { id: 'original', label: 'Original', detail: 'Full resolution', maxEdge: 8192, frame: null },
-  { id: 'web', label: 'Web', detail: '2048 px long edge', maxEdge: 2048, frame: null },
-  { id: 'ig-portrait', label: 'IG 4:5', detail: '1080 × 1350', maxEdge: 1350, frame: { width: 1080, height: 1350 } },
-  { id: 'ig-square', label: 'IG 1:1', detail: '1080 × 1080', maxEdge: 1080, frame: { width: 1080, height: 1080 } },
-  { id: 'ig-story', label: 'Story', detail: '1080 × 1920', maxEdge: 1920, frame: { width: 1080, height: 1920 } },
+const SIZE_PRESETS: Omit<SizePreset, 'label' | 'detail'>[] = [
+  { id: 'original', maxEdge: 8192, frame: null },
+  { id: 'web', maxEdge: 2048, frame: null },
+  { id: 'ig-portrait', maxEdge: 1350, frame: { width: 1080, height: 1350 } },
+  { id: 'ig-square', maxEdge: 1080, frame: { width: 1080, height: 1080 } },
+  { id: 'ig-story', maxEdge: 1920, frame: { width: 1080, height: 1920 } },
 ]
 
 const POSITIONS: { id: WatermarkPosition; label: string }[] = [
@@ -41,8 +42,8 @@ const POSITIONS: { id: WatermarkPosition; label: string }[] = [
   { id: 'bottom-right', label: '↘' },
 ]
 
-function presetFor(options: ExportOptions): string {
-  const match = SIZE_PRESETS.find((p) =>
+function presetFor(options: ExportOptions, presets: SizePreset[]): string {
+  const match = presets.find((p) =>
     p.frame
       ? options.frame?.width === p.frame.width && options.frame?.height === p.frame.height
       : !options.frame && options.maxEdge === p.maxEdge,
@@ -51,6 +52,15 @@ function presetFor(options: ExportOptions): string {
 }
 
 export function ExportDialog({ open, initial, selectionCount, onClose, onExport }: ExportDialogProps) {
+  const { copy } = useEditorLang()
+  const ex = copy.export
+  const sizePresets: SizePreset[] = [
+    { ...SIZE_PRESETS[0]!, label: ex.original, detail: ex.originalDetail },
+    { ...SIZE_PRESETS[1]!, label: ex.web, detail: ex.webDetail },
+    { ...SIZE_PRESETS[2]!, label: ex.igPortrait, detail: ex.igPortraitDetail },
+    { ...SIZE_PRESETS[3]!, label: ex.igSquare, detail: ex.igSquareDetail },
+    { ...SIZE_PRESETS[4]!, label: ex.story, detail: ex.storyDetail },
+  ]
   const [options, setOptions] = useState<ExportOptions>(initial)
   const patch = (next: Partial<ExportOptions>) => setOptions((prev) => ({ ...prev, ...next }))
   const mark = options.watermark
@@ -58,23 +68,23 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
     setOptions((prev) => ({ ...prev, watermark: { ...prev.watermark, ...next } }))
 
   if (!open) return null
-  const preset = presetFor(options)
+  const preset = presetFor(options, sizePresets)
 
   return (
-    <div className="modal" role="dialog" aria-modal="true" aria-label="Export options">
-      <button type="button" className="modal__backdrop" aria-label="Close" onClick={onClose} />
+    <div className="modal" role="dialog" aria-modal="true" aria-label={ex.dialog}>
+      <button type="button" className="modal__backdrop" aria-label={ex.close} onClick={onClose} />
       <div className="modal__card modal__card--wide">
         <div className="panel__header">
-          <h2 className="panel__title">Export {selectionCount > 1 ? `${selectionCount} photos` : ''}</h2>
+          <h2 className="panel__title">{selectionCount > 1 ? ex.titleMany(selectionCount) : ex.title}</h2>
           <button type="button" className="btn btn--ghost btn--sm" onClick={onClose}>
-            Close
+            {ex.close}
           </button>
         </div>
 
         <div className="export-section">
-          <h3 className="adjust-group__title">Size</h3>
-          <div className="export-presets" role="group" aria-label="Size preset">
-            {SIZE_PRESETS.map((item) => (
+          <h3 className="adjust-group__title">{ex.size}</h3>
+          <div className="export-presets" role="group" aria-label={ex.sizePreset}>
+            {sizePresets.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -95,7 +105,7 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
           </div>
           {options.frame ? (
             <div className="field-row">
-              <span>Border colour (photo is fitted, not cropped)</span>
+              <span>{ex.border}</span>
               <span className="btn-group">
                 {['#ffffff', '#000000', '#f1ece4'].map((color) => (
                   <button
@@ -105,7 +115,7 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
                       options.frame?.background === color ? 'swatch-btn swatch-btn--active' : 'swatch-btn'
                     }
                     style={{ background: color }}
-                    aria-label={`Border ${color}`}
+                    aria-label={ex.borderColor(color)}
                     onClick={() => patch({ frame: options.frame ? { ...options.frame, background: color } : null })}
                   />
                 ))}
@@ -113,12 +123,12 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
             </div>
           ) : (
             <Slider
-              label="Long edge"
+              label={ex.longEdge}
               value={options.maxEdge}
               min={800}
               max={8192}
               step={16}
-              format={(v) => (v >= 8192 ? 'Full' : `${v}px`)}
+              format={(v) => (v >= 8192 ? ex.full : `${v}px`)}
               onChange={(maxEdge) => patch({ maxEdge })}
             />
           )}
@@ -126,8 +136,8 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
 
         <div className="export-section">
           <div className="field-row">
-            <span>AI upscale</span>
-            <span className="segmented segmented--compact" role="group" aria-label="AI upscale">
+            <span>{ex.upscale}</span>
+            <span className="segmented segmented--compact" role="group" aria-label={ex.upscale}>
               {([1, 2, 4] as const).map((factor) => (
                 <button
                   key={factor}
@@ -139,23 +149,22 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
                     patch({ upscale: factor })
                   }}
                 >
-                  {factor === 1 ? 'Off' : `${factor}×`}
+                  {factor === 1 ? ex.off : `${factor}×`}
                 </button>
               ))}
             </span>
           </div>
           {options.upscale > 1 && (
             <p className="field-hint">
-              Sharp enlargement, up to the size above (8192 px max). Best on small or cropped photos; big ones can
-              take a while. Downloads a 5 MB model once and runs on your device, on the GPU when it can.
+              {ex.upscaleHint}
             </p>
           )}
         </div>
 
         <div className="export-section">
-          <h3 className="adjust-group__title">File</h3>
+          <h3 className="adjust-group__title">{ex.file}</h3>
           <div className="field-row">
-            <span>Format</span>
+            <span>{ex.format}</span>
             <select
               className="field field--sm"
               value={options.format}
@@ -168,7 +177,7 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
           </div>
           {options.format !== 'png' && (
             <Slider
-              label="Quality"
+              label={ex.quality}
               value={Math.round(options.quality * 100)}
               min={50}
               max={100}
@@ -177,27 +186,27 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
             />
           )}
           <label className="field-row">
-            <span>Filename</span>
+            <span>{ex.filename}</span>
             <input
               className="field field--sm"
               value={options.filenamePattern}
               onChange={(e) => patch({ filenamePattern: e.target.value })}
               placeholder="{name}-edited"
-              title="{name} is replaced with the original file name"
+              title={ex.filenameTitle}
             />
           </label>
         </div>
 
         <div className="export-section">
           <div className="adjust-group__header">
-            <h3 className="adjust-group__title">Watermark</h3>
+            <h3 className="adjust-group__title">{ex.watermark}</h3>
             <label className="check">
               <input
                 type="checkbox"
                 checked={mark.enabled}
                 onChange={(e) => patchMark({ enabled: e.target.checked })}
               />
-              <span>Add</span>
+              <span>{ex.add}</span>
             </label>
           </div>
           {mark.enabled && (
@@ -207,11 +216,11 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
                 value={mark.text}
                 onChange={(e) => patchMark({ text: e.target.value })}
                 placeholder="© Your name"
-                aria-label="Watermark text"
+                aria-label={ex.watermarkText}
               />
               <div className="field-row">
-                <span>Position</span>
-                <span className="segmented segmented--compact" role="group" aria-label="Watermark position">
+                <span>{ex.position}</span>
+                <span className="segmented segmented--compact" role="group" aria-label={ex.position}>
                   {POSITIONS.map((pos) => (
                     <button
                       key={pos.id}
@@ -227,7 +236,7 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
                 </span>
               </div>
               <Slider
-                label="Size"
+                label={ex.markSize}
                 value={Math.round(mark.size * 1000) / 10}
                 min={1}
                 max={10}
@@ -236,7 +245,7 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
                 onChange={(v) => patchMark({ size: v / 100 })}
               />
               <Slider
-                label="Opacity"
+                label={ex.opacity}
                 value={Math.round(mark.opacity * 100)}
                 min={10}
                 max={100}
@@ -250,10 +259,10 @@ export function ExportDialog({ open, initial, selectionCount, onClose, onExport 
 
         <div className="modal__actions">
           <button type="button" className="btn" onClick={() => setOptions(DEFAULT_EXPORT_OPTIONS)}>
-            Reset defaults
+            {ex.reset}
           </button>
           <button type="button" className="btn btn--accent" onClick={() => onExport(options)}>
-            Export {selectionCount > 1 ? `${selectionCount} files` : ''}
+            {selectionCount > 1 ? ex.exportFiles(selectionCount) : ex.title}
           </button>
         </div>
       </div>

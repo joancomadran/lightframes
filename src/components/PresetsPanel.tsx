@@ -1,6 +1,10 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { usePresetThumbnails, type ThumbGeometry } from '../hooks/usePresetThumbnails'
+import { useEditorLang } from '../hooks/useEditorLang'
+import { trackFreePackDownload } from '../lib/analytics'
 import { BUILTIN_PRESETS, isBuiltinPreset } from '../lib/builtinPresets'
+import { FREE_PACK_PRESETS, freePackPresetLabel, isFreePackPreset } from '../lib/freePackPresets'
+import { freePresetsPackPath, freePresetsPackZipUrl } from '../site/freePresetsPack'
 import type { Preset } from '../types/edits'
 
 type PresetTileProps = {
@@ -14,6 +18,10 @@ type PresetTileProps = {
   onRemove: () => void
   onIntensityChange: (intensity: number) => void
   actions?: ReactNode
+  applyLabel: (name: string) => string
+  removeLabel: (name: string) => string
+  intensityLabel: (name: string) => string
+  intensityTitle: string
 }
 
 function PresetTile({
@@ -26,6 +34,10 @@ function PresetTile({
   onRemove,
   onIntensityChange,
   actions,
+  applyLabel,
+  removeLabel,
+  intensityLabel,
+  intensityTitle,
 }: PresetTileProps) {
   return (
     <li className={selected ? 'preset-grid__item preset-grid__item--active' : 'preset-grid__item'}>
@@ -35,7 +47,7 @@ function PresetTile({
         disabled={disabled}
         aria-pressed={selected}
         onClick={() => (selected ? onRemove() : onApply(preset))}
-        title={selected ? `Remove “${preset.name}”` : `Apply “${preset.name}”`}
+        title={selected ? removeLabel(preset.name) : applyLabel(preset.name)}
       >
         <span className="preset-grid__thumb">
           {thumb && <img src={thumb} alt="" draggable={false} />}
@@ -45,7 +57,7 @@ function PresetTile({
       {/* Sits over the thumbnail, outside the button, so dragging it doesn't toggle the preset. */}
       {selected && (
         <div className="preset-grid__intensity">
-          <label className="preset-grid__intensity-bar" title="Intensity · double-click to reset">
+          <label className="preset-grid__intensity-bar" title={intensityTitle}>
             <span className="preset-grid__intensity-value">{intensity}%</span>
             <input
               type="range"
@@ -54,7 +66,7 @@ function PresetTile({
               step={1}
               value={intensity}
               disabled={disabled}
-              aria-label={`${preset.name} intensity`}
+              aria-label={intensityLabel(preset.name)}
               onChange={(e) => onIntensityChange(Number(e.target.value))}
               onDoubleClick={() => onIntensityChange(100)}
             />
@@ -102,36 +114,46 @@ export function PresetsPanel({
   onExportAll,
   onImport,
 }: PresetsPanelProps) {
+  const { lang, copy } = useEditorLang()
+  const tx = copy.presets
   const [name, setName] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const selected = [...BUILTIN_PRESETS, ...presets].find((p) => p.id === selectedPresetId) ?? null
-  const selectedIsBuiltin = Boolean(selected && isBuiltinPreset(selected.id))
+  const catalog = [...BUILTIN_PRESETS, ...FREE_PACK_PRESETS, ...presets]
+  const selected = catalog.find((p) => p.id === selectedPresetId) ?? null
+  const selectedIsLocked = Boolean(selected && (isBuiltinPreset(selected.id) || isFreePackPreset(selected.id)))
   const canSave = Boolean(!disabled && name.trim())
-  const canUpdate = Boolean(!disabled && selected && !selectedIsBuiltin)
+  const canUpdate = Boolean(!disabled && selected && !selectedIsLocked)
   const builtinThumbs = usePresetThumbnails(BUILTIN_PRESETS, previewSrc, previewGeometry)
+  const freePackThumbs = usePresetThumbnails(FREE_PACK_PRESETS, previewSrc, previewGeometry)
   const customThumbs = usePresetThumbnails(presets, previewSrc, previewGeometry)
+  const tileLabels = {
+    applyLabel: tx.apply,
+    removeLabel: tx.remove,
+    intensityLabel: tx.intensity,
+    intensityTitle: tx.intensityTitle,
+  }
 
   return (
-    <section className="panel panel--presets" aria-label="Presets">
+    <section className="panel panel--presets" aria-label={copy.panels.presets}>
       <div className="adjust-group__header">
-        <h3 className="adjust-group__title">Presets</h3>
+        <h3 className="adjust-group__title">{copy.panels.presets}</h3>
         <div className="btn-group">
           <button
             type="button"
             className="btn btn--ghost btn--sm"
             onClick={() => fileRef.current?.click()}
-            title="Import a JSON, XMP or CUBE LUT preset"
+            title={tx.importTitle}
           >
-            Import
+            {tx.import}
           </button>
           <button
             type="button"
             className="btn btn--ghost btn--sm"
             disabled={presets.length === 0}
             onClick={onExportAll}
-            title="Download all presets as one JSON backup"
+            title={tx.backupTitle}
           >
-            Backup
+            {tx.backup}
           </button>
         </div>
         <input
@@ -148,7 +170,7 @@ export function PresetsPanel({
       </div>
 
       <div className="field-row">
-        <span>Filters</span>
+        <span>{tx.filters}</span>
         <span className="field-row__count">{BUILTIN_PRESETS.length}</span>
       </div>
       <ul className="preset-grid">
@@ -163,8 +185,39 @@ export function PresetsPanel({
             onApply={onApply}
             onRemove={onRemove}
             onIntensityChange={onIntensityChange}
+            {...tileLabels}
           />
         ))}
+      </ul>
+
+      <div className="field-row">
+        <span>{tx.freePack}</span>
+        <span className="field-row__count">{FREE_PACK_PRESETS.length}</span>
+      </div>
+      <p className="preset-pack__links">
+        <a href={freePresetsPackZipUrl} download onClick={() => trackFreePackDownload('full-pack')}>
+          {tx.downloadZip}
+        </a>
+        <a href={freePresetsPackPath[lang]}>{tx.packPage}</a>
+      </p>
+      <ul className="preset-grid" aria-label={tx.freePack}>
+        {FREE_PACK_PRESETS.map((preset) => {
+          const labeled = { ...preset, name: freePackPresetLabel(preset, lang) }
+          return (
+            <PresetTile
+              key={preset.id}
+              preset={labeled}
+              thumb={freePackThumbs[preset.id]}
+              selected={preset.id === selectedPresetId}
+              intensity={intensity}
+              disabled={disabled}
+              onApply={() => onApply(preset)}
+              onRemove={onRemove}
+              onIntensityChange={onIntensityChange}
+              {...tileLabels}
+            />
+          )
+        })}
       </ul>
 
       <form
@@ -179,27 +232,27 @@ export function PresetsPanel({
         <input
           className="preset-save__input"
           type="text"
-          placeholder="Save current edits as…"
-          aria-label="New preset name"
+          placeholder={tx.savePlaceholder}
+          aria-label={tx.saveLabel}
           value={name}
           disabled={disabled}
           onChange={(e) => setName(e.target.value)}
         />
         <button type="submit" className="btn btn--accent btn--sm" disabled={!canSave}>
-          Save
+          {tx.save}
         </button>
       </form>
 
       {presets.length === 0 ? (
         <div className="empty-state">
           <p className="empty-state__text">
-            No custom presets yet. Save your current look above, or import a JSON, XMP or CUBE file.
+            {tx.empty}
           </p>
         </div>
       ) : (
         <>
           <div className="field-row">
-            <span>My presets</span>
+            <span>{tx.mine}</span>
             <span className="field-row__count">{presets.length}</span>
           </div>
           <ul className="preset-grid">
@@ -214,6 +267,7 @@ export function PresetsPanel({
                 onApply={onApply}
                 onRemove={onRemove}
                 onIntensityChange={onIntensityChange}
+                {...tileLabels}
                 actions={
                   <>
                     {preset.id === selectedPresetId && (
@@ -222,8 +276,8 @@ export function PresetsPanel({
                         className="btn btn--ghost btn--sm btn--icon"
                         disabled={!canUpdate}
                         onClick={onUpdateSelected}
-                        title="Update with current edits"
-                        aria-label={`Update ${preset.name} with current edits`}
+                        title={tx.updateTitle}
+                        aria-label={tx.update(preset.name)}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                           <path
@@ -240,8 +294,8 @@ export function PresetsPanel({
                       type="button"
                       className="btn btn--ghost btn--sm btn--icon"
                       onClick={() => onExport(preset)}
-                      title="Download as JSON"
-                      aria-label={`Download ${preset.name}`}
+                      title={tx.downloadTitle}
+                      aria-label={tx.download(preset.name)}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path
@@ -257,8 +311,8 @@ export function PresetsPanel({
                       type="button"
                       className="btn btn--ghost btn--sm btn--icon"
                       onClick={() => onDelete(preset.id)}
-                      title="Delete preset"
-                      aria-label={`Delete ${preset.name}`}
+                      title={tx.deleteTitle}
+                      aria-label={tx.delete(preset.name)}
                     >
                       ×
                     </button>
