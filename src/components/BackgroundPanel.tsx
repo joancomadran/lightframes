@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { getAiStatus, preloadModel, subscribeAi } from '../lib/ai'
 import type { BackgroundEdit, BackgroundMode } from '../types/edits'
 import type { RefineTool } from './RefineOverlay'
@@ -35,6 +36,7 @@ export function BackgroundPanel({
   refine,
   onRefineChange,
 }: BackgroundPanelProps) {
+  const { copy } = useEditorLang()
   const status = useSyncExternalStore(subscribeAi, () => getAiStatus('segment'))
   const active = background.mode !== 'original'
 
@@ -45,9 +47,9 @@ export function BackgroundPanel({
   }
 
   return (
-    <section className="panel" aria-label="Background">
+    <section className="panel" aria-label={copy.panels.background}>
       <div className="adjust-group__header heal-header">
-        <h3 className="adjust-group__title">Background</h3>
+        <h3 className="adjust-group__title">{copy.panels.background}</h3>
       </div>
 
       <div className="segmented" role="group" aria-label="Background">

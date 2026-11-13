@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import type { HistogramBins } from '../lib/histogram'
 import { evaluateToneCurve } from '../lib/imageProcessing'
 import {
@@ -83,6 +84,7 @@ export function ToneCurvePanel({
   onBegin,
   onCommit,
 }: ToneCurvePanelProps) {
+  const { copy } = useEditorLang()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragIndex = useRef<number | null>(null)
   const [size, setSize] = useState(0)
@@ -212,9 +214,9 @@ export function ToneCurvePanel({
   const active = activeIndex !== null ? points[activeIndex] : undefined
 
   return (
-    <section className="panel" aria-label="Tone curve">
+    <section className="panel" aria-label={copy.panels.toneCurve}>
       <div className="adjust-group__header">
-        <h3 className="adjust-group__title">Tone curve</h3>
+        <h3 className="adjust-group__title">{copy.panels.toneCurve}</h3>
       </div>
 
       <div className="segmented segmented--channels" role="tablist" aria-label="Curve channel">

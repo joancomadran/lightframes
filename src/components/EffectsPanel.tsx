@@ -1,3 +1,4 @@
+import { useEditorLang } from '../hooks/useEditorLang'
 import type { BasicEditKey, EditParams } from '../types/edits'
 import { SliderGroup } from './AdjustmentsPanel'
 
@@ -9,19 +10,20 @@ type EffectsPanelProps = {
   onCommit?: () => void
 }
 
-const GROUPS: { title: string; keys: BasicEditKey[] }[] = [
-  { title: 'Vignette', keys: ['vignette', 'vignetteMidpoint'] },
-  { title: 'Grain', keys: ['grain', 'grainSize'] },
-  { title: 'Detail', keys: ['sharpening', 'noiseReduction', 'colorNoiseReduction'] },
+const GROUPS: { id: 'vignette' | 'grain' | 'detail'; keys: BasicEditKey[] }[] = [
+  { id: 'vignette', keys: ['vignette', 'vignetteMidpoint'] },
+  { id: 'grain', keys: ['grain', 'grainSize'] },
+  { id: 'detail', keys: ['sharpening', 'noiseReduction', 'colorNoiseReduction'] },
 ]
 
 export function EffectsPanel(props: EffectsPanelProps) {
+  const { copy } = useEditorLang()
   return (
-    <section className="panel" aria-label="Effects">
+    <section className="panel" aria-label={copy.panels.effects}>
       {GROUPS.map((group) => (
-        <div key={group.title} className="adjust-group">
+        <div key={group.id} className="adjust-group">
           <div className="adjust-group__header">
-            <h3 className="adjust-group__title">{group.title}</h3>
+            <h3 className="adjust-group__title">{copy.panels[group.id]}</h3>
           </div>
           <SliderGroup keys={group.keys} {...props} />
         </div>

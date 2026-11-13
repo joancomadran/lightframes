@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { aspectRatioFor, fitCropInImage, restraightenCrop, rotatedBounds, type FrameSize, type Size } from '../lib/crop'
 import { ASPECT_PRESETS, createDefaultCrop, stepRotate, type CropRect, type EditParams } from '../types/edits'
 import { Slider } from './Slider'
@@ -54,6 +55,7 @@ export function CropPanel({
   onBegin,
   onCommit,
 }: CropPanelProps) {
+  const { copy } = useEditorLang()
   const crop = edits.crop
   const image = frameSize?.image ?? null
   const canFlip = aspectId !== 'free' && aspectId !== '1:1'
@@ -85,10 +87,10 @@ export function CropPanel({
   const outH = frame ? Math.round(crop.height * frame.h) : null
 
   return (
-    <section className="panel" aria-label="Crop and rotate">
+    <section className="panel" aria-label={copy.panels.cropAndRotate}>
       <div className="adjust-group">
         <div className="adjust-group__header">
-          <h3 className="adjust-group__title">Crop</h3>
+          <h3 className="adjust-group__title">{copy.panels.crop}</h3>
           <button
             type="button"
             className={cropMode ? 'btn btn--sm btn--accent' : 'btn btn--sm'}
@@ -160,7 +162,7 @@ export function CropPanel({
 
       <div className="adjust-group">
         <div className="adjust-group__header">
-          <h3 className="adjust-group__title">Rotate</h3>
+          <h3 className="adjust-group__title">{copy.panels.rotate}</h3>
           <div className="btn-group">
             <button
               type="button"

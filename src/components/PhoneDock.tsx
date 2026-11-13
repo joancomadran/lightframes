@@ -1,4 +1,5 @@
 import { useEffect, useState, type HTMLAttributes, type ReactNode } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 
 export type DockItem = {
   id: string
@@ -56,6 +57,8 @@ function DockIcon({ size = 22, children }: { size?: number; children: ReactNode 
  * and an action button bottom-right — the editor's list of tools, or a studio's settings sheet.
  */
 export function PhoneDock({ photoCount, filmstrip, overlay, action, exit }: PhoneDockProps) {
+  const { copy } = useEditorLang()
+  const dock = copy.dock
   const [open, setOpen] = useState<'menu' | 'photos' | null>(null)
 
   useEffect(() => {
@@ -76,13 +79,13 @@ export function PhoneDock({ photoCount, filmstrip, overlay, action, exit }: Phon
 
       {/* Any tap outside the tool list closes it instead of reaching the photo. */}
       {open === 'menu' && (
-        <button type="button" className="phone-dock__scrim" aria-label="Close tools" onClick={() => setOpen(null)} />
+        <button type="button" className="phone-dock__scrim" aria-label={dock.closeTools} onClick={() => setOpen(null)} />
       )}
 
       {open === 'photos' && <div className="phone-dock__tray">{filmstrip}</div>}
 
       {open === 'menu' && (
-        <ul className="phone-dock__menu" aria-label="Editing tools">
+        <ul className="phone-dock__menu" aria-label={dock.editingTools}>
           {items.map((item, index) => (
             <li
               key={item.id}
@@ -109,7 +112,7 @@ export function PhoneDock({ photoCount, filmstrip, overlay, action, exit }: Phon
       <button
         type="button"
         className={open === 'photos' ? 'phone-fab phone-fab--photos phone-fab--on' : 'phone-fab phone-fab--photos'}
-        aria-label={open === 'photos' ? 'Hide photos' : 'Show photos'}
+        aria-label={open === 'photos' ? dock.hidePhotos : dock.showPhotos}
         aria-expanded={open === 'photos'}
         onClick={() => setOpen((v) => (v === 'photos' ? null : 'photos'))}
       >
@@ -141,7 +144,7 @@ export function PhoneDock({ photoCount, filmstrip, overlay, action, exit }: Phon
       <button
         type="button"
         className={actionOn ? 'phone-fab phone-fab--tools phone-fab--on' : 'phone-fab phone-fab--tools'}
-        aria-label={action.kind === 'menu' ? (actionOn ? 'Close tools' : 'Editing tools') : action.label}
+        aria-label={action.kind === 'menu' ? (actionOn ? dock.closeTools : dock.editingTools) : action.label}
         aria-expanded={actionOn}
         onClick={() => {
           if (action.kind === 'menu') {
@@ -180,6 +183,7 @@ export function PhoneSheetHead({
   onClose,
   ...swipe
 }: { icon: ReactNode; title: ReactNode; onClose: () => void } & HTMLAttributes<HTMLDivElement>) {
+  const { copy } = useEditorLang()
   return (
     <div className="sheet-head" {...swipe}>
       <div className="sheet-head__row">
@@ -190,8 +194,8 @@ export function PhoneSheetHead({
         <button
           type="button"
           className="btn btn--ghost btn--sm btn--icon sheet-head__close"
-          aria-label="Close tools"
-          title="Close"
+          aria-label={copy.dock.closeTools}
+          title={copy.dock.close}
           onClick={onClose}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">

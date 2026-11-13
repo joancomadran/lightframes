@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { useInstallPrompt, type ManualInstall } from '../hooks/useInstallPrompt'
 
 const MANUAL_STEPS: Record<ManualInstall, string> = {
@@ -12,6 +13,7 @@ const MANUAL_STEPS: Record<ManualInstall, string> = {
  * installing isn't possible. Shares the privacy badge's popover styles.
  */
 export function InstallButton() {
+  const { copy } = useEditorLang()
   const { state, install } = useInstallPrompt()
   const tipId = useId()
   const [open, setOpen] = useState(false)
@@ -46,7 +48,7 @@ export function InstallButton() {
         className="btn btn--ghost btn--sm install__btn"
         aria-describedby={manual ? tipId : undefined}
         aria-expanded={manual ? open : undefined}
-        title={manual ? undefined : 'Install Lightframes as an app — editing works offline after it has loaded, in its own window'}
+        title={manual ? undefined : copy.installTitle}
         onClick={() => (manual ? setOpen((v) => !v) : void install())}
       >
         <svg
@@ -63,7 +65,7 @@ export function InstallButton() {
           <path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5" />
           <path d="M5 21h14" />
         </svg>
-        Install app
+        {copy.install}
       </button>
       {manual && (
         <span id={tipId} role="tooltip" className="privacy__tip">

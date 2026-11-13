@@ -196,16 +196,26 @@ export async function openImages(opts?: { folder?: boolean }): Promise<OpenImage
 }
 
 /** Demo photos served from /public/samples, developed flat from the author's own RAWs. */
-const SAMPLE_PHOTOS = ['pagoda.jpg', 'twelve-apostles.jpg', 'opera-night.jpg']
+export const SAMPLE_PHOTOS = ['pagoda.jpg', 'twelve-apostles.jpg', 'opera-night.jpg'] as const
+
+export type SamplePhoto = (typeof SAMPLE_PHOTOS)[number]
+
+export function isSamplePhoto(name: string): name is SamplePhoto {
+  return (SAMPLE_PHOTOS as readonly string[]).includes(name)
+}
+
+async function fetchSampleFile(name: SamplePhoto): Promise<File> {
+  const res = await fetch(`/samples/${name}`)
+  if (!res.ok) throw new Error('Could not load sample photos')
+  return new File([await res.blob()], name, { type: 'image/jpeg' })
+}
+
+export async function fetchSampleImage(name: SamplePhoto): Promise<File> {
+  return fetchSampleFile(name)
+}
 
 export async function fetchSampleImages(): Promise<File[]> {
-  return Promise.all(
-    SAMPLE_PHOTOS.map(async (name) => {
-      const res = await fetch(`/samples/${name}`)
-      if (!res.ok) throw new Error('Could not load sample photos')
-      return new File([await res.blob()], name, { type: 'image/jpeg' })
-    }),
-  )
+  return Promise.all(SAMPLE_PHOTOS.map((name) => fetchSampleFile(name)))
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {

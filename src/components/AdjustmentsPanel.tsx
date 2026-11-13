@@ -1,3 +1,4 @@
+import { useEditorLang } from '../hooks/useEditorLang'
 import { DEFAULT_EDITS, EDIT_SLIDERS, type BasicEditKey, type EditParams } from '../types/edits'
 import { Slider } from './Slider'
 
@@ -75,12 +76,13 @@ export function AdjustmentsPanel({
   onBegin,
   onCommit,
 }: AdjustmentsPanelProps) {
+  const { copy } = useEditorLang()
   const sliderProps = { edits, disabled, onChange, onBegin, onCommit }
   return (
-    <section className="panel" aria-label="Adjustments">
+    <section className="panel" aria-label={copy.panels.adjustments}>
       <div className="adjust-group">
         <div className="adjust-group__header">
-          <h3 className="adjust-group__title">Light</h3>
+          <h3 className="adjust-group__title">{copy.panels.light}</h3>
           <div className="btn-group">
             <button
               type="button"
@@ -96,9 +98,9 @@ export function AdjustmentsPanel({
               className="btn btn--ghost btn--sm"
               onClick={onReset}
               disabled={disabled}
-              title="Reset all adjustments"
+              title={copy.panels.resetAllTitle}
             >
-              Reset all
+              {copy.panels.resetAll}
             </button>
           </div>
         </div>
@@ -107,7 +109,7 @@ export function AdjustmentsPanel({
 
       <div className="adjust-group">
         <div className="adjust-group__header">
-          <h3 className="adjust-group__title">Color</h3>
+          <h3 className="adjust-group__title">{copy.panels.color}</h3>
           <div className="btn-group">
             <button
               type="button"
@@ -145,7 +147,7 @@ export function AdjustmentsPanel({
 
       <div className="adjust-group">
         <div className="adjust-group__header">
-          <h3 className="adjust-group__title">Presence</h3>
+          <h3 className="adjust-group__title">{copy.panels.presence}</h3>
         </div>
         <SliderGroup keys={['texture', 'clarity', 'dehaze']} {...sliderProps} />
       </div>

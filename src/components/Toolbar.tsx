@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEditorLang } from '../hooks/useEditorLang'
 import { useInstallPrompt } from '../hooks/useInstallPrompt'
 import { AppLoader } from './AppMark'
 
@@ -24,11 +25,9 @@ type ToolbarProps = {
 
 type ToolbarMode = 'edit' | 'collage'
 
-const MODES: { id: ToolbarMode; label: string; title: string; icon: ReactNode }[] = [
+const MODES: { id: ToolbarMode; icon: ReactNode }[] = [
   {
     id: 'edit',
-    label: 'Edit',
-    title: 'Develop and retouch photos',
     icon: (
       <>
         <path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1" />
@@ -40,8 +39,6 @@ const MODES: { id: ToolbarMode; label: string; title: string; icon: ReactNode }[
   },
   {
     id: 'collage',
-    label: 'Collage',
-    title: 'Instagram collages',
     icon: (
       <>
         <rect x="3" y="3" width="8" height="18" rx="1.5" />
@@ -83,7 +80,11 @@ export function Toolbar({
   onShowShortcuts,
   onClearWorkspace,
 }: ToolbarProps) {
+  const { copy } = useEditorLang()
+  const tx = copy.toolbar
   const editing = mode === 'edit'
+  const modeLabel = { edit: tx.edit, collage: tx.collage }
+  const modeTitle = { edit: tx.editTitle, collage: tx.collageTitle }
   const { state: installState, install } = useInstallPrompt()
   const [menuOpen, setMenuOpen] = useState(false)
   // The launch hint duplicates the empty state, so the compact status chip skips it.
@@ -120,7 +121,7 @@ export function Toolbar({
         <span className="brand-mark" aria-hidden="true" />
         {/* Logo, not a second page title. The visible h1 is the empty-state headline. */}
         <p className="brand-name">Lightframes</p>
-        <div className="mode-switch" role="tablist" aria-label="Mode">
+        <div className="mode-switch" role="tablist" aria-label={tx.mode}>
           {MODES.map((m) => (
             <button
               key={m.id}
@@ -128,13 +129,13 @@ export function Toolbar({
               role="tab"
               aria-selected={mode === m.id}
               className={mode === m.id ? 'mode-switch__btn mode-switch__btn--active' : 'mode-switch__btn'}
-              title={m.title}
+              title={modeTitle[m.id]}
               onClick={() => onModeChange(m.id)}
             >
               <svg {...iconProps} width={16} height={16}>
                 {m.icon}
               </svg>
-              <span className="mode-switch__label">{m.label}</span>
+              <span className="mode-switch__label">{modeLabel[m.id]}</span>
             </button>
           ))}
         </div>
@@ -144,13 +145,13 @@ export function Toolbar({
         <button
           type="button"
           className="btn btn--labelled"
-          title="Open images. Hold Option/Alt to open a folder."
+          title={tx.openTitle}
           onClick={(e) => onOpen({ folder: e.altKey })}
         >
           <svg {...iconProps} className="btn__icon">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          <span className="btn__label">Open</span>
+          <span className="btn__label">{tx.open}</span>
         </button>
         {editing && (
           <>
@@ -160,8 +161,8 @@ export function Toolbar({
                 className="btn btn--icon"
                 onClick={onUndo}
                 disabled={!canUndo}
-                title="Undo (⌘Z)"
-                aria-label="Undo"
+                title={tx.undoTitle}
+                aria-label={tx.undo}
               >
                 <svg {...iconProps}>
                   <path d="M9 14 4 9l5-5" />
@@ -173,8 +174,8 @@ export function Toolbar({
                 className="btn btn--icon"
                 onClick={onRedo}
                 disabled={!canRedo}
-                title="Redo (⇧⌘Z)"
-                aria-label="Redo"
+                title={tx.redoTitle}
+                aria-label={tx.redo}
               >
                 <svg {...iconProps}>
                   <path d="m15 14 5-5-5-5" />
@@ -188,8 +189,8 @@ export function Toolbar({
                 className="btn btn--icon"
                 onClick={onCopy}
                 disabled={!canEdit}
-                title="Copy edits (⌘C)"
-                aria-label="Copy edits"
+                title={tx.copyTitle}
+                aria-label={tx.copy}
               >
                 <svg {...iconProps}>
                   <rect x="8" y="8" width="13" height="13" rx="2" />
@@ -201,8 +202,8 @@ export function Toolbar({
                 className="btn btn--icon"
                 onClick={onPaste}
                 disabled={!canEdit || !canPaste}
-                title="Paste edits to the selection, choosing which settings (⌘V)"
-                aria-label="Paste edits"
+                title={tx.pasteTitle}
+                aria-label={tx.paste}
               >
                 <svg {...iconProps}>
                   <rect x="8" y="2" width="8" height="4" rx="1" />
@@ -215,7 +216,7 @@ export function Toolbar({
               <button
                 type="button"
                 className="btn btn--icon"
-                aria-label="More actions"
+                aria-label={tx.more}
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((v) => !v)}
@@ -227,7 +228,7 @@ export function Toolbar({
                 </svg>
               </button>
               {menuOpen && (
-                <div className="menu" role="menu" aria-label="More actions">
+                <div className="menu" role="menu" aria-label={tx.more}>
                       <button
                     type="button"
                     role="menuitem"
@@ -235,7 +236,7 @@ export function Toolbar({
                     disabled={!canEdit}
                     onClick={menuAction(onCopy)}
                   >
-                    Copy edits
+                    {tx.copy}
                   </button>
                   <button
                     type="button"
@@ -244,7 +245,7 @@ export function Toolbar({
                     disabled={!canEdit || !canPaste}
                     onClick={menuAction(onPaste)}
                   >
-                    Paste edits…
+                    {tx.pasteMenu}
                     {selectionCount > 1 && <span className="menu__hint">{selectionCount}</span>}
                   </button>
                   <a
@@ -255,7 +256,7 @@ export function Toolbar({
                     rel="noreferrer"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Star on GitHub
+                    {tx.star}
                     <svg className="menu__star" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                       <path d="M8 .25a.75.75 0 0 1 .67.42l1.88 3.8 4.2.61a.75.75 0 0 1 .41 1.28l-3.04 2.96.72 4.18a.75.75 0 0 1-1.09.79L8 12.31l-3.75 1.98a.75.75 0 0 1-1.09-.79l.72-4.18L.84 6.36a.75.75 0 0 1 .41-1.28l4.2-.61L7.33.67A.75.75 0 0 1 8 .25z" />
                     </svg>
@@ -267,7 +268,7 @@ export function Toolbar({
                       className="menu__item"
                       onClick={menuAction(() => void install())}
                     >
-                      Install app
+                      {tx.install}
                     </button>
                   )}
                   <button
@@ -277,9 +278,9 @@ export function Toolbar({
                     disabled={!canEdit}
                     onClick={menuAction(onClearWorkspace)}
                   >
-                    Clear workspace…
+                    {tx.clear}
                   </button>
-                  <p className="menu__note">Long-press thumbnails to select several photos.</p>
+                  <p className="menu__note">{tx.moreNote}</p>
                 </div>
               )}
             </div>
@@ -287,15 +288,15 @@ export function Toolbar({
         )}
 
         <button type="button" className="btn btn--accent" onClick={onExport} disabled={!canExport}>
-          Export
+          {tx.export}
         </button>
         <button
           type="button"
           className="btn btn--icon toolbar__secondary toolbar__keyboard"
           hidden={!editing}
           onClick={onShowShortcuts}
-          title="Keyboard shortcuts (?)"
-          aria-label="Keyboard shortcuts"
+          title={tx.shortcutsTitle}
+          aria-label={tx.shortcuts}
         >
           <svg {...iconProps}>
             <rect x="2" y="5" width="20" height="14" rx="2" />

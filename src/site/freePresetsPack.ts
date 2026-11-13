@@ -13,7 +13,7 @@ export const freePresetsPackAlternates = {
 
 export const freePresetsPackUpdated = new Date('2026-11-05')
 
-const zipUrl = '/downloads/lightframes-free-presets-luts.zip'
+export const freePresetsPackZipUrl = '/downloads/lightframes-free-presets-luts.zip'
 
 function lookFiles(id: string) {
   const base = `/downloads/free-presets-pack/${id}/${id}`
@@ -30,7 +30,7 @@ export const freePresetsPack = {
       'Yes — you can download eight original creative looks for free, each as a Lightroom-compatible .xmp preset and a .cube 3D LUT. They were built for Lightframes, released under CC0, and you can apply them in the browser without uploading your photos.',
     license: `License: ${FREE_PACK_LICENSE}. Use, remix and share without attribution.`,
     zipLabel: 'Download the full pack (ZIP)',
-    zipUrl,
+    zipUrl: freePresetsPackZipUrl,
     sampleBefore: '/samples/pagoda.jpg',
     sampleBeforeAlt: 'Sample photo before any preset',
     tryLabel: 'Try it in Lightframes',
@@ -92,7 +92,7 @@ export const freePresetsPack = {
       'Sí: puedes descargar gratis ocho looks creativos originales, cada uno como preset .xmp compatible con Lightroom y LUT .cube 3D. Están hechos para Lightframes, publicados bajo CC0, y puedes aplicarlos en el navegador sin subir tus fotos.',
     license: `Licencia: ${FREE_PACK_LICENSE}. Úsalos, remíxalos y compártelos sin atribución.`,
     zipLabel: 'Descargar el pack completo (ZIP)',
-    zipUrl,
+    zipUrl: freePresetsPackZipUrl,
     sampleBefore: '/samples/pagoda.jpg',
     sampleBeforeAlt: 'Foto de ejemplo antes del preset',
     tryLabel: 'Probar en Lightframes',

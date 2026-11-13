@@ -109,6 +109,95 @@ test('keeps valid images when another image in the same import batch is corrupt'
   await expect(page.locator('.filmstrip__count')).toHaveText('1/1')
 })
 
+const FREE_PACK_LOOKS = [
+  'Coastal Mist',
+  'Golden Hour Glow',
+  'Ink Stone',
+  'Sage Garden',
+  'Rose Fade',
+  'Midnight City',
+  'Ember Portrait',
+  'Silver Rain',
+]
+
+async function openPresets(page: Page) {
+  const tab = page.getByRole('tab', { name: 'Presets', exact: true })
+  if (await tab.isVisible()) {
+    await tab.click()
+    return
+  }
+  await page.getByRole('button', { name: 'Editing tools' }).click()
+  await page.getByRole('button', { name: 'Presets', exact: true }).click()
+}
+
+test('loads one sample photo from an empty-state thumbnail', async ({ page }) => {
+  await page.goto('/editor')
+
+  await expect(page.getByRole('button', { name: 'Open photos' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Try sample photos' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Watch demo' })).toBeVisible()
+  await page.getByRole('button', { name: 'Open sample photo Pagoda' }).click()
+
+  await expect(page.locator('.toolbar__status')).toHaveText('Loaded 1 image')
+  await expect(page.locator('canvas[aria-label="pagoda.jpg"]')).toBeVisible()
+})
+
+test('spanish editor localizes the empty state', async ({ page }) => {
+  await page.goto('/es/editor')
+
+  const title = 'El editor de fotos open source que se queda en tu dispositivo'
+  await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()
+  expect(await visibleH1Text(page)).toEqual([title])
+  await expect(page.getByRole('button', { name: 'Abrir fotos' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Probar fotos de ejemplo' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Ver la demo' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Abrir la foto de ejemplo Pagoda' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sin subir archivos' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'The open-source photo editor that stays on your device' })).toHaveCount(0)
+  await expect(page.getByRole('tab', { name: 'Editar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Abrir', exact: true })).toBeVisible()
+})
+
+test('lists the eight free pack looks in the presets panel', async ({ page }) => {
+  await page.goto('/editor')
+  await page.getByRole('button', { name: 'Open sample photo Pagoda' }).click()
+  await expect(page.locator('.toolbar__status')).toHaveText('Loaded 1 image')
+
+  await openPresets(page)
+  const panel = page.getByRole('region', { name: 'Presets' })
+  for (const name of FREE_PACK_LOOKS) {
+    await expect(panel.getByRole('button', { name, exact: true })).toBeVisible()
+  }
+  await expect(panel.getByRole('link', { name: 'Download ZIP' })).toHaveAttribute(
+    'href',
+    '/downloads/lightframes-free-presets-luts.zip',
+  )
+  await expect(panel.getByRole('link', { name: 'About the pack' })).toHaveAttribute('href', '/free-presets-luts')
+})
+
+test('spanish presets panel names the free pack in Spanish', async ({ page }) => {
+  await page.goto('/es/editor')
+  await page.getByRole('button', { name: 'Abrir la foto de ejemplo Pagoda' }).click()
+  await expect(page.locator('.toolbar__status')).toHaveText('1 imagen cargada')
+
+  const tab = page.getByRole('tab', { name: 'Preajustes', exact: true })
+  if (await tab.isVisible()) {
+    await tab.click()
+  } else {
+    await page.getByRole('button', { name: 'Herramientas de edición' }).click()
+    await page.getByRole('button', { name: 'Preajustes', exact: true }).click()
+  }
+
+  const panel = page.getByRole('region', { name: 'Preajustes' })
+  await expect(panel.getByText('Pack gratis')).toBeVisible()
+  await expect(panel.getByRole('button', { name: 'Bruma costera', exact: true })).toBeVisible()
+  await expect(panel.getByRole('link', { name: 'Descargar ZIP' })).toHaveAttribute(
+    'href',
+    '/downloads/lightframes-free-presets-luts.zip',
+  )
+  await expect(panel.getByRole('link', { name: 'Sobre el pack' })).toHaveAttribute('href', '/es/presets-luts-gratis')
+})
+
 test('reports a batch with no importable images without creating a photo', async ({ page }) => {
   await prepareFilePicker(page, false)
 

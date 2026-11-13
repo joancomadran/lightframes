@@ -1018,6 +1018,58 @@ a.menu__item {
   margin-top: 1.5rem;
 }
 
+.preview__samples {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  width: min(100%, 22rem);
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview__sample {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preview__sample img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--bg-elevated);
+}
+
+.preview__sample span {
+  padding: 0 0.4rem 0.4rem;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: var(--text-muted);
+}
+
+.preview__sample:hover,
+.preview__sample:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.preview__sample:hover span,
+.preview__sample:focus-visible span {
+  color: var(--text);
+}
+
 .preview__empty-note {
   position: relative;
   display: flex;
@@ -1607,6 +1659,37 @@ a.github-star {
   font-variant-numeric: tabular-nums;
   text-align: center;
   color: #fff;
+}
+
+.preset-pack__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  margin: 0.1rem 0 0.55rem;
+  font-size: 0.72rem;
+}
+
+.preset-pack__links a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.preset-pack__links a:hover {
+  color: var(--text);
+}
+
+/* No photo yet: dim controls that cannot do anything, without moving the toolbar. */
+@media (min-width: 768px) {
+  .toolbar--empty .toolbar__history,
+  .toolbar--empty .toolbar__secondary,
+  .toolbar--empty .toolbar__actions > .btn--accent {
+    opacity: 0.38;
+  }
+}
+
+.sidebar--idle {
+  opacity: 0.72;
 }
 
 /* ——— Panel tabs / histogram / crop / curve / local / modal ——— */
