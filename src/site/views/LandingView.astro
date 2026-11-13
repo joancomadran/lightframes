@@ -1,5 +1,6 @@
 ---
 import BeforeAfter from '../components/BeforeAfter.astro'
+import CompareSlider from '../components/CompareSlider.astro'
 import FaqList from '../components/FaqList.astro'
 import ToolList from '../components/ToolList.astro'
 import { SITE, absoluteUrl } from '../config'
@@ -24,7 +25,11 @@ const allTools = await getTools(lang)
 const tools = allTools.filter((tool) => tool.data.featured)
 const faq = (await getFaq(lang)).slice(0, 6)
 const posts = (await getPosts(lang)).slice(0, 3)
-const examples = resultExamples(lang)
+// Person-removal stays on the tool page (`home: false`). Pairs become a slider;
+// anything else (the carousel filmstrip) keeps the labeled stills.
+const examples = resultExamples(lang).filter((example) => example.home !== false)
+const compares = examples.filter((example) => example.shots.length === 2)
+const galleries = examples.filter((example) => example.shots.length !== 2)
 ---
 
 <Base
@@ -98,10 +103,32 @@ const examples = resultExamples(lang)
     <header class="section__head">
       <h2 id="results-title">{c.results.h2}</h2>
       <p>{c.results.lead}</p>
+      <p>{c.results.hint}</p>
     </header>
+    <div class="ba-grid">
+      {
+        compares.map((example, index) => {
+          const [before, after] = example.shots
+          if (!before || !after) return null
+          return (
+            <article class:list={['ba-block', index === 0 && 'ba-block--lead']}>
+              <h3>
+                <a href={example.href}>{example.title}</a>
+              </h3>
+              <CompareSlider
+                before={before}
+                after={after}
+                label={`${c.results.compareLabel}: ${example.title}`}
+              />
+              <p class="ba__note">{example.caption}</p>
+            </article>
+          )
+        })
+      }
+    </div>
     {
-      examples.map((example) => (
-        <article class="ba-block">
+      galleries.map((example) => (
+        <article class="ba-block ba-stack">
           <h3>
             <a href={example.href}>{example.title}</a>
           </h3>

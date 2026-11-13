@@ -18,6 +18,8 @@ export const landing = {
     results: {
       h2: 'Before and after, from the sample photos',
       lead: 'These are the sample photos shipped with the editor, processed with the same code. Nothing here is a mockup.',
+      hint: 'Drag the handle to compare. With the handle focused, the arrow keys move it too.',
+      compareLabel: 'Compare before and after',
     },
     facts: ['Free and open source', 'Presets, XMP and LUTs', 'Nothing uploaded'],
     video: {
@@ -79,6 +81,8 @@ export const landing = {
     results: {
       h2: 'Antes y después, con las fotos de ejemplo',
       lead: 'Son las fotos de ejemplo que trae el editor, procesadas con el mismo código. No hay maquetas.',
+      hint: 'Arrastra el control para comparar. Con el control enfocado, las flechas también lo mueven.',
+      compareLabel: 'Comparar antes y después',
     },
     facts: ['Gratis y de código abierto', 'Presets, XMP y LUTs', 'Sin subir nada'],
     video: {
