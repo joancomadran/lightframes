@@ -116,6 +116,29 @@ export function breadcrumbs(items: { name: string; path: string }[]): Node {
   }
 }
 
+/** Markdown links allowed in FAQ answers: `[label](/path)` or `[label](https://...)`. */
+const FAQ_MD_LINK = /\[([^\]\n]+)\]\((\/[^)\s]*|https:\/\/[^)\s]+)\)/g
+
+/** Visible answer text, with link labels kept and the markdown syntax removed. */
+export function faqAnswerText(answer: string): string {
+  return answer.replace(new RegExp(FAQ_MD_LINK.source, 'g'), '$1')
+}
+
+/** Split an FAQ answer into text runs and safe links for the visible FAQ. */
+export function faqAnswerParts(answer: string): { text: string; href?: string }[] {
+  const parts: { text: string; href?: string }[] = []
+  const re = new RegExp(FAQ_MD_LINK.source, 'g')
+  let last = 0
+  for (const match of answer.matchAll(re)) {
+    const index = match.index ?? 0
+    if (index > last) parts.push({ text: answer.slice(last, index) })
+    parts.push({ text: match[1] ?? '', href: match[2] })
+    last = index + match[0].length
+  }
+  if (last < answer.length || parts.length === 0) parts.push({ text: answer.slice(last) })
+  return parts
+}
+
 export function faqPage(url: string, items: readonly { q: string; a: string }[]): Node {
   return {
     '@type': 'FAQPage',
@@ -123,7 +146,7 @@ export function faqPage(url: string, items: readonly { q: string; a: string }[])
     mainEntity: items.map((item) => ({
       '@type': 'Question',
       name: item.q,
-      acceptedAnswer: { '@type': 'Answer', text: item.a },
+      acceptedAnswer: { '@type': 'Answer', text: faqAnswerText(item.a) },
     })),
   }
 }
