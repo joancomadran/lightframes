@@ -2,7 +2,7 @@
 key: raw-editor
 slug: raw-photo-editor
 title: "Free RAW Photo Editor Online — No Upload"
-description: "Edit RAW photos online for free. Open ARW, CR2, CR3, NEF, DNG, RAF, ORF or RW2 files in your browser: no upload, no account, and editing works offline after the first visit."
+description: "Free online RAW photo editor for DNG and NEF, plus ARW, CR2 and CR3. Nothing is uploaded. No account, and it works offline after the first visit."
 h1: "Edit RAW photos online, free and without uploading"
 lead: "Lightframes opens camera RAW files (ARW, CR2, CR3, NEF, DNG, RAF, ORF, RW2 and more) directly in your browser and develops them on your own device. It is free, needs no account, and your photos are never uploaded."
 label: "RAW editor"
@@ -17,6 +17,12 @@ keywords:
   - "dng editor online"
   - "raw editor no upload"
   - "free raw converter browser"
+  - "raw photo editor free"
+  - "free raw processor"
+  - "free raw editor"
+  - "online raw photo editor"
+  - "camera raw filter online"
+  - "online nef editor"
 steps:
   - name: "Open your RAW files"
     text: "Go to the editor and click Open in the toolbar, or use Folder in the filmstrip to load a whole directory. RAW files appear as thumbnails in the filmstrip."
@@ -37,9 +43,15 @@ faq:
     a: "Yes. After the editor has loaded once while online, the app and its RAW decoder are cached, so opening, editing and exporting RAW files works without a connection. You can also install it as an app."
   - q: "What resolution does the export have?"
     a: "Exports are developed from the full-resolution sensor data, up to 8192 px on the long edge. You can also choose a smaller long edge or a fixed social-media size."
-  - q: "Is there a cost or a watermark?"
-    a: "No. Lightframes is free and open source under the MIT license, and it adds no watermark unless you turn one on yourself in the export dialog."
-updated: 2026-11-11
+  - q: "Is this RAW editor really free?"
+    a: "Yes. There is no cost, no account and no watermark unless you turn one on yourself in the export dialog. Lightframes is free and open source under the MIT license."
+  - q: "Is there a Camera Raw filter online?"
+    a: "Lightframes is not Adobe Camera Raw and does not load that filter. In the browser it offers Camera Raw-style develop sliders: exposure, contrast, highlights, shadows, whites, blacks, temperature, tint, texture, clarity, dehaze, vibrance and saturation, plus a tone curve, HSL and colour grading. You can import a Lightroom or Camera Raw .xmp preset, but camera profiles, lens corrections and masks in that file are not applied. Lightroom and Camera Raw are trademarks of Adobe, and Lightframes is not affiliated with Adobe. Import steps are in [how to use XMP presets without Lightroom](/xmp-presets-without-lightroom)."
+  - q: "Can I edit NEF or DNG files online without installing software?"
+    a: "Yes. Open a .nef, .nrw or .dng file in the editor. LibRaw decodes it in your browser on your device, nothing is uploaded, and you export a JPEG, PNG or WebP. There is nothing to install and no account. Convert-only steps are on [NEF to JPG](/tools/nef-to-jpg) and [DNG to JPG](/tools/dng-to-jpg)."
+  - q: "Can I use my Lightroom XMP presets on RAW files?"
+    a: "Yes, when the preset is a .xmp develop file. Import it from the Presets tab and apply it to the RAW. Lightframes maps exposure, contrast, highlights, shadows, whites, blacks, white balance, texture, clarity, dehaze, vibrance, saturation, the tone curve, HSL, colour grading, sharpening, noise reduction, vignette and grain. Camera profiles, lens corrections and masks in the file are not imported. Lightroom and Camera Raw are trademarks of Adobe, and Lightframes is not affiliated with Adobe. See [how to use XMP presets without Lightroom](/xmp-presets-without-lightroom) and the [free presets and LUTs pack](/free-presets-luts)."
+updated: 2026-11-16
 ---
 
 ## What this RAW editor is and who it's for
@@ -47,6 +59,8 @@ updated: 2026-11-11
 Lightframes is a free RAW photo editor that runs entirely in a web browser, built for photographers who want to develop camera files without installing software, signing up or sending their pictures to a cloud service. It suits a quick edit on a borrowed laptop, a look at a card of files while travelling, or a full editing session on your own computer. The code is open source under the MIT license.
 
 If you would rather install a desktop RAW catalogue, see [free Lightroom alternatives](/blog/free-lightroom-alternatives): it compares Lightframes with darktable, RawTherapee and Photopea.
+
+For a walkthrough of those steps, read the [step-by-step guide to editing RAW photos in your browser](/blog/edit-raw-photos-in-browser).
 
 ## How RAW decoding works, and why nothing is uploaded
 
@@ -66,18 +80,18 @@ Lightframes recognises the following file extensions:
 
 | Extension | Common source |
 | --- | --- |
-| `.arw` | Sony |
-| `.cr2`, `.cr3` | Canon |
-| `.nef`, `.nrw` | Nikon |
-| `.dng` | Digital Negative (many cameras and phones) |
-| `.raf` | Fujifilm |
-| `.orf` | Olympus / OM System |
-| `.rw2` | Panasonic |
-| `.pef` | Pentax |
-| `.srw` | Samsung |
+| [`.arw`](/tools/arw-to-jpg) | Sony |
+| [`.cr2`](/tools/raw-to-jpg), [`.cr3`](/tools/cr3-to-jpg) | Canon |
+| [`.nef`](/tools/nef-to-jpg), [`.nrw`](/tools/nef-to-jpg) | Nikon |
+| [`.dng`](/tools/dng-to-jpg) | Digital Negative (many cameras and phones) |
+| [`.raf`](/tools/raw-to-jpg) | Fujifilm |
+| [`.orf`](/tools/raw-to-jpg) | Olympus / OM System |
+| [`.rw2`](/tools/raw-to-jpg) | Panasonic |
+| [`.pef`](/tools/raw-to-jpg) | Pentax |
+| [`.srw`](/tools/raw-to-jpg) | Samsung |
 | `.jpg`, `.jpeg`, `.png` | Any camera, phone or app |
 
-Only need a JPG? The [RAW to JPG converter](/tools/raw-to-jpg) guide shows how to convert one file or a whole card in one export, with a dedicated page for [Canon CR3 to JPG](/tools/cr3-to-jpg).
+Only need a JPG? The [RAW to JPG converter](/tools/raw-to-jpg) covers any of these files, one at a time or a whole card. Dedicated pages: [Sony ARW to JPG](/tools/arw-to-jpg), [Canon CR3 to JPG](/tools/cr3-to-jpg), [Nikon NEF to JPG](/tools/nef-to-jpg) and [DNG to JPG](/tools/dng-to-jpg).
 
 You can export to **JPEG**, **PNG** or **WebP**, with a quality setting (50–100) for JPEG and WebP, a long-edge size from 800 to 8192 px, and a filename pattern such as `{name}-edited`.
 
@@ -99,6 +113,7 @@ The editor covers the usual development controls, all applied live on the previe
 - Recover highlights first. Lower Highlights and Whites while the clipping overlay (J) is on, then lift Shadows.
 - Fix white balance before colour work. The picker gives a neutral starting point for HSL and grading.
 - Save your look. Once a photo looks right, store it as a [custom preset](/tools/photo-presets) and apply it to the rest of the shoot.
+- Use a Lightroom or Camera Raw .xmp preset on a RAW file from the Presets tab. [How to use XMP presets without Lightroom](/xmp-presets-without-lightroom) lists which settings carry over. A starter set is in the [free presets and LUTs pack](/free-presets-luts).
 - Edit a whole shoot at once. Copy and paste edits across a selection and export everything as one ZIP with the [batch photo editor](/tools/batch-photo-editor).
 
 ## Limitations
