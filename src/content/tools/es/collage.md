@@ -92,7 +92,7 @@ Si abres más de nueve fotos, Lightframes empieza con cuadrículas de cuatro por
 - **Bordes finos para un aire moderno**, o sin bordes para un mosaico compacto. El blanco o el crema quedan bien en posts tipo álbum; el negro, en fotos nocturnas o de ciudad.
 - **Combina orientaciones con cabeza.** Fotos verticales en celdas altas y horizontales en celdas anchas, para no recortar de más.
 - **Abre con una foto potente** en las publicaciones de varias diapositivas, porque la primera es la que se ve en el feed.
-- **¿Quieres una imagen que continúe entre diapositivas?** Eso lo hace el [carrusel de Instagram](/es/herramientas/carrusel-instagram), en el mismo modo.
+- **¿Quieres una imagen que continúe entre diapositivas?** Eso lo hace el [carrusel de Instagram](/es/herramientas/carrusel-instagram), en el mismo modo. Si el formato es 4:5, las medidas 1080×1350 y los cortes están en [medidas y errores del carrusel continuo](/es/blog/medidas-errores-carrusel-instagram-1080x1350).
 
 ## Limitaciones
 

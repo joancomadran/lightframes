@@ -64,13 +64,13 @@ Yes. Lightframes decodes the RAW on your device with LibRaw in WebAssembly, and 
 
 These three run locally, on a decoded RAW as well as on JPEG and PNG:
 
-- **Object removal.** In the Retouch panel, Remove fills the area you paint with an on-device inpainting model. See [remove objects from photos](/tools/remove-objects-from-photos).
+- **Object removal.** In the Retouch panel, Remove fills the area you paint with an on-device inpainting model. See [remove objects from photos](/tools/remove-objects-from-photos). The step-by-step is in [remove objects from photos online](/blog/remove-objects-from-photos-online).
 - **Background removal.** In Retouch, under Background, Remove finds the subject with an on-device model. You can export a transparent PNG, a solid colour or a blur. The same model drives subject masks in the Local panel. See the [background remover](/tools/background-remover).
 - **AI upscale.** At export, 2× or 4× super-resolution runs on your device, on the photo developed from the RAW. See the [AI image upscaler](/tools/ai-image-upscaler).
 
 While you edit, the preview is a half-size RAW decode, and that is what object removal and background removal see. Export decodes the RAW again at full resolution and applies those edits. If you turn on AI upscale, that step runs on the full-resolution photo. If LibRaw cannot develop a particular file, the editor uses the camera's embedded JPEG instead, and the AI tools run on that JPEG.
 
-Object removal downloads its model from Hugging Face the first time you use it. Background removal and upscaling download theirs from Lightframes. The photo stays on your device, and those tools work offline once the models are stored.
+Object removal downloads its model from Hugging Face the first time you use it. Background removal and upscaling download theirs from Lightframes. The photo stays on your device, and those tools work offline once the models are stored. Which model runs for each tool, and where the file is loaded from, is in [run AI image models in the browser](/blog/run-ai-image-models-in-the-browser).
 
 ## How do you edit a RAW photo in Lightframes, step by step?
 
@@ -83,7 +83,7 @@ Object removal downloads its model from Hugging Face the first time you use it. 
 7. **Compare.** Press **\\** for a before/after view. Every edit is non-destructive and undoable (**Ctrl/Cmd+Z**).
 8. **Export.** Press **Ctrl/Cmd+E**, choose a size preset and format, and save.
 
-If you shot a whole series in the same light, edit one photo, copy its settings (**Ctrl/Cmd+C**) and paste them onto the rest of the selection (**Ctrl/Cmd+V**). The paste dialog lets you choose which settings to bring across, so you can paste the colour without the crop. There's more on that in the [batch photo editor](/tools/batch-photo-editor) guide, and you can save any look as a reusable preset with the [photo presets](/tools/photo-presets) tool. A [free presets and LUTs pack](/free-presets-luts) is there if you want a starting look.
+If you shot a whole series in the same light, edit one photo, copy its settings (**Ctrl/Cmd+C**) and paste them onto the rest of the selection (**Ctrl/Cmd+V**). The paste dialog lets you choose which settings to bring across, so you can paste the colour without the crop. There's more on that in the [batch photo editor](/tools/batch-photo-editor) guide, and you can save any look as a reusable preset with the [photo presets](/tools/photo-presets) tool. A [free presets and LUTs pack](/free-presets-luts) is there if you want a starting look. What a `.cube` file contains is in [what a .cube LUT is](/blog/what-is-a-cube-lut). For a film-style grade after the RAW develop, see [make photos look like film](/blog/make-photos-look-like-film).
 
 ## Which RAW formats are supported?
 

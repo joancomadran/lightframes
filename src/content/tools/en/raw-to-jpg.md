@@ -87,7 +87,7 @@ CR3 is Canon's RAW from 2018 on, including the EOS R range; CR2 is the older EOS
 
 A desktop converter — the camera maker's app, Lightroom or darktable — installs on the computer, can use more memory, and usually applies that brand's colour profile and lens corrections. Lightframes does not install. No uploads: decoding and the JPEG stay in the browser tab.
 
-A very large file, or many open at once, can run out of browser memory and the export fails. Each RAW is developed one after another. The long edge stops at 8192 px, and the rendering is a neutral base, without the manufacturer's picture style. A longer look at desktop apps is in [free Lightroom alternatives](/blog/free-lightroom-alternatives).
+A very large file, or many open at once, can run out of browser memory and the export fails. Each RAW is developed one after another. The long edge stops at 8192 px, and the rendering is a neutral base, without the manufacturer's picture style. A longer look at desktop apps is in [free Lightroom alternatives](/blog/free-lightroom-alternatives). If you want a film-like grade on that neutral JPG, the slider order is in [make photos look like film](/blog/make-photos-look-like-film).
 
 ## Export settings for the JPG
 
@@ -107,7 +107,7 @@ A plain conversion gives you a faithful, neutral JPG. Editing first is worth it 
 
 - **Blown-out sky:** lower Highlights and Whites with the clipping overlay (J) on.
 - **Wrong colour cast:** use the white balance picker on something neutral.
-- **A consistent look for a set:** apply a [preset](/tools/photo-presets) or paste one edit across the whole selection with the [batch editor](/tools/batch-photo-editor).
+- **A consistent look for a set:** apply a [preset](/tools/photo-presets), start from the [free presets and LUTs pack](/free-presets-luts), or paste one edit across the whole selection with the [batch editor](/tools/batch-photo-editor). A [.cube LUT](/blog/what-is-a-cube-lut) keeps that colour the same on every file in the set.
 
 For the full list of controls, see the [RAW photo editor](/tools/raw-photo-editor), or [open the editor](/editor?intent=raw) with your files. How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
 

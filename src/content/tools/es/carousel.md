@@ -45,7 +45,7 @@ faq:
 updated: 2026-10-20
 ---
 
-Guía paso a paso: [cómo hacer un carrusel continuo de Instagram a partir de una panorámica](/es/blog/carrusel-instagram-panoramica-continua).
+Guía paso a paso: [cómo hacer un carrusel continuo de Instagram a partir de una panorámica](/es/blog/carrusel-instagram-panoramica-continua). Medidas de la tira 1080×1350, dónde no debe caer el corte y errores al publicar: [medidas y errores del carrusel 1080×1350](/es/blog/medidas-errores-carrusel-instagram-1080x1350).
 
 ## Qué es un carrusel continuo y para quién es
 

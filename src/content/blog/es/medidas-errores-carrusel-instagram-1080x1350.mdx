@@ -1,0 +1,109 @@
+---
+key: carousel-1080-mistakes
+slug: medidas-errores-carrusel-instagram-1080x1350
+title: "Carrusel 1080×1350: medidas y errores"
+description: "Cada diapositiva 4:5 del carrusel continuo mide 1080×1350 px. Calcula la tira, aparta los cortes de las caras y evita fallos al publicar. La foto no se sube."
+h1: "Medidas 1080×1350 y errores al hacer un carrusel continuo de Instagram"
+faq:
+  - q: "¿Cuánto mide cada diapositiva de un carrusel de Instagram en 4:5?"
+    a: "En Lightframes, el formato 4:5 exporta cada diapositiva a 1080×1350 px, en JPEG. Tres diapositivas forman una tira de 3240×1350 px. Cuatro, de 4320×1350 px. El alto no cambia: solo suma 1080 px de ancho por cada diapositiva."
+  - q: "¿Por qué se nota un corte o un salto al deslizar?"
+    a: "La exportación ya corta la tira por anchos exactos de 1080 px, así que el salto suele aparecer al publicar: orden distinto al de carousel-01, carousel-02, un recorte o un zoom de Instagram, o un filtro aplicado solo a una diapositiva. Si retocas un JPEG suelto y le cambias el tamaño, la unión deja de coincidir."
+  - q: "¿Qué ancho mínimo necesita la panorámica?"
+    a: "Al menos 1080 px por diapositiva, sin ampliar. Para tres diapositivas 4:5 hacen falta 3240 px de ancho. Para cuatro, 4320 px. Si la foto es más estrecha, el carrusel tiene que estirarla y el detalle se ablanda."
+  - q: "¿Puedo usar 3:4 o 1:1 en vez de 1080×1350?"
+    a: "Sí. 3:4 exporta 1080×1440 px y 1:1 exporta 1080×1080 px. 4:5 (1080×1350) es el tamaño vertical más seguro para el feed. Si publicas en un formato distinto del que exportaste, Instagram recorta y las uniones dejan de cuadrar. La guía general del carrusel está en [cómo hacer un carrusel continuo a partir de una panorámica](/es/blog/carrusel-instagram-panoramica-continua)."
+published: 2026-11-18
+author: Lightframes
+tags: ["instagram", "guias"]
+tools: ["carousel", "collage"]
+keywords:
+  - carrusel continuo instagram
+  - dividir foto panorámica instagram
+  - carrusel instagram 1080x1350
+  - tamaño carrusel instagram 4:5
+  - cortes carrusel panorámico instagram
+  - errores carrusel continuo instagram
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Cada diapositiva 4:5 de un carrusel continuo sale a 1080×1350 px.** La tira mide 1080 px de ancho por cada diapositiva y 1350 px de alto. Tres diapositivas son 3240×1350 px. Cuatro son 4320×1350 px. El corte entre dos diapositivas cae exactamente cada 1080 px. En el [creador de carruseles de Instagram](/es/herramientas/carrusel-instagram) eliges **4:5**, ajustas **Slides**, apartas caras y horizonte de esas líneas y exportas JPEG numerados. Es gratis y la foto no sale de tu dispositivo.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
+
+La guía general, con los tres formatos y el recorrido completo, está en [cómo hacer un carrusel continuo a partir de una panorámica](/es/blog/carrusel-instagram-panoramica-continua). Esta página se queda en el tamaño 1080×1350, en cómo no partir un detalle y en los fallos que desalinean la tira al publicar. La interfaz del editor está en inglés.
+
+## ¿Qué mide una diapositiva 4:5 y qué mide la tira?
+
+Lightframes exporta el formato **4:5** a **1080×1350 px** por diapositiva, en JPEG, con nombres `carousel-01.jpg`, `carousel-02.jpg` y así. 1080 px es el ancho al que el feed enseña la imagen. Más ancho no se ve más nítido ahí: la app vuelve a escalar. Menos ancho obliga a ampliar.
+
+La tira es la suma de esas diapositivas, en horizontal:
+
+| Diapositivas | Ancho de la tira | Alto | Proporción |
+| --- | --- | --- | --- |
+| 2 | 2160 px | 1350 px | 1,6:1 |
+| 3 | 3240 px | 1350 px | 2,4:1 |
+| 4 | 4320 px | 1350 px | 3,2:1 |
+| 5 | 5400 px | 1350 px | 4:1 |
+| 6 | 6480 px | 1350 px | 4,8:1 |
+
+El alto no crece. Solo crece el ancho, de 1080 en 1080. Puedes usar de 2 a 10 diapositivas. La cabecera lo resume, por ejemplo `3 × 1080 × 1350`. **3:4** exporta 1080×1440 y **1:1** exporta 1080×1080. El ancho sigue siendo diapositivas × 1080.
+
+## ¿Cómo encajas la panorámica en esa tira sin recortar de más?
+
+La foto se escala para llenar la tira. Divide el ancho de tu archivo entre el alto y compáralo con la tabla. Si tu número es mayor que la proporción de la tira, se pierden franjas a los lados. Si es menor, se pierden arriba y abajo.
+
+La tira de tres diapositivas pide **3240 px** de ancho reales. La de cuatro pide **4320 px**. Si la panorámica es más estrecha, hay que ampliarla y el detalle se ablanda. Una panorámica cosida suele llegar. Un recorte del móvil, a menudo no: baja a dos diapositivas (2160 px). **Zoom** y **Reframe** eligen qué parte se queda. No cambian el JPEG: sigue en 1080×1350. Acercar de más recorta y amplía.
+
+## ¿Cómo evitas que el corte parta una cara, el horizonte o un edificio?
+
+Los cortes son líneas verticales. En 4:5 caen a 1080 px, a 2160, a 3240 y así. El lienzo las dibuja antes de exportar. Si un ojo, una torre o el horizonte caen encima, el salto se ve al pasar a la siguiente diapositiva.
+
+1. **Mira las líneas con Panorama.** La foto cruza todas las diapositivas y las uniones se ven en el lienzo.
+2. **Deja margen.** Una cara tiene que caber entera en una diapositiva, con fondo a los lados. Pegada a la línea, el deslizamiento la parte.
+3. **Cruza solo zonas lisas.** Cielo, agua, pared o asfalto pueden pasar de una a otra. Ojos, letras y la esquina de un edificio, no.
+4. **Mueve la foto, no el corte.** El corte sigue a 1080 px. Con **Reframe** (doble clic y arrastrar) desplazas la panorámica hasta que la línea caiga en una zona tranquila.
+5. **Pasa las diapositivas con Preview swipe.** Si el sujeto salta, todavía estás a tiempo: no has exportado.
+6. **Edita la panorámica entera antes de partirla.** Exposición, color y un preset van sobre la foto completa, así el color no cambia en la unión. Retocar un JPEG suelto después sí puede cambiarlo.
+
+**Framed** añade un margen y no mueve el corte. Para fotos sueltas en cuadrícula, sin imagen continua, usa el [creador de collages](/es/herramientas/collage-fotos).
+
+## Paso a paso con el carrusel, centrado en el 1080×1350
+
+1. Abre [el editor](/es/editor) y pulsa **Open**. Sirven JPEG, PNG y RAW. El carrusel exporta desde el revelado, también si el archivo es RAW.
+2. Ajusta la foto en **Edit** ahora. Un preset de toda la panorámica mantiene el color continuo. Más en [presets para fotos](/es/herramientas/presets-fotos).
+3. Pulsa **Collage** arriba y elige **Carousel** en **Format**.
+4. En **Size**, deja **4:5**. En **Slides**, elige el número cuya proporción se acerque a tu foto (la tabla de arriba). La cabecera debe decir algo como `3 × 1080 × 1350`.
+5. Elige **Panorama**.
+6. Con **Zoom** y **Reframe**, aparta caras y verticales de las líneas de corte.
+7. Pulsa **Preview swipe** y revisa cada unión.
+8. Pulsa **Export N slides**. En el ordenador baja un ZIP. En el móvil, si el navegador lo permite, aparecen **Save** y **Share**.
+
+No se sube la panorámica para montar las diapositivas. El corte se hace en el navegador.
+
+## Errores que desalinean el carrusel
+
+**Publicar en otro formato.** Exportaste 1080×1350 y el marco de Instagram se queda en cuadrado, o al revés. La app recorta y cada diapositiva pierde una franja distinta. El marco de la publicación tiene que ser 4:5, el mismo de **Size**.
+
+**Desordenar los archivos.** `carousel-01.jpg` es la izquierda. Instagram usa el orden en que seleccionas, no el número del nombre. Empieza por la 01. Si inviertes dos, la escena salta hacia atrás.
+
+**Filtro solo en una diapositiva.** Un filtro, un ajuste de luz o un texto con fondo en una sola imagen se ve como un corte de color. El color se edita en la panorámica, antes de exportar.
+
+**Reabrir un JPEG y cambiarle el tamaño.** Otro programa puede escalar o recortar una sola diapositiva. El resto sigue en 1080×1350 y la unión deja de coincidir. Vuelve a exportar el carrusel. No repares un JPEG suelto.
+
+**El sujeto encima de la línea.** En la tira se ve bien y al deslizar, mal. **Preview swipe** lo enseña. Si no puedes apartarlo, quita una diapositiva: los cortes se mueven.
+
+**La primera no se entiende sola.** En el feed se ve `carousel-01.jpg` antes de deslizar. Si es solo cielo o el borde de un edificio, la publicación parece vacía. Esa imagen tiene que tener el sujeto, y que se note que la escena sigue a la derecha.
+
+**Elegir 3:4 sin mirar la app.** 1080×1440 es más alto. Si al publicar vuelve a 4:5, recorta y las uniones fallan. Si dudas, exporta 4:5.
+
+## Cómo comprobar las uniones antes de publicar
+
+Abre el ZIP y pasa los JPEG en orden, sin cambiar el zoom. El borde derecho de uno y el izquierdo del siguiente son la misma línea de la escena. Todos miden 1080×1350. Si uno no, exporta otra vez.
+
+En el móvil, **Share** manda los archivos al menú de compartir. Añádelos en orden. No uses el recorte ni el zoom de la publicación. Un "desliza" en el texto no arregla un corte mal colocado.
+
+¿Lo pruebas con tu panorámica más ancha? [Abre el editor](/es/editor), pon **4:5** y revisa las líneas antes de exportar.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />

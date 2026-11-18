@@ -83,7 +83,7 @@ Si no has copiado nada, Paste edits toma como origen la foto activa. Selecciona 
 
 ### Presets sobre una selección
 
-Si aplicas un preset desde la pestaña Presets, se aplica a todas las fotos seleccionadas, y el control Intensity (0–100 %) las ajusta a la vez. Más detalles en [presets para fotos](/es/herramientas/presets-fotos).
+Si aplicas un preset desde la pestaña Presets, se aplica a todas las fotos seleccionadas, y el control Intensity (0–100 %) las ajusta a la vez. Más detalles en [presets para fotos](/es/herramientas/presets-fotos). Para un retrato cálido con los looks gratis del pack, mira [look tipo Kodak Portra con presets gratis](/es/blog/look-kodak-portra-presets-gratis).
 
 ## Seleccionar y ordenar las fotos
 

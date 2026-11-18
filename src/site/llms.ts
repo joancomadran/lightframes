@@ -28,9 +28,10 @@ const FACTS = [
 ]
 
 export async function llmsTxt(): Promise<string> {
-  const [tools, posts, pages, toolsEs, compare, platforms, compareEs, platformsEs] = await Promise.all([
+  const [tools, posts, postsEs, pages, toolsEs, compare, platforms, compareEs, platformsEs] = await Promise.all([
     getTools('en'),
     getPosts('en'),
+    getPosts('es'),
     getPages('en'),
     getTools('es'),
     getAnswers('compare', 'en'),
@@ -72,6 +73,10 @@ export async function llmsTxt(): Promise<string> {
     '',
     ...posts.map((post) => `- [${post.data.h1 ?? post.data.title}](${url(entryPath(post))}): ${post.data.description}`),
     '',
+    '### Guías en español',
+    '',
+    ...postsEs.map((post) => `- [${post.data.h1 ?? post.data.title}](${url(entryPath(post))}): ${post.data.description}`),
+    '',
     '## Reference',
     '',
     `- [Frequently asked questions](${url(href('faq', 'en'))})`,
@@ -88,9 +93,10 @@ export async function llmsTxt(): Promise<string> {
 
 /** Every tool page, guide and the FAQ as Markdown, for assistants that want the full text in one fetch. */
 export async function llmsFullTxt(): Promise<string> {
-  const [tools, posts, faq, compare, platforms, compareEs, platformsEs] = await Promise.all([
+  const [tools, posts, postsEs, faq, compare, platforms, compareEs, platformsEs] = await Promise.all([
     getTools('en'),
     getPosts('en'),
+    getPosts('es'),
     getFaq('en'),
     getAnswers('compare', 'en'),
     getAnswers('platforms', 'en'),
@@ -155,6 +161,17 @@ export async function llmsFullTxt(): Promise<string> {
       ),
     ),
     ...posts.map((post) => section(post.data.h1 ?? post.data.title, entryPath(post), post.data.description, stripComments(post.body))),
+    ...postsEs.map((post) =>
+      section(
+        post.data.h1 ?? post.data.title,
+        entryPath(post),
+        post.data.description,
+        [
+          stripComments(post.body),
+          post.data.faq.length ? `### Preguntas\n\n${post.data.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}` : '',
+        ].join('\n\n'),
+      ),
+    ),
     section(
       xmpLanding.en.h1,
       xmpLandingPath.en,

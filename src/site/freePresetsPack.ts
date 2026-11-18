@@ -143,6 +143,7 @@ export const freePresetsPack = {
       { label: 'Presets de fotos', path: '/es/herramientas/presets-fotos' },
       { label: 'Presets XMP sin Lightroom', path: '/es/presets-xmp-sin-lightroom' },
       { label: 'Aplicar LUT .cube', path: '/es/herramientas/aplicar-lut-foto' },
+      { label: 'Look tipo Kodak Portra con presets gratis', path: '/es/blog/look-kodak-portra-presets-gratis' },
     ],
   },
 } satisfies Record<Lang, unknown>
