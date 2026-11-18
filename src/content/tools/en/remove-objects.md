@@ -45,7 +45,7 @@ updated: 2026-10-20
 
 The object remover in Lightframes lets you erase things you don't want in a photo by painting over them. It's built for the everyday clean-up jobs: a tourist walking through your landscape, a bin or a sign at the edge of the frame, a power line across the sky, skin blemishes in a portrait, or the dust spots that a dirty sensor leaves in the same place on every shot.
 
-It sits in the same editor you use for exposure, colour and presets, so you can retouch and develop a photo in one place. If you shoot RAW, you can open the file directly; spot removal works on RAW files from the [RAW photo editor](/tools/raw-photo-editor) just as it does on JPEGs.
+It sits in the same editor you use for exposure, colour and presets, so you can retouch and develop a photo in one place. If you shoot RAW, you can open the file directly; spot removal works on RAW files from the [RAW photo editor](/tools/raw-photo-editor) just as it does on JPEGs. The step-by-step, including when to use Heal, Clone or Remove, is in [remove objects from photos online](/blog/remove-objects-from-photos-online).
 
 ## How it works, and what happens to your photo
 
@@ -61,7 +61,7 @@ The three modes use different techniques:
 
 For Heal and Clone, Lightframes picks a source area automatically by looking for the best match around the spot. If it chooses badly, drag the green outline to another place or press **New source** (shortcut `/`) to try the next candidate.
 
-Remove needs the model the first time you select it. It downloads once from Hugging Face (about 28 MB), is checked against a fixed checksum, and is then kept in your browser's storage, so later sessions start straight away, even offline. The model runs on your device's processor in a background worker, so the editor stays responsive while it fills a spot. Your photo is not part of that download.
+Remove needs the model the first time you select it. It downloads once from Hugging Face (about 28 MB), is checked against a fixed checksum, and is then kept in your browser's storage, so later sessions start straight away, even offline. The model runs on your device's processor in a background worker, so the editor stays responsive while it fills a spot. Your photo is not part of that download. Which model Remove loads, and where that file comes from, is in [run AI image models in the browser](/blog/run-ai-image-models-in-the-browser).
 
 ## Controls
 
