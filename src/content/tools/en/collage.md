@@ -92,7 +92,7 @@ If you open more than nine photos, Lightframes starts you off with grids of four
 - **Use thin borders for a modern look**, or turn borders off for a tight mosaic. White or cream borders give a classic print look; black suits night and city shots.
 - **Mix orientations sensibly.** Put portrait photos in tall cells and landscapes in wide ones to avoid heavy crops.
 - **Give the first slide a strong lead photo** in multi-slide posts, since it's the one shown in the feed.
-- **Want one image running across slides?** That's the [Instagram carousel maker](/tools/instagram-carousel-maker), in the same mode.
+- **Want one image running across slides?** That's the [Instagram carousel maker](/tools/instagram-carousel-maker), in the same mode. How to split one panorama into those slides is in [make a seamless Instagram carousel from a panorama](/blog/seamless-instagram-carousel-panorama).
 
 ## Limitations
 

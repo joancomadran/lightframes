@@ -81,7 +81,7 @@ If nothing has been copied, Paste edits uses the active photo as the source. Sel
 
 ### Presets on a selection
 
-Applying a preset from the Presets tab affects every selected photo, and the Intensity slider (0–100%) adjusts all of them together. See [photo presets](/tools/photo-presets) for saving and importing looks.
+Applying a preset from the Presets tab affects every selected photo, and the Intensity slider (0–100%) adjusts all of them together. See [photo presets](/tools/photo-presets) for saving and importing looks. A film-style grade you can paste across the set, including which groups to copy, is in [make photos look like film](/blog/make-photos-look-like-film).
 
 ## Selecting and sorting photos
 

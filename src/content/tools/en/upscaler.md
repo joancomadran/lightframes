@@ -48,7 +48,7 @@ In Lightframes, upscaling is part of exporting. You develop the photo as usual (
 
 ## How it works, and why nothing is uploaded
 
-Lightframes uses **Real-ESRGAN (general x4v3)**, an open super-resolution model under the BSD-3-Clause licence, and runs it inside your browser. The photo is never sent anywhere: the only thing downloaded is the model file itself, about 5 MB, the first time you pick 2× or 4×. It is checked against a fixed checksum and kept in your browser's storage, so later exports start straight away and work offline.
+Lightframes uses **Real-ESRGAN (general x4v3)**, an open super-resolution model under the BSD-3-Clause licence, and runs it inside your browser. The photo is never sent anywhere: the only thing downloaded is the model file itself, about 5 MB, the first time you pick 2× or 4×. It is checked against a fixed checksum and kept in your browser's storage, so later exports start straight away and work offline. Which model enlarges the photo, and where that file is loaded from, is in [run AI image models in the browser](/blog/run-ai-image-models-in-the-browser).
 
 The model runs on your graphics card through WebGPU when your browser supports it, and falls back to the processor otherwise. It works on 128 px tiles that overlap slightly, keeping only the middle of each tile, so tile edges don't show as seams. Each tile's 4× result is resampled straight to the factor you asked for, which keeps memory use down.
 

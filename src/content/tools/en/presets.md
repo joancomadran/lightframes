@@ -89,6 +89,8 @@ These are the same develop settings stored in presets exported from Lightroom or
 
 Lightroom and Camera Raw are trademarks of Adobe. Lightframes is an independent open-source project and is not affiliated with or endorsed by Adobe.
 
+A film-style grade you build with the sliders can be saved as a preset. The order of those sliders is in [make photos look like film](/blog/make-photos-look-like-film). A `.cube` file is a colour table rather than a list of sliders. What `LUT_3D_SIZE` and the RGB samples mean is in [what a .cube LUT is](/blog/what-is-a-cube-lut).
+
 ## Tips
 
 - Build presets on a well-exposed photo. A preset saved from a photo that needed +2 EV will push every other photo up too.
