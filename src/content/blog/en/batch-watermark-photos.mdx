@@ -34,7 +34,7 @@ import EditorCta from '../../../site/components/EditorCta.astro'
 
 **You add a text watermark to many photos at once** by opening them in [Lightframes](/editor), selecting them in the filmstrip and turning on **Watermark** in the export dialog (**Ctrl/Cmd+E**). The same text, corner, size and opacity are drawn on every selected file, including camera RAW, and two or more files download as one ZIP. Nothing is uploaded: the files are read from your disk and encoded in the browser.
 
-<EditorCta lang="en" label="Open the editor — free, no upload" />
+<EditorCta lang="en" label="Open the editor: free, no upload" />
 
 ## How do you batch watermark photos?
 
@@ -62,7 +62,7 @@ That short-edge rule is what keeps a set consistent. A portrait and a landscape 
 **Corner or center** is the other choice:
 
 - **A corner** (the default is **bottom-right**) sits inset from the photo edge by **0.9 times the text height**. It stays out of the middle of the frame. Use it when the mark should be findable but not the subject. **2% to 4%** of the short edge is the range around the default: readable at a normal viewing size, small enough to leave the picture alone. Drop toward **1%** only on a large export; on a small frame the 10 px floor already stops it getting smaller.
-- **Center** places the line in the middle of the photo, with no inset. It is the one people actually see at thumbnail size, and it covers whatever is in the middle. If you use it, go larger — toward **6% to 10%** — and accept that it is a stamp, not a signature. Opacity at the default 70% keeps the picture visible underneath; 100% is a solid white line.
+- **Center** places the line in the middle of the photo, with no inset. It is the one people actually see at thumbnail size, and it covers whatever is in the middle. If you use it, go larger, toward **6% to 10%**, and accept that it is a stamp, not a signature. Opacity at the default 70% keeps the picture visible underneath; 100% is a solid white line.
 
 The shadow helps, but a white line on a white wall still disappears if you set opacity high and the shadow is the only dark pixel. A darker corner, or a slightly lower opacity so the shadow reads, is the practical fix. There is no black-text option.
 
@@ -79,14 +79,14 @@ A typical set:
 1. **Develop one photo.** Exposure, white balance and the rest are per photo. For a shared look, import a preset under **Presets → Import**. A Lightroom or Camera Raw `.xmp` maps onto the sliders; a `.cube` LUT becomes a preset you blend with **Intensity** from 0 to 100%. Lightroom and Camera Raw are trademarks of Adobe. Lightframes is not affiliated with Adobe. What a `.cube` file contains is in [what a .cube LUT is](/blog/what-is-a-cube-lut). The controls are on [photo presets](/tools/photo-presets) and [apply a LUT to a photo](/tools/apply-lut-to-photo).
 2. **Put that look on the selection.** Click the preset with the photos selected, or copy edits and paste the groups you want (tick **Look (LUT)** if the look is a LUT). Each photo keeps the edits you pasted. The watermark is not among them.
 3. **Export once.** In the same dialog as the watermark, pick the size:
-   - **Original** — long edge up to **8192 px** (the export maximum; larger originals are scaled down to that).
-   - **Web** — **2048 px** long edge.
-   - **IG 4:5** — exactly **1080 × 1350**.
-   - **IG 1:1** — exactly **1080 × 1080**.
-   - **Story** — exactly **1080 × 1920**.
+   - **Original**: long edge up to **8192 px** (the export maximum; larger originals are scaled down to that).
+   - **Web**: **2048 px** long edge.
+   - **IG 4:5**: exactly **1080 × 1350**.
+   - **IG 1:1**: exactly **1080 × 1080**.
+   - **Story**: exactly **1080 × 1920**.
    - Or set **Long edge** yourself, from **800 to 8192 px**. Choosing an exact frame also switches the format to **JPEG**. The border is white, black or a warm off-white (`#f1ece4`); the photo is fitted inside, not cropped.
 
-For each selected file the export decodes a RAW at full resolution with LibRaw (camera white balance, no tone curve yet), applies that photo's edits — including the preset or LUT — resizes, optionally upscales, letterboxes if you chose an exact frame, **then** draws the watermark, then encodes. The text is drawn at the final pixel size, so an AI upscale does not enlarge the letters. Upscale is **2×** or **4×**, off by default, capped by the export size, **8192 px** and **40 megapixels**. If it would enlarge by less than 1.1× it is skipped. Turning it on downloads a model of about **5 MB** once; the watermark itself does not download anything.
+For each selected file the export decodes a RAW at full resolution with LibRaw (camera white balance, no tone curve yet), applies that photo's edits (including the preset or LUT), resizes, optionally upscales, letterboxes if you chose an exact frame, **then** draws the watermark, then encodes. The text is drawn at the final pixel size, so an AI upscale does not enlarge the letters. Upscale is **2×** or **4×**, off by default, capped by the export size, **8192 px** and **40 megapixels**. If it would enlarge by less than 1.1× it is skipped. Turning it on downloads a model of about **5 MB** once; the watermark itself does not download anything.
 
 **Quality** is a slider from **50 to 100** for JPEG and WebP (default **92**). PNG has no quality slider. A cut-out on a transparent background is saved as PNG even if JPEG was selected, because JPEG has no transparency. The watermark is still drawn on that file.
 
@@ -102,4 +102,4 @@ The [Instagram carousel maker](/tools/instagram-carousel-maker) is a different e
 - **A failed file stops the download.** Opening is isolated per file; export is one pass. If one photo fails to encode, the ZIP is not saved. Very large batches are limited by memory, and the ZIP itself has to stay under **4 GB**.
 - **The editor interface is in English.** This guide uses the labels you see on screen.
 
-<EditorCta lang="en" label="Open the editor — free, no upload" />
+<EditorCta lang="en" label="Open the editor: free, no upload" />
