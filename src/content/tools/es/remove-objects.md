@@ -45,7 +45,7 @@ updated: 2026-10-20
 
 El borrador de objetos de Lightframes te permite quitar lo que sobra en una foto pintando encima. Está pensado para los arreglos de todos los días: el turista que cruza tu paisaje, una papelera o un cartel en el borde del encuadre, un cable que atraviesa el cielo, granos e imperfecciones en un retrato o esas motas de polvo que un sensor sucio deja en el mismo sitio en cada disparo.
 
-Está dentro del mismo editor que usas para la exposición, el color y los presets, así que retocas y revelas la foto en un solo sitio. Si disparas en RAW, abres el archivo directamente: la eliminación de manchas funciona igual con los archivos del [editor de fotos RAW](/es/herramientas/editor-fotos-raw) que con un JPEG.
+Está dentro del mismo editor que usas para la exposición, el color y los presets, así que retocas y revelas la foto en un solo sitio. Si disparas en RAW, abres el archivo directamente: la eliminación de manchas funciona igual con los archivos del [editor de fotos RAW](/es/herramientas/editor-fotos-raw) que con un JPEG. El paso a paso, incluido cuándo usar Heal, Clone o Remove, está en [quitar objetos de una foto online](/es/blog/quitar-objetos-foto-online).
 
 ## Cómo funciona y qué pasa con tu foto
 
@@ -61,7 +61,7 @@ Cada modo usa una técnica distinta:
 
 En Heal y Clone, Lightframes elige solo la zona de origen buscando la que mejor encaja alrededor. Si no acierta, arrastra el contorno verde a otro sitio o pulsa **New source** (atajo `/`) para probar la siguiente opción.
 
-Remove necesita el modelo la primera vez que lo eliges. Se descarga una sola vez de Hugging Face (unos 28 MB), se comprueba con una suma de verificación fija y se guarda en el almacenamiento del navegador, así que en las siguientes sesiones arranca al momento, incluso sin conexión. El modelo se ejecuta en el procesador de tu dispositivo, en segundo plano, para que el editor no se quede bloqueado mientras rellena. La foto no forma parte de esa descarga.
+Remove necesita el modelo la primera vez que lo eliges. Se descarga una sola vez de Hugging Face (unos 28 MB), se comprueba con una suma de verificación fija y se guarda en el almacenamiento del navegador, así que en las siguientes sesiones arranca al momento, incluso sin conexión. El modelo se ejecuta en el procesador de tu dispositivo, en segundo plano, para que el editor no se quede bloqueado mientras rellena. La foto no forma parte de esa descarga. Qué modelo carga Remove, y de dónde sale ese archivo, está en [IA en el navegador para editar fotos](/es/blog/ia-en-el-navegador-editar-fotos).
 
 ## Controles
 

@@ -48,7 +48,7 @@ En Lightframes, ampliar forma parte de la exportación. Revelas la foto como sie
 
 ## Cómo funciona y por qué no se sube nada
 
-Lightframes usa **Real-ESRGAN (general x4v3)**, un modelo abierto de superresolución con licencia BSD-3-Clause, y lo ejecuta dentro de tu navegador. La foto no se envía a ningún sitio: lo único que se descarga es el propio modelo, unos 5 MB, la primera vez que eliges 2× o 4×. Se comprueba con una suma de verificación fija y se guarda en el almacenamiento del navegador, así que las siguientes exportaciones empiezan al momento y funcionan sin conexión.
+Lightframes usa **Real-ESRGAN (general x4v3)**, un modelo abierto de superresolución con licencia BSD-3-Clause, y lo ejecuta dentro de tu navegador. La foto no se envía a ningún sitio: lo único que se descarga es el propio modelo, unos 5 MB, la primera vez que eliges 2× o 4×. Se comprueba con una suma de verificación fija y se guarda en el almacenamiento del navegador, así que las siguientes exportaciones empiezan al momento y funcionan sin conexión. Qué modelo amplía la foto, y de dónde se carga ese archivo, está en [IA en el navegador para editar fotos](/es/blog/ia-en-el-navegador-editar-fotos).
 
 El modelo usa la tarjeta gráfica mediante WebGPU cuando tu navegador lo permite y, si no, el procesador. Trabaja en bloques de 128 px que se solapan un poco y solo conserva el centro de cada uno, para que no se noten costuras entre bloques. El resultado 4× de cada bloque se reescala directamente al factor que has pedido, lo que ahorra memoria.
 
