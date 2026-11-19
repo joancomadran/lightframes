@@ -91,6 +91,8 @@ Son los mismos ajustes de revelado que guardan los presets exportados desde Ligh
 
 Lightroom y Camera Raw son marcas de Adobe. Lightframes es un proyecto independiente de código abierto, sin relación ni respaldo de Adobe.
 
+Un look de película que montas con los controles se puede guardar como preset, y el orden de esos controles está en [efecto analógico en fotos](/es/blog/efecto-analogico-fotos).
+
 ## Consejos
 
 - Crea los presets sobre una foto bien expuesta: si la foto de origen necesitaba +2 EV, el preset subirá también la exposición de todas las demás.
