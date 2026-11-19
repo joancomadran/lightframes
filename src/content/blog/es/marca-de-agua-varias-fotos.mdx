@@ -1,0 +1,108 @@
+---
+key: batch-watermark
+slug: marca-de-agua-varias-fotos
+title: "Poner marca de agua a varias fotos"
+description: "Pon marca de agua de texto a varias fotos a la vez, gratis en el navegador y desde RAW. Preset y tamaño van en la misma exportación. No se sube nada."
+h1: "¿Cómo poner marca de agua a varias fotos gratis y sin subirlas?"
+faq:
+  - q: "¿Puedo poner marca de agua a varias fotos a la vez sin subirlas?"
+    a: "Sí. Abre las fotos en Lightframes, selecciónalas en la tira y pulsa Ctrl/Cmd+E. En el cuadro de exportación, marca Add bajo Watermark, escribe el texto y exporta. El mismo texto, la misma posición, el mismo tamaño y la misma opacidad se dibujan en cada foto seleccionada. Si hay dos o más, se descargan en un ZIP llamado lightframes-YYYY-MM-DD-N-photos.zip (la fecha es la del día en UTC). Una sola foto se descarga aparte. No se sube nada."
+  - q: "¿Sirve para fotos RAW?"
+    a: "Sí. JPEG, PNG y RAW de cámara (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF y SRW) conviven en la misma tira. Al exportar, LibRaw revela cada RAW a resolución completa en tu equipo, se aplican tus ajustes y la marca de agua se dibuja sobre ese resultado. Si LibRaw no puede revelar un archivo, esa exportación usa la imagen que ya se abrió, que es el JPEG incrustado de la cámara cuando existe. El revelado está explicado en la guía de editar fotos RAW en el navegador."
+  - q: "¿Dónde se coloca y qué tamaño tiene?"
+    a: "Cinco posiciones: arriba a la izquierda, arriba a la derecha, abajo a la izquierda, abajo a la derecha y el centro. Por defecto queda abajo a la derecha. El tamaño es la altura del texto como porcentaje del lado corto de la zona de la foto, del 1 % al 10 % en pasos de 0,1 %, y el valor inicial es 3,5 %. Lo dibujado mide al menos 10 píxeles. La opacidad va del 10 % al 100 %; por defecto, 70 %. El texto es blanco, en negrita, con una sombra negra suave. En las esquinas se separa del borde 0,9 veces la altura del texto; en el centro queda en medio de la foto."
+  - q: "¿Puedo usar un logo, un patrón repetido o girar la marca?"
+    a: "No. La marca es una sola línea de texto, dibujada una vez. No hay imagen de logo, ni patrón en mosaico, ni rotación. No hay selector de color: el texto siempre es blanco. Una línea larga no salta de renglón y puede salirse de la foto."
+  - q: "¿Se conservan el EXIF y el archivo original?"
+    a: "El archivo que abriste no se modifica. La descarga es un JPEG, PNG o WebP nuevo, codificado a partir de los píxeles editados, así que el EXIF de la cámara, el GPS y el resto de metadatos no se copian. La marca no es un ajuste que puedas copiar y pegar: solo existe en esa exportación."
+  - q: "¿Puedo marcar, aplicar un preset y cambiar el tamaño para Instagram en la misma exportación?"
+    a: "Sí. Los presets y los LUT .cube son ajustes, y se aplican al revelar. En el mismo cuadro eliges el tamaño (Web, con 2048 px en el lado largo, o un marco exacto como 1080 × 1350) y la marca de agua. Cada foto conserva sus ajustes y recibe la misma marca y el mismo tamaño. El creador de carruseles de Instagram es otra exportación y no dibuja esta marca."
+published: 2026-11-19
+author: Lightframes
+tags: ["guias", "lotes"]
+tools: ["batch", "raw-to-jpg", "cr3-to-jpg", "presets", "lut", "carousel"]
+keywords:
+  - poner marca de agua a varias fotos
+  - marca de agua en lote
+  - marca de agua fotos raw
+  - marca de agua texto varias fotos
+  - marca de agua sin subir fotos
+  - marca de agua jpeg raw navegador
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Puedes poner la misma marca de agua de texto a varias fotos a la vez** abriéndolas en [Lightframes](/es/editor), seleccionándolas en la tira y activando **Watermark** en el cuadro de exportación (**Ctrl/Cmd+E**). Ese texto, con la misma esquina, el mismo tamaño y la misma opacidad, se dibuja en cada archivo seleccionado, también si es RAW, y si hay más de uno se descargan juntos en un ZIP. No se sube nada: el navegador lee los archivos de tu disco y genera la copia en tu ordenador.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />
+
+La interfaz del editor está en inglés. Los nombres de botones de esta guía son los que verás en pantalla.
+
+## Cómo poner la marca de agua en lote
+
+La marca no está entre los controles de revelado. Solo aparece al exportar, y permanece apagada hasta que marcas **Add**. El campo empieza en `© `, así que puedes escribir tu nombre justo después del símbolo. El texto de ejemplo del campo es `© Your name`.
+
+Piensa en un reportaje que vas a entregar o a publicar: mismas fotos, misma firma, sin pasarlas una a una por un programa de escritorio.
+
+1. **Abre el editor** en [/es/editor](/es/editor). Para una tanda grande, y más si son RAW, va mejor un Chromium reciente (Chrome, Edge, Brave) en el ordenador. En el móvil se puede, pero la memoria se queda corta antes.
+2. **Abre las fotos.** Pulsa **Open** y elige JPEG, PNG o RAW. Mantén pulsada **Opción/Alt** al hacer clic para coger una carpeta. Aparecen en la tira. Se abren de una en una: un archivo ilegible no tira el resto.
+3. **Selecciona las que quieres firmar.** **Ctrl/Cmd-clic** añade o quita una foto, **Mayús-clic** selecciona un tramo y **Ctrl/Cmd+A** las selecciona todas. En el móvil, deja pulsada la miniatura para sumarla. Al abrir, solo queda seleccionada la primera, así que marca el conjunto antes de exportar. Se firma lo que esté seleccionado; si no hay selección, solo se exporta la foto que estás viendo.
+4. **Abre la exportación** con **Ctrl/Cmd+E** (o **Export**). Si hay varias, el título dice **Export N photos**.
+5. **Activa la marca.** En **Watermark**, marca **Add**. Escribe el texto. Elige una esquina o el centro, y ajusta **Size** y **Opacity**. Esos valores valen para todos los archivos de esta exportación. No puedes poner un texto distinto en cada foto en la misma pasada.
+6. **Elige tamaño y formato en ese mismo cuadro** y pulsa **Export N files**. Los formatos son JPEG, PNG y WebP. Si salen dos o más archivos, se descargan en un ZIP, `lightframes-YYYY-MM-DD-N-photos.zip` (la fecha es la del día en UTC). Una sola foto se descarga con el patrón de nombre, que por defecto es `{"{name}"}-edited` (el JPEG lleva extensión `.jpg`). `{"{name}"}` es el nombre de esa foto sin la extensión.
+
+El archivo original no se sobrescribe. Los ajustes viven con la foto hasta que exportas.
+
+Copiar y pegar ajustes (**Ctrl/Cmd+C**, **Ctrl/Cmd+V**) no copia la marca. No es uno de los grupos del pegado. Cómo se copian los ajustes y cómo se arma el ZIP está en [editar fotos por lotes](/es/herramientas/editar-fotos-por-lotes); la marca es el paso que añades al final de esa exportación.
+
+## Esquina o centro, y qué tamaño dejar
+
+El texto es siempre **blanco**, en una sans-serif **negrita**, con una **sombra negra suave** para que se lea tanto en una esquina clara como en una oscura. No hay control de color. La opacidad va del **10 % al 100 %**; el valor inicial es **70 %**.
+
+**Size** es la altura del texto respecto al **lado corto** de la zona de la foto, no respecto al lado largo ni al borde vacío de un marco. El control va del **1 % al 10 %**, en pasos de 0,1 %. El valor inicial es **3,5 %**. La altura dibujada no baja de **10 píxeles**, así que en una exportación pequeña las letras no se vuelven ilegibles por puro encogimiento.
+
+Esa regla del lado corto es lo que mantiene pareja una tanda. Un vertical y un horizontal que comparten el lado corto llevan el texto a la misma altura. Un panorámico muy ancho no agranda las letras con el lado largo. En el marco de Instagram 4:5 (1080 × 1350), una foto que llena el ancho tiene 1080 px de lado corto, así que el 3,5 % son 38 px. Si la foto queda con bandas y su lado corto encajado es menor, el texto se reduce con ese lado.
+
+**Esquina o centro:**
+
+- **Una esquina** (por defecto, **abajo a la derecha**) se separa del borde de la foto **0,9 veces la altura del texto**. Deja el centro libre. Sirve cuando la firma tiene que encontrarse, no cuando tiene que protagonizar. Alrededor del valor inicial, un **2 % a un 4 %** del lado corto se lee a tamaño normal y no se come la imagen. Bajar hacia el **1 %** solo compensa en una exportación grande; en un marco pequeño el suelo de 10 px ya impide que encoja más.
+- **El centro** pone la línea en medio de la foto, sin margen. Es la que se ve en una miniatura, y tapa lo que haya en el medio. Si la usas, súbela — hacia el **6 % o el 10 %** — y trátala como un sello, no como una firma. Con la opacidad por defecto del 70 % la foto se sigue viendo debajo; al 100 % es una línea blanca maciza.
+
+La sombra ayuda, pero un texto blanco sobre una pared blanca se pierde si subes mucho la opacidad y lo único oscuro es la sombra. Mejor una esquina más oscura, o bajar un poco la opacidad para que la sombra se note. No hay modo de texto negro.
+
+En un marco exacto (los tamaños de Instagram) la foto se **encaja con bandas**, no se recorta. La marca se coloca sobre esa **foto encajada**, no sobre la banda vacía. Un retrato dentro de un cuadrado lleva la firma en el retrato, separada de los bordes del retrato.
+
+## RAW, preset, LUT y tamaño web o de Instagram en la misma exportación
+
+Sí se puede. La marca se dibuja al final de la misma exportación que revela el archivo, así que el look y el tamaño no piden una segunda pasada.
+
+Se pueden abrir JPEG, PNG y RAW con extensión `.arw`, `.cr2`, `.cr3`, `.nef`, `.nrw`, `.dng`, `.raf`, `.orf`, `.rw2`, `.pef` y `.srw`. WebP es un formato de salida, no un tipo que el selector trate como foto de entrada. Por formato: [convertir RAW a JPG](/es/herramientas/convertir-raw-a-jpg) y [convertir CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg). El revelado, incluido el recurso al JPEG incrustado, está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+
+Una tanda típica:
+
+1. **Revela una foto.** Exposición, balance de blancos y el resto son de cada foto. Para un look común, importa un preset en **Presets → Import**. Un `.xmp` de Lightroom o Camera Raw se traduce a los controles; un LUT `.cube` pasa a ser un preset que mezclas con **Intensity** del 0 al 100 %. Lightroom y Camera Raw son marcas de Adobe. Lightframes no está afiliado a Adobe. Qué hay dentro de un `.cube` está en [qué es un LUT .cube](/es/blog/que-es-un-lut-cube). Los controles, en [presets de fotos](/es/herramientas/presets-fotos) y [aplicar un LUT a una foto](/es/herramientas/aplicar-lut-foto).
+2. **Lleva ese look a la selección.** Pulsa el preset con las fotos seleccionadas, o copia los ajustes y pega los grupos que te interesen (marca **Look (LUT)** si el look es un LUT). Cada foto se queda con lo que pegaste. La marca de agua no va entre esos grupos.
+3. **Exporta una vez.** En el mismo cuadro que la marca, elige el tamaño:
+   - **Original**: lado largo hasta **8192 px** (el máximo de la exportación; un original más grande se reduce a eso).
+   - **Web**: **2048 px** en el lado largo.
+   - **IG 4:5**: exactamente **1080 × 1350**.
+   - **IG 1:1**: exactamente **1080 × 1080**.
+   - **Story**: exactamente **1080 × 1920**.
+   - O fija tú **Long edge**, de **800 a 8192 px**. Elegir un marco exacto cambia el formato a **JPEG**. El borde puede ser blanco, negro o un blanco roto (`#f1ece4`); la foto se encaja dentro, no se recorta.
+
+En cada archivo seleccionado la exportación revela el RAW a resolución completa con LibRaw (balance de blancos de la cámara, todavía sin curva de tonos), aplica los ajustes de esa foto — preset o LUT incluidos —, cambia el tamaño, amplía si lo pediste, añade bandas si elegiste un marco exacto, **después** dibuja la marca y por último codifica. El texto se dibuja al tamaño final en píxeles, así que una ampliación con IA no agranda las letras. La ampliación es **2×** o **4×**, apagada por defecto, y se limita al tamaño de exportación, a **8192 px** y a **40 megapíxeles**. Si ampliara menos de 1,1×, se omite. Al activarla se descarga un modelo de unos **5 MB** una sola vez; la marca de agua en sí no descarga nada.
+
+**Quality** va del **50 al 100** en JPEG y WebP (por defecto **92**). El PNG no tiene control de calidad. Un recorte sobre fondo transparente se guarda como PNG aunque hubieras elegido JPEG, porque el JPEG no tiene transparencia. La marca se dibuja igual en ese archivo.
+
+El [carrusel de Instagram](/es/herramientas/carrusel-instagram) es otra exportación. Corta diapositivas de 1080 px de ancho y **no** dibuja esta marca de texto. Usa los marcos IG del cuadro de exportación cuando quieras la firma en fotos sueltas a esos tamaños.
+
+## Lo que esta marca de agua no hace
+
+- **Solo texto.** Una línea, una vez. Sin logo, sin sello en PNG, sin mosaico, sin repetición en diagonal, sin rotación, sin segunda línea y sin otro color que el blanco.
+- **No se ve en la vista previa.** Mientras editas, la foto no lleva la marca. Solo aparece en el archivo exportado. **Reset defaults** la apaga y restaura `© `, abajo a la derecha, 70 % de opacidad y 3,5 % de tamaño, junto con el resto de valores iniciales (JPEG, calidad 92, lado largo 8192, nombre `{"{name}"}-edited`). Esas elecciones duran la sesión; al recargar se vuelve a los valores iniciales, con la marca apagada.
+- **Una sola frase para toda la selección.** Si cada foto necesita un texto distinto, son exportaciones distintas.
+- **El texto largo no parte la línea** y puede salirse de la foto. Conviene una frase corta, sobre todo en el centro o en un marco pequeño.
+- **Los metadatos no se conservan.** La descarga es una imagen recién codificada. El EXIF de la cámara, el GPS y el perfil de color original no pasan al archivo nuevo. El que abriste se queda como estaba.
+- **Si un archivo falla, no se descarga el lote.** Al abrir, cada archivo va por su cuenta; al exportar, es una sola pasada. Si una foto no se puede codificar, el ZIP no se guarda. En tandas muy grandes el límite práctico es la memoria, y el ZIP tiene que quedarse por debajo de **4 GB**.
+
+<EditorCta lang="es" label="Abrir el editor gratis" />

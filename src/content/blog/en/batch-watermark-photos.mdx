@@ -1,0 +1,105 @@
+---
+key: batch-watermark
+slug: batch-watermark-photos
+title: "Batch watermark photos free, no upload"
+description: "Add the same text watermark to many photos at once, free in your browser, from JPEG or RAW. Apply a preset and resize in that export. Nothing is uploaded."
+h1: "How do you batch watermark photos for free without uploading them?"
+faq:
+  - q: "Can I add a watermark to multiple photos at once without uploading them?"
+    a: "Yes. Open the photos in Lightframes, select them in the filmstrip and press Ctrl/Cmd+E. In the export dialog, tick Add under Watermark, type the text and export. The same text, position, size and opacity are drawn on every selected photo. Two or more files download as one ZIP named lightframes-YYYY-MM-DD-N-photos.zip, with the date in UTC. One file downloads on its own. Nothing is uploaded."
+  - q: "Can I watermark RAW photos?"
+    a: "Yes. JPEG, PNG and camera RAW (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF and SRW) open in the same filmstrip. On export, LibRaw decodes each RAW at full resolution on your device, your edits are applied, and the text watermark is drawn on that result. If LibRaw cannot develop a file, that export uses the image already opened for it, which is the camera's embedded JPEG when one is present. See the guide on editing RAW photos in the browser for the decode path."
+  - q: "Where can I put the watermark, and how big is it?"
+    a: "Five positions: top-left, top-right, bottom-left, bottom-right and center. The default is bottom-right. Size is the text height as a percentage of the short edge of the photo area, from 1% to 10% in 0.1% steps, default 3.5%. The drawn size is at least 10 pixels. Opacity runs from 10% to 100%, default 70%. The text is white, bold, with a soft black shadow. Corners are inset by 0.9 times the text height; center sits in the middle of the photo."
+  - q: "Can I use a logo, a tiled pattern or a rotated watermark?"
+    a: "No. The watermark is one line of text, drawn once. There is no logo image, no repeated or tiled pattern, and no rotation. There is no colour picker: the text is always white. A long line does not wrap, so it can run off the edge of the photo."
+  - q: "Does the export keep EXIF and the original file?"
+    a: "The original file on disk is not modified. The download is a new JPEG, PNG or WebP encoded from the edited pixels, so camera EXIF, GPS and other metadata are not copied into it. The watermark is not stored as an edit you can copy and paste; it exists only in that export."
+  - q: "Can I watermark, apply a preset and resize for Instagram in one export?"
+    a: "Yes. Presets and .cube LUTs are edits, applied when the photo is developed. The export dialog then sets the size (Web at a 2048 px long edge, or an exact frame such as 1080 × 1350) and the watermark together. Each selected photo keeps its own edits and receives the same watermark and size. The Instagram carousel maker is a separate export and does not draw this watermark."
+published: 2026-11-19
+author: Lightframes
+tags: ["guides", "batch"]
+tools: ["batch", "raw-to-jpg", "cr3-to-jpg", "presets", "lut", "carousel"]
+keywords:
+  - batch watermark photos
+  - add watermark to multiple photos
+  - watermark RAW photos
+  - text watermark many photos
+  - watermark photos in browser no upload
+  - batch watermark jpeg raw
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**You add a text watermark to many photos at once** by opening them in [Lightframes](/editor), selecting them in the filmstrip and turning on **Watermark** in the export dialog (**Ctrl/Cmd+E**). The same text, corner, size and opacity are drawn on every selected file, including camera RAW, and two or more files download as one ZIP. Nothing is uploaded: the files are read from your disk and encoded in the browser.
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
+
+## How do you batch watermark photos?
+
+The mark is not a slider in the edit panels. It lives only in the export dialog, and it is off until you tick **Add**. The field starts as `© `, so you can type your name after the copyright sign. The placeholder you see is `© Your name`.
+
+1. **Open the editor** at [/editor](/editor). A recent Chromium browser (Chrome, Edge, Brave) on a computer is the comfortable choice for a large set, especially RAW.
+2. **Open the photos.** Click **Open** and pick JPEG, PNG or camera RAW files. Hold **Option/Alt** while clicking to choose a folder. They land in the filmstrip. Files are opened one at a time, so one unreadable file does not discard the rest.
+3. **Select the ones to mark.** **Ctrl/Cmd-click** adds or removes a photo, **Shift-click** selects a range, and **Ctrl/Cmd+A** selects all. On a phone, long-press a thumbnail to add it. Opening files selects only the first one, so select the set before you export. Whatever is selected is what gets the watermark; if nothing is selected, only the photo on screen is exported.
+4. **Open export** with **Ctrl/Cmd+E** (or **Export**). The title reads **Export N photos** when more than one is selected.
+5. **Turn the watermark on.** Under **Watermark**, tick **Add**. Type the text. Pick a corner or the center, then set **Size** and **Opacity**. These settings are shared by every file in this export. You cannot give each photo a different line of text in one pass.
+6. **Choose size and format in the same dialog**, then click **Export N files**. JPEG, PNG and WebP are the formats. Two or more successful files download as one ZIP, `lightframes-YYYY-MM-DD-N-photos.zip` (the date is UTC). A single photo downloads under the filename pattern, which defaults to `{"{name}"}-edited` (JPEG uses a `.jpg` extension). `{"{name}"}` is that photo's name without its extension.
+
+The original file is never overwritten. Edits stay with the photo until you export.
+
+Copying edits (**Ctrl/Cmd+C**, **Ctrl/Cmd+V**) does not copy the watermark. The mark is not one of the paste groups. The [batch photo editor](/tools/batch-photo-editor) covers copy, paste and the ZIP; the watermark is this extra step at the end of that export.
+
+## Where should the watermark sit, and how large should it be?
+
+The text is always **white**, in a **bold** sans-serif, with a **soft black shadow** so it can be read on a light corner and a dark one. There is no colour control. Opacity is a slider from **10% to 100%**; the default is **70%**.
+
+**Size** is the text height as a fraction of the **short edge** of the photo area, not of the long edge and not of a letterbox border. The slider runs from **1% to 10%** in 0.1% steps. The default is **3.5%**. The drawn height is at least **10 pixels**, so a tiny export does not shrink the words to nothing.
+
+That short-edge rule is what keeps a set consistent. A portrait and a landscape that share the same short side get the same text height. A very wide frame does not grow the words with the long side. On the Instagram 4:5 frame (1080 × 1350), a photo that fills the width has a 1080 px short edge, so 3.5% is 38 px. If the photo is letterboxed and its fitted short edge is smaller, the text shrinks with that edge.
+
+**Corner or center** is the other choice:
+
+- **A corner** (the default is **bottom-right**) sits inset from the photo edge by **0.9 times the text height**. It stays out of the middle of the frame. Use it when the mark should be findable but not the subject. **2% to 4%** of the short edge is the range around the default: readable at a normal viewing size, small enough to leave the picture alone. Drop toward **1%** only on a large export; on a small frame the 10 px floor already stops it getting smaller.
+- **Center** places the line in the middle of the photo, with no inset. It is the one people actually see at thumbnail size, and it covers whatever is in the middle. If you use it, go larger — toward **6% to 10%** — and accept that it is a stamp, not a signature. Opacity at the default 70% keeps the picture visible underneath; 100% is a solid white line.
+
+The shadow helps, but a white line on a white wall still disappears if you set opacity high and the shadow is the only dark pixel. A darker corner, or a slightly lower opacity so the shadow reads, is the practical fix. There is no black-text option.
+
+On an exact frame (the Instagram sizes), the photo is **fitted and letterboxed**, not cropped. The watermark is positioned on that **fitted photo**, not in the empty border. A portrait inside a square frame gets the mark on the portrait, inset from the portrait's edges.
+
+## Can you watermark RAW photos and apply a preset, a LUT and a resize in the same export?
+
+Yes. The watermark is drawn at the end of the same export that develops the file, so the look and the size do not need a second pass.
+
+What you can open: JPEG, PNG, and RAW with the extensions `.arw`, `.cr2`, `.cr3`, `.nef`, `.nrw`, `.dng`, `.raf`, `.orf`, `.rw2`, `.pef` and `.srw`. WebP is an export format, not an input the file picker treats as a photo. Format-by-format pages: [RAW to JPG](/tools/raw-to-jpg) and [CR3 to JPG](/tools/cr3-to-jpg). The decode details, including the embedded-JPEG fallback, are in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+
+A typical set:
+
+1. **Develop one photo.** Exposure, white balance and the rest are per photo. For a shared look, import a preset under **Presets → Import**. A Lightroom or Camera Raw `.xmp` maps onto the sliders; a `.cube` LUT becomes a preset you blend with **Intensity** from 0 to 100%. Lightroom and Camera Raw are trademarks of Adobe. Lightframes is not affiliated with Adobe. What a `.cube` file contains is in [what a .cube LUT is](/blog/what-is-a-cube-lut). The controls are on [photo presets](/tools/photo-presets) and [apply a LUT to a photo](/tools/apply-lut-to-photo).
+2. **Put that look on the selection.** Click the preset with the photos selected, or copy edits and paste the groups you want (tick **Look (LUT)** if the look is a LUT). Each photo keeps the edits you pasted. The watermark is not among them.
+3. **Export once.** In the same dialog as the watermark, pick the size:
+   - **Original** — long edge up to **8192 px** (the export maximum; larger originals are scaled down to that).
+   - **Web** — **2048 px** long edge.
+   - **IG 4:5** — exactly **1080 × 1350**.
+   - **IG 1:1** — exactly **1080 × 1080**.
+   - **Story** — exactly **1080 × 1920**.
+   - Or set **Long edge** yourself, from **800 to 8192 px**. Choosing an exact frame also switches the format to **JPEG**. The border is white, black or a warm off-white (`#f1ece4`); the photo is fitted inside, not cropped.
+
+For each selected file the export decodes a RAW at full resolution with LibRaw (camera white balance, no tone curve yet), applies that photo's edits — including the preset or LUT — resizes, optionally upscales, letterboxes if you chose an exact frame, **then** draws the watermark, then encodes. The text is drawn at the final pixel size, so an AI upscale does not enlarge the letters. Upscale is **2×** or **4×**, off by default, capped by the export size, **8192 px** and **40 megapixels**. If it would enlarge by less than 1.1× it is skipped. Turning it on downloads a model of about **5 MB** once; the watermark itself does not download anything.
+
+**Quality** is a slider from **50 to 100** for JPEG and WebP (default **92**). PNG has no quality slider. A cut-out on a transparent background is saved as PNG even if JPEG was selected, because JPEG has no transparency. The watermark is still drawn on that file.
+
+The [Instagram carousel maker](/tools/instagram-carousel-maker) is a different export. It cuts slides at 1080 px wide and does **not** draw this text watermark. Use the export dialog's IG frames when you want the mark on single photos at those sizes.
+
+## What the watermark does not do
+
+- **Text only.** One line, drawn once. No logo, no PNG stamp, no tiled pattern, no diagonal repeat, no rotation, no second line, no text colour other than white.
+- **Not in the preview.** You will not see the mark on the photo while you edit. It appears only in the exported file. **Reset defaults** turns it back off and restores `© `, bottom-right, 70% opacity and 3.5% size, along with the other export defaults (JPEG, quality 92, long edge 8192, filename `{"{name}"}-edited`). Those choices last for the session; a reload starts from the defaults again, with the watermark off.
+- **One line for the whole selection.** Different captions per photo means separate exports.
+- **Long text does not wrap** and can run off the photo. Keep the line short, especially at center or on a small frame.
+- **Metadata is not kept.** The download is a newly encoded image. Camera EXIF, GPS and the original colour profile are not copied across. The file you opened is left as it was.
+- **A failed file stops the download.** Opening is isolated per file; export is one pass. If one photo fails to encode, the ZIP is not saved. Very large batches are limited by memory, and the ZIP itself has to stay under **4 GB**.
+- **The editor interface is in English.** This guide uses the labels you see on screen.
+
+<EditorCta lang="en" label="Open the editor — free, no upload" />
