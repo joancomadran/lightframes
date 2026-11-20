@@ -1,20 +1,20 @@
 ---
 key: collage
 slug: photo-collage-maker
-title: "Free Photo Collage Maker, No Upload"
-description: "Make photo collages with 1 to 9 photos per slide, 40 layouts, borders and Instagram sizes from 9:16 to 1.91:1. Free, in your browser, photos never uploaded."
-h1: "Make a photo collage in your browser"
-lead: "Lightframes puts 1 to 9 photos on a slide with ready-made layouts, adjustable borders and Instagram-ready sizes, and exports one JPEG per slide. It's free, needs no account and your photos stay on your device."
+title: "Free Collage Maker Online, No Watermark"
+description: "Free online photo collage maker for 1 to 9 photos, 40 layouts and borders. JPEG, no watermark, no sign-up, and your photos never leave your device."
+h1: "Make a photo collage online in your browser"
+lead: "Lightframes puts 1 to 9 photos on a slide with 40 layouts, adjustable borders and eight pixel sizes, and exports JPEG slides with no watermark. It's free, needs no sign-up, and your photos never leave your device."
 label: "Collage maker"
 summary: "Grid layouts for 1 to 9 photos per slide, with borders, eight sizes and up to 20 slides for a carousel post."
 order: 9
 keywords:
-  - "photo collage maker"
   - "free collage maker online"
-  - "instagram collage"
-  - "photo grid maker"
+  - "photo collage maker online"
   - "collage maker no watermark"
-  - "make a collage of photos"
+  - "photo collage online free"
+  - "collage maker 10 photos"
+  - "4 photo collage"
 steps:
   - name: "Open your photos"
     text: "Open the editor, click Open photos and add the pictures for the collage. Any edits you make in the editor are used in the collage."
@@ -27,17 +27,17 @@ steps:
   - name: "Style and export"
     text: "Adjust the Border width, colour and Outer edge, add more slides if you need them, then click Export collage."
 faq:
-  - q: "Is this collage maker free and without a watermark?"
-    a: "Yes. Lightframes is free and open source, needs no account and adds no watermark to your collages. It runs in your browser, so there are no export limits."
-  - q: "How many photos can I put in a collage?"
-    a: "Each slide holds 1 to 9 photos, with between one and eight layouts for each count. A post can have up to 20 slides, each with its own layout."
-  - q: "What sizes can I export a collage in?"
-    a: "There are eight sizes: 9:16 (1080 × 1920), 3:4 (1080 × 1440), 4:5 (1080 × 1350), 1:1 (1080 × 1080), 4:3 (1440 × 1080), 3:2 (1620 × 1080), 16:9 (1920 × 1080) and 1.91:1 (1080 × 566). Every slide in a post uses the same size, and each is exported as a JPEG."
+  - q: "How many photos can I put in one collage?"
+    a: "Each slide holds 1 to 9 photos, with 40 layouts in total and eight of them for 4 photos. A collage can have up to 20 slides. Ten photos do not fit on one slide: opening them starts as three slides of 4, 4 and 2, and you can change that to two slides such as 6 and 4. Twelve photos start as three slides of four, or you can use two slides of six."
+  - q: "Can I add borders or frames?"
+    a: "Yes, borders. Turn Border on and set the width from 0.5% to 6% of the slide width (1.5% by default). Choose white, black, cream, dark green or any custom colour, and turn on Outer edge to frame the outside as well as the gaps. Corners stay square: there is no corner radius and no decorative picture-frame artwork. With borders off, the gaps close and the slide background is black."
+  - q: "Is this collage maker free, with no watermark and no sign-up?"
+    a: "Yes. Lightframes is free, needs no account and adds no watermark to collage exports. One slide downloads as a JPEG named collage.jpg. Several slides download as a ZIP of collage-01.jpg, collage-02.jpg and so on."
+  - q: "What sizes can I export, and is there an A4 or print size?"
+    a: "There is no A4 or other paper size. Every slide shares one of eight pixel sizes: 9:16 (1080 × 1920), 3:4 (1080 × 1440), 4:5 (1080 × 1350), 1:1 (1080 × 1080), 4:3 (1440 × 1080), 3:2 (1620 × 1080), 16:9 (1920 × 1080) and 1.91:1 (1080 × 566). The 9:16, 4:5, 1:1 and 1.91:1 sizes match common Instagram story, portrait, square and landscape posts. Export is JPEG at 1×, 2× (the default) or 3× those pixels, or at the photos' own resolution when the browser can draw it. JPEG quality runs from 50% to 100%, and the default is 92%."
   - q: "Are my photos uploaded to make the collage?"
-    a: "No. The collage is laid out and rendered inside your browser, and the finished JPEG files are saved straight to your device. Your photos are not sent to a server."
-  - q: "Can I edit the photos before putting them in a collage?"
-    a: "Yes. The collage uses each photo with the edits you made in the editor, including crop, colour, presets and retouching. Change an edit and the collage picks it up."
-updated: 2026-10-20
+    a: "No. The collage is laid out and exported in your browser. Your photos never leave your device."
+updated: 2026-11-20
 ---
 
 ## What the collage maker is for
@@ -51,6 +51,12 @@ It lives inside the photo editor, so the photos in your collage are the develope
 The collage is built and exported entirely in your browser; your photos never leave your device. When you export, Lightframes develops each photo with its edits at the resolution its cell actually needs, draws every slide at full size and saves it as a JPEG. Cell edges are snapped to whole pixels, so neighbouring photos never leave a thin seam.
 
 There's no account and no upload, and once the app is loaded, collage also works offline.
+
+## Ten photos, twelve photos, and A4
+
+One slide holds at most 9 photos, so 10 or 12 photos always take more than one slide. Open 10 and Lightframes starts with three slides of 4, 4 and 2. Open 12 and it starts as three slides of four. You can then switch a slide to any layout for its photo count, for example two slides of 6, or 5 and 5. A collage can have up to 20 slides. Each slide keeps its own layout, and every slide uses the same pixel size.
+
+There is no A4 preset and no print size in millimetres. The sizes below are pixel canvases, including common Instagram story, portrait, square and landscape ratios. Borders are straight gaps from 0.5% to 6% of the slide width, in white, black, cream, dark green or any colour, with an optional outer edge. Corners stay square. The exported JPEG has no watermark.
 
 ## Sizes
 
@@ -84,7 +90,7 @@ Other controls:
 - **Fill empty**: drops photos that aren't in the collage yet into the empty cells.
 - **Slides**: add a slide, duplicate it, move it left or right, or delete it, up to 20 slides.
 
-If you open more than nine photos, Lightframes starts you off with grids of four per slide; with nine or fewer, it puts them all on one slide.
+If you open more than nine photos, Lightframes starts you with slides of up to four photos; with nine or fewer, it puts them all on one slide.
 
 ## Tips
 
@@ -96,4 +102,4 @@ If you open more than nine photos, Lightframes starts you off with grids of four
 
 ## Limitations
 
-Collages are exported as JPEG only, at the fixed sizes above. There's no text, stickers or free-form placement: photos sit in layout cells (the carousel mode allows free placement). Your photos, edits and the collage or carousel layout, including each photo's rotation, are restored after a reload and stay on this device. For other questions, see the [FAQ](/faq) or [open the editor](/editor).
+Collages are exported as JPEG only. The pixel size is one of the eight aspects above, at 1×, 2×, 3× or the photos' own resolution. There's no text, stickers, rounded corners or free-form placement: photos sit in layout cells (the carousel mode allows free placement). Your photos, edits and the collage or carousel layout, including each photo's rotation, are restored after a reload and stay on this device. For other questions, see the [FAQ](/faq) or [open the editor](/editor).
