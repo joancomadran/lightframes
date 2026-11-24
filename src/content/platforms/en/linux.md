@@ -1,13 +1,17 @@
 ---
 key: linux
 slug: linux
-title: "Lightroom alternative for Linux"
-description: "A free Lightroom alternative for Linux: Lightframes runs in the browser with RAW, .xmp presets and batch export. darktable is the desktop library option."
-h1: "A free Lightroom alternative for Linux"
-lead: "On Linux, open Lightframes in Firefox or Chrome when you want .xmp presets, .cube LUTs and a private RAW session without installing a raw developer. Install darktable when you want a native library, OpenCL and a module pipeline. Adobe’s published desktop requirements for Lightroom list Windows and macOS, not a Linux build."
+title: "Lightroom for Linux? Free in the browser"
+description: "Adobe lists Lightroom desktop for Windows and macOS, not Linux. Lightframes is a free browser alternative: RAW and .xmp presets, nothing uploaded."
+h1: "Lightroom for Linux"
+lead: "No: Adobe’s published desktop requirements for Lightroom list Windows and macOS, not Linux. Open Lightframes in Firefox or Chrome for .xmp presets, .cube LUTs and a RAW session in the browser, with nothing uploaded. Install darktable when you want a native library, OpenCL and a module pipeline."
 order: 3
-updated: 2026-11-10
+updated: 2026-11-24
 faq:
+  - q: "Is there an official Lightroom for Linux?"
+    a: "No. Adobe’s published desktop requirements for Lightroom list Windows and macOS, not a Linux build ([system requirements](https://helpx.adobe.com/lightroom-cc/system-requirements.html))."
+  - q: "Can I use my Lightroom .xmp presets on Linux?"
+    a: "Yes. On Linux it is the same browser app: open Presets and import a .xmp develop preset. Lightframes maps exposure, contrast, highlights, shadows, whites, blacks, temperature and tint (relative values; Kelvin approximated), vibrance, saturation, texture, clarity, dehaze, the tone curve (master and red, green and blue), HSL, colour grading or split toning, sharpening, luminance and colour noise reduction, post-crop vignette (amount and midpoint) and grain (amount and size). Camera profiles, lens corrections, calibration and masks are not imported. Legacy .lrtemplate files are not read. You can apply the preset to the open photo, including RAW in ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF and SRW. Photos are not uploaded. The same import list is on [XMP presets without Lightroom](/xmp-presets-without-lightroom)."
   - q: "Does Lightframes run on Linux?"
     a: "Yes, in a current browser: Firefox, Chrome, Edge or Brave. It is the same web app. Photos are processed on the machine with WebAssembly and are not uploaded."
   - q: "Should I install darktable instead?"

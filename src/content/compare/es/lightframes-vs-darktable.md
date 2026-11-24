@@ -6,7 +6,7 @@ description: "Lightframes o darktable como alternativa gratis a Lightroom: prese
 h1: "Lightframes o darktable"
 lead: "Lightframes encaja si quieres un editor gratis en el navegador que importa presets .xmp de Lightroom y LUTs .cube, y deja las fotos en tu equipo. darktable encaja si quieres un revelador RAW de escritorio, también gratis, con biblioteca, OpenCL y un flujo por módulos que se instala. No se sustituyen: la FAQ de darktable dice que los presets de otros programas, Lightroom incluido, no son compatibles."
 order: 1
-updated: 2026-11-10
+updated: 2026-11-24
 faq:
   - q: "¿darktable es una alternativa gratis a Lightroom?"
     a: "Su FAQ dice que sí y que no. Revela RAW y gestiona una biblioteca, pero no es un recambio directo, y la curva de aprendizaje es pronunciada porque casi nada de un flujo de Lightroom se traslada."
@@ -38,7 +38,7 @@ Lightroom y Camera Raw son marcas de Adobe. Lightframes es independiente y no es
 
 darktable es la opción cuando el trabajo es una biblioteca RAW que se queda en tu disco. Su [página de funciones](https://www.darktable.org/about/features/) describe edición no destructiva, un flujo en coma flotante de 32 bits, OpenCL, gestión de color, disparo conectado en algunas cámaras y exportación a galerías web además de a archivo. La [FAQ](https://www.darktable.org/about/faq/) deja claro que es una caja de herramientas con curva pronunciada, no una piel de Lightroom.
 
-También es la mejor opción en Linux si quieres una app nativa de tu distribución, un AppImage o un Flatpak. Ten en cuenta el límite de IA del Flatpak y el de macOS: las builds oficiales actuales van a Apple silicon con macOS 13.5 o más nuevo.
+También es la mejor opción en Linux si quieres una app nativa de tu distribución, un AppImage o un Flatpak. Para lo que Adobe publica sobre Lightroom de escritorio en Linux, y para el editor en el navegador en ese sistema, mira [Lightroom para Linux](/es/para/linux). Ten en cuenta el límite de IA del Flatpak y el de macOS: las builds oficiales actuales van a Apple silicon con macOS 13.5 o más nuevo.
 
 ## Cuándo conviene Lightframes
 

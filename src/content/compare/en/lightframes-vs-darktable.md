@@ -6,7 +6,7 @@ description: "Lightframes or darktable as a free Lightroom alternative: browser 
 h1: "Lightframes vs darktable"
 lead: "Choose Lightframes if you want a free editor in the browser that imports Lightroom .xmp presets and .cube LUTs and keeps the photos on your device. Choose darktable if you want a free desktop raw developer with a real photo library, OpenCL and a module pipeline you install. They are not substitutes: darktable’s own FAQ says presets from other programs, including Lightroom, are not compatible."
 order: 1
-updated: 2026-11-10
+updated: 2026-11-24
 faq:
   - q: "Is darktable a free Lightroom alternative?"
     a: "darktable’s FAQ says yes and no. It edits raw files and manages a library, but it is not a direct replacement, and the learning curve is steep because little of a Lightroom workflow transfers."
@@ -38,7 +38,7 @@ Lightroom and Camera Raw are trademarks of Adobe. Lightframes is independent and
 
 Pick darktable when the job is a lasting raw library on your own disk. Its [features page](https://www.darktable.org/about/features/) describes non-destructive editing, a 32-bit float pipeline, OpenCL, display colour management, tethered shooting for some cameras, and export to web galleries as well as files. The [FAQ](https://www.darktable.org/about/faq/) is explicit that this is a toolbox with a steep learning curve, not a Lightroom skin.
 
-It is also the better choice on Linux when you want a native app from your distribution, an AppImage or a Flatpak. Remember the Flatpak limit on AI features noted above, and the macOS limit: official builds currently target Apple silicon on macOS 13.5 or newer.
+It is also the better choice on Linux when you want a native app from your distribution, an AppImage or a Flatpak. For what Adobe publishes about desktop Lightroom on Linux, and for the browser editor on that system, see [Lightroom for Linux](/for/linux). Remember the Flatpak limit on AI features noted above, and the macOS limit: official builds currently target Apple silicon on macOS 13.5 or newer.
 
 ## When Lightframes is the better choice
 
