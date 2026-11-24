@@ -110,6 +110,9 @@ const crumbs = [
       <ul>
         {c.limits.map((line) => <li>{line}</li>)}
       </ul>
+      <p>
+        {c.linuxBridge.before}<a href={c.linuxBridge.href}>{c.linuxBridge.label}</a>{c.linuxBridge.after}
+      </p>
     </section>
 
     <section class="section-block" aria-labelledby="faq-title">

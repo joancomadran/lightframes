@@ -12,7 +12,7 @@ type FaqItem = { q: string; a: string }
 type Step = { name: string; text: string }
 type TableRow = { setting: string; supported: boolean; notes?: string }
 
-export const xmpLandingUpdated = new Date('2026-10-30')
+export const xmpLandingUpdated = new Date('2026-11-24')
 
 export const xmpLanding = {
   en: {
@@ -81,6 +81,12 @@ export const xmpLanding = {
       'Presets you bought on Etsy or Gumroad are almost always .xmp — they work here. Mobile-only preset packs tied to Adobe’s cloud need Lightroom or a desktop .xmp export.',
       'The editor interface is in English. The site is available in English and Spanish.',
     ],
+    linuxBridge: {
+      before: 'If you edit on Linux, ',
+      label: 'Lightroom for Linux',
+      href: '/for/linux',
+      after: ' explains Adobe’s published desktop requirements and how this .xmp import runs in Firefox or Chrome there.',
+    },
     faq: [
       {
         q: 'Is Lightframes free?',
@@ -189,6 +195,12 @@ export const xmpLanding = {
       'Los presets comprados en Etsy o Gumroad casi siempre son .xmp — funcionan aquí. Los packs solo móvil ligados a la nube de Adobe necesitan Lightroom o una exportación .xmp de escritorio.',
       'La interfaz del editor está en inglés. El sitio web está en inglés y español.',
     ],
+    linuxBridge: {
+      before: 'Si editas en Linux, ',
+      label: 'Lightroom para Linux',
+      href: '/es/para/linux',
+      after: ' explica los requisitos de escritorio que publica Adobe y cómo esta importación .xmp corre en Firefox o Chrome en ese sistema.',
+    },
     faq: [
       {
         q: '¿Lightframes es gratis?',

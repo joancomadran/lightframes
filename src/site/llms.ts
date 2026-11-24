@@ -180,6 +180,7 @@ export async function llmsFullTxt(): Promise<string> {
         xmpLanding.en.trademark,
         `### ${xmpLanding.en.stepsTitle}\n\n${xmpLanding.en.steps.map((s, i) => `${i + 1}. **${s.name}.** ${s.text}`).join('\n')}`,
         `### ${xmpLanding.en.tableTitle}\n\n${xmpLanding.en.supportedRows.map((r) => `- ${r.setting}: ${r.supported ? 'imported' : 'not imported'}${r.notes ? ` (${r.notes})` : ''}`).join('\n')}`,
+        `${xmpLanding.en.linuxBridge.before}${xmpLanding.en.linuxBridge.label}${xmpLanding.en.linuxBridge.after}`,
         `### Questions\n\n${xmpLanding.en.faq.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
       ].join('\n\n'),
     ),
