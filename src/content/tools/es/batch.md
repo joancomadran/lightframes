@@ -98,7 +98,7 @@ Con varias fotos seleccionadas, Export aplica las mismas opciones a todas:
 
 - Formato **JPEG**, **PNG** o **WebP**, con calidad de 50 a 100 en JPEG y WebP.
 - Tamaño: Original (hasta 8192 px), Web (2048 px de lado largo), IG 4:5 (1080 × 1350), IG 1:1 (1080 × 1080), Story (1080 × 1920) o un lado largo a medida.
-- Patrón de nombre como `{name}-edited`, marca de agua de texto opcional y ampliación con IA opcional.
+- Patrón de nombre como `{name}-edited`, [marca de agua de texto](/es/herramientas/marca-de-agua-fotos) opcional y ampliación con IA opcional.
 
 Una sola foto se descarga tal cual; varias se descargan en un único ZIP, sin que el navegador lance decenas de descargas. Si quieres montar un carrusel con la misma serie, prueba el [creador de carruseles para Instagram](/es/herramientas/carrusel-instagram).
 
