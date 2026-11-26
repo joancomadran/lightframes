@@ -96,7 +96,7 @@ With several photos selected, Export applies the same options to all of them:
 
 - Format: **JPEG**, **PNG** or **WebP**, with quality 50–100 for JPEG and WebP.
 - Size: Original (up to 8192 px), Web (2048 px long edge), IG 4:5 (1080 × 1350), IG 1:1 (1080 × 1080), Story (1080 × 1920), or a custom long edge.
-- A filename pattern such as `{name}-edited`, an optional text watermark, and optional AI upscaling.
+- A filename pattern such as `{name}-edited`, an optional [text watermark](/tools/watermark-photos), and optional AI upscaling.
 
 A single photo downloads as a file. Several photos download as one ZIP, so your browser doesn't fire dozens of separate downloads. For carousels or collages built from the same set, see the [Instagram carousel maker](/tools/instagram-carousel-maker).
 
