@@ -45,7 +45,7 @@ faq:
     a: "No exactamente. Lightframes revela todos los RAW con un mismo revelado base neutro y el balance de blancos de la cámara, sin los estilos de imagen del fabricante ni correcciones de objetivo. Si buscas otro resultado, ajusta los controles antes de exportar."
   - q: "¿Se modifica el archivo RAW original?"
     a: "No. La conversión crea un JPG nuevo; el RAW de tu disco no se toca."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## Qué significa convertir RAW a JPG con Lightframes
@@ -110,7 +110,7 @@ Una conversión directa te da un JPG fiel y neutro. Merece la pena editar antes 
 - **Dominante de color:** usa el cuentagotas del balance de blancos sobre algo neutro.
 - **Mismo estilo en toda la serie:** aplica un [preset](/es/herramientas/presets-fotos) o pega una misma edición en toda la selección con la [edición por lotes](/es/herramientas/editar-fotos-por-lotes).
 
-Tienes todos los controles explicados en el [editor de fotos RAW](/es/herramientas/editor-fotos-raw), o [abre el editor](/es/editor?intent=raw) con tus archivos. Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+Tienes todos los controles explicados en el [editor de fotos RAW](/es/herramientas/editor-fotos-raw), o [abre el editor](/es/editor?intent=raw) con tus archivos. Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador). La calidad, el tamaño y una sesión entera están en [cómo convertir RAW a JPG](/es/blog/convertir-raw-a-jpg).
 
 ## Limitaciones
 
