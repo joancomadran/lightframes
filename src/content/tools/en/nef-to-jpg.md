@@ -41,7 +41,7 @@ faq:
     a: "Not exactly. Lightframes uses the camera's white balance and a neutral base rendering, but it doesn't apply Nikon Picture Controls, Active D-Lighting or in-camera lens corrections. Adjust the sliders or apply a preset before exporting to get the look you want."
   - q: "What happens with High Efficiency NEF files?"
     a: "Some recent Z cameras offer High Efficiency RAW, a compression the bundled decoder may not be able to read. If a file can't be developed, Lightframes exports the full-size JPEG preview Nikon stores inside the NEF instead of failing."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## What a NEF file is
@@ -110,4 +110,4 @@ A very large NEF, or many open at once, can run out of browser memory and the ex
 - **Metadata.** EXIF information (date, camera, lens, GPS) is not copied into the JPG.
 - **Very new bodies and modes.** Files the bundled LibRaw can't read fall back to the embedded preview.
 
-To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser). Quality, size and a full shoot are covered in [how to convert RAW to JPG](/blog/convert-raw-to-jpg).

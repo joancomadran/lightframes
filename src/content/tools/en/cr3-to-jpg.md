@@ -43,7 +43,7 @@ faq:
     a: "Yes. Older Canon .cr2 files are converted in exactly the same way, and so are RAW files from other brands; see the RAW to JPG converter."
   - q: "Will the colours match my Canon JPEGs?"
     a: "Not exactly. Lightframes uses the camera's white balance and a neutral base rendering, but it doesn't apply Canon Picture Styles or in-camera lens corrections. Adjust the sliders or apply a preset before exporting to get the look you want."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## What a CR3 file is, and why it's awkward to share
@@ -110,4 +110,4 @@ A very large CR3, or many open at once, can run out of browser memory and the ex
 - **Metadata.** EXIF information (date, camera, lens, GPS) is not copied into the JPG.
 - **Very new bodies.** Files from cameras newer than the bundled LibRaw version fall back to the embedded preview.
 
-To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser). Quality, size and a full shoot are covered in [how to convert RAW to JPG](/blog/convert-raw-to-jpg).

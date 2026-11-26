@@ -38,7 +38,7 @@ faq:
     a: "Not exactly. Lightframes uses the camera's white balance and a neutral base rendering, but it doesn't apply Sony Creative Looks or Creative Styles, DRO or in-camera lens corrections. Adjust the sliders or apply a preset before exporting to get the look you want."
   - q: "Does it work with compressed and lossless compressed ARW?"
     a: "Compressed and uncompressed ARW files develop normally. If a file uses a compression the bundled decoder can't read, Lightframes exports the full-size JPEG preview Sony stores inside the ARW instead of failing."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## What an ARW file is
@@ -105,4 +105,4 @@ A very large ARW, or many open at once, can run out of browser memory and the ex
 - **Metadata.** EXIF information (date, camera, lens, GPS) is not copied into the JPG.
 - **Very new bodies.** Files the bundled LibRaw can't read fall back to the embedded preview.
 
-To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+To edit before you export, see the [RAW photo editor](/tools/raw-photo-editor) or [open the editor](/editor?intent=raw). How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser). Quality, size and a full shoot are covered in [how to convert RAW to JPG](/blog/convert-raw-to-jpg).

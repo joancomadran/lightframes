@@ -1,0 +1,164 @@
+---
+key: convert-raw-to-jpg
+slug: convertir-raw-a-jpg
+title: "Cómo convertir RAW a JPG"
+description: "Cómo convertir RAW a JPG en el navegador: revela el sensor, elige calidad JPEG y tamaño, y exporta la sesión. Los archivos se quedan en tu equipo."
+h1: "¿Cómo convertir RAW a JPG?"
+faq:
+  - q: "¿Convertir RAW a JPG hace perder calidad?"
+    a: "El JPEG es un archivo de 8 bits y pesa menos, así que no guarda todo lo que hay en el RAW. Lightframes descodifica los datos del sensor como RGB lineal de 16 bits, aplica su curva base y los ajustes que hayas hecho, y el navegador codifica un JPEG de 8 bits. La calidad va de 50 a 100 (92 por defecto) y solo cambia cuánto se comprime ese JPEG. Calidad 100 sigue siendo un JPEG de 8 bits, no un RAW. El PNG del mismo cuadro no lleva compresión con pérdida, pero también es de 8 bits. Conserva el RAW si más adelante vas a necesitar otro tamaño u otro revelado."
+  - q: "¿Puedo convertir RAW a JPG sin Lightroom?"
+    a: "Sí. No hace falta tener Lightroom instalado. Abre el archivo en Lightframes, pulsa Ctrl/Cmd+E, pon Format en JPEG y exporta. El revelado y el JPEG se quedan en el navegador. Lightroom es una marca de Adobe. Lightframes no está afiliado a Adobe. Los programas de escritorio están en [alternativas gratis a Lightroom](/es/blog/alternativas-gratis-a-lightroom)."
+  - q: "¿Es gratis? ¿Se suben los archivos?"
+    a: "Es gratis y no hace falta cuenta. Lightframes es de código abierto, con licencia MIT. No se sube nada: el RAW se lee de tu disco y el JPEG se genera en tu equipo. Los archivos se quedan en tu equipo."
+  - q: "¿Qué formatos RAW se pueden convertir?"
+    a: "El editor abre .arw, .cr2, .cr3, .nef, .nrw, .dng, .raf, .orf, .rw2, .pef y .srw. LibRaw, compilado a WebAssembly, revela el archivo. Si esa versión no lee una cámara o una compresión, se usa el JPEG incrustado cuando la cámara lo guardó. Otras extensiones RAW no se abren."
+  - q: "¿El JPG se verá igual que el JPEG de la cámara?"
+    a: "No exactamente. La exportación usa el balance de blancos de la cámara y la curva base neutra de Lightframes. No aplica el estilo de imagen del fabricante ni las correcciones de objetivo. Si quieres otro aspecto, ajusta la exposición y el balance de blancos antes de exportar."
+  - q: "¿El JPG conserva el EXIF, la fecha y el GPS?"
+    a: "No. La descarga es un JPEG nuevo, codificado a partir de los píxeles revelados. El EXIF de la cámara, la fecha de captura, el modelo y el GPS no se copian. El RAW del disco no se modifica, así que esos datos siguen en el RAW."
+  - q: "¿Qué calidad y qué tamaño uso para web y para imprimir?"
+    a: "Para imprimir o para archivar, deja Size en Original (lado largo hasta 8192 px) y pon Quality entre 95 y 100. Para una web o un correo, usa Web (2048 px en el lado largo) y una calidad entre 85 y 92. El valor inicial es 92. Los marcos de Instagram son exactos: 1080 × 1350, 1080 × 1080 y 1080 × 1920, y al elegir uno el formato pasa a JPEG."
+published: 2026-11-26
+author: Lightframes
+tags: ["raw", "guias"]
+tools: ["raw-to-jpg", "cr3-to-jpg", "nef-to-jpg", "arw-to-jpg", "dng-to-jpg", "batch"]
+keywords:
+  - cómo convertir RAW a JPG
+  - convertir RAW a JPG sin perder calidad
+  - cómo convertir ARW a JPG
+  - cómo convertir NEF a JPG
+  - convertir RAW a JPG sin Lightroom
+  - convertir RAW a JPG por lotes
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Abre el RAW en [Lightframes](/es/editor?intent=raw), pulsa Ctrl/Cmd+E, pon Format en JPEG y exporta.** La aplicación revela los datos del sensor en tu equipo con LibRaw, y el navegador escribe un JPEG de 8 bits con la calidad y el tamaño que elijas. No se sube nada: los archivos se quedan en tu equipo. Una foto se descarga como `.jpg`. Si hay dos o más, bajan juntas en un ZIP.
+
+<EditorCta lang="es" label="Convertir RAW a JPG gratis" editorQuery="?intent=raw" />
+
+La interfaz del editor está en inglés. Los nombres de botones de esta guía son los que verás en pantalla.
+
+Para hacerlo directamente están [RAW a JPG](/es/herramientas/convertir-raw-a-jpg), [CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg), [NEF a JPG](/es/herramientas/convertir-nef-a-jpg), [ARW a JPG](/es/herramientas/convertir-arw-a-jpg) y [DNG a JPG](/es/herramientas/convertir-dng-a-jpg). Esta página explica el revelado y los ajustes. Esas son el sitio para ejecutarlo.
+
+## Cómo convertir RAW a JPG en Lightframes
+
+Un RAW no es un JPEG con otra extensión. Cambiar `IMG_2048.CR3` a `IMG_2048.jpg` no convierte nada. Hay que revelar el archivo y después codificarlo.
+
+1. **Abre el editor** en [/es/editor](/es/editor). Para una tarjeta entera, mejor un Chromium reciente (Chrome, Edge, Brave) en el ordenador. En el móvil se puede abrir un RAW, pero la memoria se acaba antes.
+2. **Abre las fotos.** Pulsa **Open**, o **Folder** en la tira. Mantén **Opción/Alt** al pulsar **Open** para elegir una carpeta. Se leen de una en una: un archivo ilegible no tira el resto.
+3. **Espera al revelado de la vista.** La miniatura de la tira es el JPEG que la cámara incrustó, y por eso aparece enseguida. La vista grande es un revelado real, a mitad de tamaño. Al exportar se descodifica otra vez a resolución completa.
+4. **Ajusta solo si hace falta.** Para una conversión directa, no toques los controles. La exportación usa el balance de blancos de la cámara y la curva base de Lightframes. Si el cielo está quemado o el color va torcido, corrige antes la exposición, las altas luces y el balance de blancos. Con **J** ves el aviso de recorte.
+5. **Selecciona lo que quieres convertir.** Al abrir, solo queda seleccionada la primera foto. **Ctrl/Cmd+A** selecciona todas, **Mayús-clic** marca un tramo y **Ctrl/Cmd-clic** añade o quita una. Si no hay selección, solo se exporta la foto que estás viendo.
+6. **Abre la exportación** con **Ctrl/Cmd+E** (o **Export**). Pon **Format** en **JPEG**. Deja **Size** en **Original** si quieres el archivo a resolución completa, o elige **Web** (2048 px en el lado largo) si el JPG es para una página o un correo. **Quality** empieza en **92**.
+7. **Pon el nombre.** El patrón inicial es `{"{name}"}-edited`, y el JPEG lleva extensión `.jpg`. `{"{name}"}` es el nombre original sin extensión. Si pones solo `{"{name}"}`, de `DSC_0042.NEF` sale `DSC_0042.jpg`.
+8. **Exporta.** Un solo archivo se descarga tal cual. Dos o más que salgan bien se descargan como `lightframes-YYYY-MM-DD-N-photos.zip`. La fecha es UTC. El RAW del disco no cambia.
+
+Los mismos pasos, con el selector apuntando al RAW, están en [RAW a JPG](/es/herramientas/convertir-raw-a-jpg).
+
+## Qué ocurre de verdad al pasar de RAW a JPG
+
+«Convertir» mezcla dos trabajos distintos. Uno es **revelar**: pasar de la lectura del sensor a una imagen. El otro es **cambiar de formato**: comprimir esa imagen en JPEG. Lightframes hace las dos cosas al exportar. No copia los bytes del RAW a un archivo que se llame `.jpg`.
+
+Lo que guardó la cámara es un mosaico (un color por fotosito), casi siempre a más de 8 bits por canal, más los ajustes que registró (entre ellos el balance de blancos). Un JPEG es una imagen de 8 bits por canal, comprimida con pérdida, que cualquier navegador puede mostrar.
+
+Dentro de Lightframes el camino se parte según el trabajo:
+
+- **Las miniaturas** salen del JPEG incrustado más grande (un par de marcadores JPEG de al menos 50 KB, y al menos 800 px en un lado). Esa vista previa ya la procesó la cámara. No es el archivo que debes dar por convertido.
+- **La vista de edición** es un revelado de LibRaw: RGB lineal de 16 bits, balance de blancos de la cámara, primarias sRGB (`outputColor` 1), sin curva de tonos todavía (`gamm` 1, 1), a mitad de tamaño para que los controles respondan.
+- **La exportación** repite ese revelado a resolución completa (`halfSize` desactivado). Lightframes aplica entonces su curva base y los ajustes que hayas hecho, cambia el tamaño al que elegiste, y el navegador codifica el lienzo como JPEG.
+
+Si LibRaw no puede revelar un archivo, la exportación usa la imagen que ya se abrió. Es el JPEG incrustado cuando la cámara lo guardó. En ese caso estás guardando la vista previa de 8 bits, y recuperar altas luces no se comporta como un revelado RAW de verdad. Ese camino es el mismo de [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+
+No hay un menú de espacio de color. LibRaw va a primarias sRGB, y la descarga es un JPEG de 8 bits del lienzo del navegador. En esta exportación no puedes elegir Adobe RGB ni ProPhoto RGB.
+
+## Qué calidad y qué tamaño conviene
+
+**Quality** es un control de **50 a 100** para JPEG y WebP. El valor inicial es **92**. El PNG no tiene control de calidad. El número es el ajuste del codificador JPEG del navegador. No cambia la profundidad de bits, y no devuelve al archivo el margen que tenía el RAW.
+
+En la práctica:
+
+- **95 a 100**, con **Size** en **Original**, es el ajuste para imprimir o para un JPG que quizá vuelvas a retocar. Calidad 100 sigue siendo JPEG con pérdida y de 8 bits por canal. Es el menor daño extra de la compresión, no una copia sin pérdida del RAW.
+- **85 a 92**, con **Web** (2048 px en el lado largo), basta para una página, una prueba para el cliente o un correo. El 92 de serie cae en ese tramo.
+- **50 a 80** deja un archivo claramente más pequeño. El detalle fino y los degradados (cielo, piel) enseñan la compresión antes que el resto. Úsalo cuando el archivo tenga que pesar poco, y guarda el RAW para poder exportar otra vez.
+
+El **tamaño** no es la calidad. Un RAW de 45 megapíxeles exportado a 2048 px en el lado largo ya ha tirado píxeles, aunque la calidad esté a 100.
+
+| Uso | Size en el cuadro | Quality |
+| --- | --- | --- |
+| Impresión o archivo JPG | Original (lado largo hasta 8192 px) | 95-100 |
+| Web, correo, prueba para el cliente | Web (2048 px en el lado largo) | 85-92 |
+| Marco de Instagram | IG 4:5 (1080 × 1350), IG 1:1 (1080 × 1080) o Story (1080 × 1920) | 92 |
+| Tu propio lado largo | Long edge, de 800 a 8192 px, en pasos de 16 | 92, salvo que necesites archivos más pequeños |
+
+**Original** no significa «todos los píxeles de un sensor de 50 megapíxeles» cuando el lado largo pasa de **8192 px**. Esos archivos se reducen a 8192 px. El control del lado largo se detiene en el mismo tope. A 8192 la etiqueta dice **Full**.
+
+Los tamaños de Instagram son marcos exactos. La foto se ajusta y se deja con bandas, no se recorta. Al elegir uno, **Format** pasa a **JPEG**. El borde es blanco, negro o un hueso cálido (`#f1ece4`).
+
+**8 bits frente al RAW.** El revelado parte de RGB lineal de 16 bits. El JPEG guardado es de 8 bits por canal porque así escribe el codificador JPEG del lienzo. Ese salto (a menudo una captura de 12 o 14 bits que baja a 8) es la razón de hacer un cambio fuerte de exposición o de color en el RAW, antes de exportar, y no en el JPG después. Si necesitas un archivo que no esté comprimido en JPEG, elige **PNG** en el mismo cuadro. El PNG no tiene pérdida a 8 bits. Sigue sin ser el RAW.
+
+## Por qué conviene guardar el RAW
+
+El JPG es el archivo de entrega. El RAW es el archivo maestro.
+
+- El archivo original no se sobrescribe. Los ajustes viven en el navegador hasta que exportas.
+- El JPG no recibe el EXIF de la cámara, el GPS, la fecha de captura ni el modelo. Si necesitas ese registro, sigue en el RAW.
+- Un recorte posterior, otro balance de blancos o un tamaño mayor tienen que salir del RAW. Subir la calidad JPEG de un JPG ya exportado no recupera detalle.
+- Si LibRaw ha caído a la vista previa en un archivo, ese JPG es la vista de la cámara. El RAW sigue siendo la única copia de los datos del sensor.
+
+Guarda el RAW, exporta el JPG que necesitas hoy, y vuelve a exportar cuando cambien el tamaño o el aspecto.
+
+## Cómo convertir una sesión entera
+
+Selecciona el conjunto y exporta una vez. Cada foto se revela con sus propios ajustes, y todas comparten tamaño, formato y calidad.
+
+1. Abre la carpeta (**Folder** en la tira, en Chrome, Edge o Brave).
+2. Pulsa **Ctrl/Cmd+A**. Mira el título de la exportación: tiene que decir **Export N photos**, no **Export**.
+3. Si toda la serie debe llevar el mismo aspecto, edita una foto, copia (**Ctrl/Cmd+C**) y pega (**Ctrl/Cmd+V**) sobre la selección. El pegado puede traer el color sin el recorte. Ese flujo es la [edición por lotes](/es/herramientas/editar-fotos-por-lotes).
+4. Pon JPEG, el tamaño y la calidad, y pulsa **Export N files**.
+
+Los archivos se revelan de uno en uno, a resolución completa. Una tarjeta larga tarda, y va más rápida en el ordenador que en el móvil. No hay un número fijo de archivos. El límite es la memoria, y el ZIP tiene que quedarse por debajo de **4 GB** (el archivo guarda los JPEG tal cual, no los vuelve a comprimir). Si una foto no se puede codificar, la exportación se detiene y el ZIP no se guarda. Abrir va archivo a archivo; exportar es una sola pasada.
+
+Si dos archivos iban a llamarse igual, el ZIP los separa: el segundo queda como `nombre (2).jpg`.
+
+## Qué cambia en CR3, NEF, ARW, DNG y el resto
+
+Los pasos no cambian. La extensión solo decide si el archivo se abre. Estas son las que acepta el editor, y la página de cada una:
+
+| Cámara | Extensiones | Dónde convertir |
+| --- | --- | --- |
+| Canon | `.cr2`, `.cr3` | [CR3 a JPG](/es/herramientas/convertir-cr3-a-jpg) |
+| Nikon | `.nef`, `.nrw` | [NEF a JPG](/es/herramientas/convertir-nef-a-jpg) |
+| Sony | `.arw` | [ARW a JPG](/es/herramientas/convertir-arw-a-jpg) |
+| DNG (cámaras, móviles, drones) | `.dng` | [DNG a JPG](/es/herramientas/convertir-dng-a-jpg) |
+| Fujifilm | `.raf` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Olympus / OM System | `.orf` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Panasonic | `.rw2` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Pentax | `.pef` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+| Samsung | `.srw` | [RAW a JPG](/es/herramientas/convertir-raw-a-jpg) |
+
+Cualquier otra extensión RAW no se abre.
+
+Unas notas que salen de esa lista, no de un conversor distinto por marca:
+
+- **Canon CR3 y CR2.** El CR3 es el RAW de 2018 en adelante (EOS R y las EOS posteriores). El CR2 es el RAW de las réflex anteriores. El C-RAW sigue siendo un CR3 y se abre igual. No se aplican los Picture Styles ni las correcciones de objetivo de Canon.
+- **Nikon NEF y NRW.** El NEF es el RAW de las cámaras de objetivos intercambiables. El NRW es la variante de algunas Coolpix. Algunas Z recientes escriben NEF High Efficiency, que el LibRaw incluido puede no revelar. Esos archivos caen al JPEG incrustado.
+- **Sony ARW.** Las Alpha, y las RX y ZV que disparan en RAW, usan `.arw`. No se aplican los Creative Looks ni el DRO. Una compresión que el descodificador incluido no lee cae al JPEG incrustado.
+- **DNG.** Las cámaras, los móviles y los drones que escriben `.dng` usan la misma exportación. El JPEG del móvil incluye su propio mapeo de tonos. El revelado del DNG no lo reproduce. Pulsa **Auto**, o pega un mismo ajuste en la serie, si quieres un aspecto terminado.
+- **Fujifilm RAF, Olympus ORF, Panasonic RW2, Pentax PEF, Samsung SRW.** Se abren en el mismo editor y se exportan igual. No hay una página por marca. Que un cuerpo concreto se revele depende de la versión de LibRaw incluida. Un archivo que no se pueda revelar usa el JPEG incrustado cuando existe.
+
+Las cámaras muy nuevas pueden ir por delante de esa versión de LibRaw. Si hay vista previa, la salida es esa vista, no una descarga fallida.
+
+## Errores habituales
+
+- **Renombrar el archivo** a `.jpg` y enviarlo. Quien lo recibe sigue teniendo un RAW.
+- **Juzgar la conversión por la tira.** Esa miniatura es el JPEG incrustado. La exportación es otro revelado a resolución completa, salvo que LibRaw no haya podido leer el archivo.
+- **Borrar el RAW** en cuanto llega el ZIP. El JPG no lleva EXIF ni la profundidad de bits de más. Desde él no se reconstruye el RAW.
+- **Dejar Size en Web** cuando ibas a imprimir. 2048 px en el lado largo es un archivo de pantalla. Original, con tope de 8192 px, es el ajuste de impresión.
+- **Esperar el JPEG de la cámara.** El revelado es neutro: balance de blancos de la cámara, sin estilo de imagen y sin corrección de objetivo. Acerca el aspecto con los controles antes de exportar, no regrabando el JPG.
+- **Exportar una sola foto sin querer.** Si la selección está vacía, solo se escribe la foto en pantalla. Selecciona el conjunto y comprueba **Export N photos**.
+- **Dar por hecho que un archivo fallido se salta.** Un error de codificación corta la pasada. No hay un ZIP con las que sí salieron.
+- **Contar con todos los píxeles de un archivo de 50 megapíxeles.** El lado largo se queda en 8192 px.
+
+<EditorCta lang="es" label="Convertir RAW a JPG gratis" editorQuery="?intent=raw" />

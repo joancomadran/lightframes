@@ -41,7 +41,7 @@ faq:
     a: "El JPEG o HEIC del móvil lleva su propio procesado: mapeo de tonos, enfoque y reducción de ruido. Un DNG está más cerca de la captura en bruto, así que parte más plano. Pulsa Auto o aplica un preset antes de exportar para conseguir un resultado acabado."
   - q: "¿Y si un DNG no se abre bien?"
     a: "Algunos móviles recientes guardan DNG con tipos de compresión más nuevos que el decodificador incluido puede no leer. En ese caso Lightframes exporta la vista previa JPEG a tamaño completo que va dentro del DNG, en vez de fallar."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## Qué es un archivo DNG
@@ -108,4 +108,4 @@ Un DNG muy grande, o muchos abiertos a la vez, puede agotar la memoria del naveg
 - **Metadatos.** Los datos EXIF (fecha, cámara, objetivo, GPS) no se copian al JPG.
 - **Compresiones nuevas.** Los DNG que la versión de LibRaw incluida no puede leer usan la vista previa incrustada.
 
-Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador). La calidad, el tamaño y una sesión entera están en [cómo convertir RAW a JPG](/es/blog/convertir-raw-a-jpg).

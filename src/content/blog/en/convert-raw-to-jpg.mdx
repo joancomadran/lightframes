@@ -1,0 +1,162 @@
+---
+key: convert-raw-to-jpg
+slug: convert-raw-to-jpg
+title: "How to convert RAW to JPG"
+description: "How to convert RAW to JPG in your browser: develop the sensor data, set JPEG quality and size, then batch a whole shoot. Nothing is uploaded."
+h1: "How do you convert RAW to JPG?"
+faq:
+  - q: "Does converting RAW to JPG lose quality?"
+    a: "The JPEG is a smaller, 8-bit file, so it does not keep everything in the RAW. Lightframes decodes the sensor data as 16-bit linear RGB, applies its base tone curve and any edits, then the browser encodes an 8-bit JPEG. Quality runs from 50 to 100 (default 92) and only changes how hard that JPEG is compressed. Quality 100 is still an 8-bit JPEG, not a RAW. PNG in the same dialog is lossless, but it is still 8-bit. Keep the RAW if you may need another size or another develop later."
+  - q: "Can I convert RAW to JPG without Lightroom?"
+    a: "Yes. You do not need Lightroom installed. Open the file in Lightframes, press Ctrl/Cmd+E, set Format to JPEG and export. Decoding and the JPEG stay in the browser. Lightroom is a trademark of Adobe. Lightframes is not affiliated with Adobe. Desktop apps are covered in [free Lightroom alternatives](/blog/free-lightroom-alternatives)."
+  - q: "Is it free, and are the files uploaded?"
+    a: "It is free, with no account. Lightframes is open source under the MIT licence. Nothing is uploaded: the RAW is read from your disk and the JPEG is encoded on your device. The files stay on your device."
+  - q: "Which RAW formats can I convert?"
+    a: "The editor opens .arw, .cr2, .cr3, .nef, .nrw, .dng, .raf, .orf, .rw2, .pef and .srw. LibRaw, compiled to WebAssembly, develops the file. A camera or compression that build cannot read falls back to the embedded JPEG when the camera saved one. Other RAW extensions are not opened."
+  - q: "Will the JPG match the camera's own JPEG?"
+    a: "Not exactly. Export uses the camera white balance and Lightframes' neutral base curve. It does not apply the manufacturer's picture style or lens corrections. Change exposure and white balance before you export if you want a different look."
+  - q: "Does the JPG keep EXIF, the date and GPS?"
+    a: "No. The download is a new JPEG encoded from the developed pixels. Camera EXIF, the capture date, the camera model and GPS are not copied into it. The RAW on disk is not modified, so that metadata stays in the RAW."
+  - q: "What quality and size should I use for web and for print?"
+    a: "For a print or an archive copy, leave Size on Original (long edge up to 8192 px) and set Quality around 95 to 100. For a website or email, use Web (2048 px on the long edge) and a quality around 85 to 92. The default is 92. Instagram frames are exact: 1080 × 1350, 1080 × 1080 and 1080 × 1920, and choosing one switches the format to JPEG."
+published: 2026-11-26
+author: Lightframes
+tags: ["raw", "guides"]
+tools: ["raw-to-jpg", "cr3-to-jpg", "nef-to-jpg", "arw-to-jpg", "dng-to-jpg", "batch"]
+keywords:
+  - how to convert RAW to JPG
+  - how to convert arw to jpg
+  - how to convert nef to jpg
+  - convert raw to jpg without losing quality
+  - convert raw to jpg without lightroom
+  - batch convert raw to jpg
+---
+
+import EditorCta from '../../../site/components/EditorCta.astro'
+
+**Open the RAW in [Lightframes](/editor?intent=raw), press Ctrl/Cmd+E, set Format to JPEG and export.** The app develops the sensor data on your device with LibRaw, then the browser writes an 8-bit JPEG at the quality and size you set. Nothing is uploaded: the files stay on your device. One photo downloads as a `.jpg`. Two or more download as one ZIP.
+
+<EditorCta lang="en" label="Convert RAW to JPG: free, no upload" editorQuery="?intent=raw" />
+
+The pages that start this conversion for you are [RAW to JPG](/tools/raw-to-jpg), [CR3 to JPG](/tools/cr3-to-jpg), [NEF to JPG](/tools/nef-to-jpg), [ARW to JPG](/tools/arw-to-jpg) and [DNG to JPG](/tools/dng-to-jpg). This guide is the why and the settings. Those pages are the place to run it.
+
+## How do you convert RAW to JPG in Lightframes?
+
+A RAW is not a JPEG with a different extension. Renaming `IMG_2048.CR3` to `IMG_2048.jpg` does not convert it. The file has to be developed, then encoded.
+
+1. **Open the editor** at [/editor](/editor). For a full card, use a recent Chromium browser (Chrome, Edge, Brave) on a computer. Phones can open RAW files, but they run out of memory sooner.
+2. **Open the photos.** Click **Open**, or **Folder** in the filmstrip. Hold **Option/Alt** while clicking **Open** to pick a folder. Files are read one at a time, so one unreadable file does not discard the rest.
+3. **Let the preview develop.** The filmstrip thumbnail is the camera's embedded JPEG, which is fast. The large preview is a real RAW develop at half size. Export decodes again at full resolution.
+4. **Edit only if you need to.** For a straight conversion, leave the sliders alone. Export then uses the camera white balance and Lightframes' base curve. If the sky is blown or the colour is wrong, fix exposure, highlights and white balance first. Press **J** for the clipping overlay.
+5. **Select what should be converted.** Opening files selects only the first photo. **Ctrl/Cmd+A** selects all, **Shift-click** selects a range, and **Ctrl/Cmd-click** adds or removes one. If nothing is selected, only the photo on screen is exported.
+6. **Open export** with **Ctrl/Cmd+E** (or **Export**). Set **Format** to **JPEG**. Leave **Size** on **Original** for a full-resolution file, or pick **Web** (2048 px on the long edge) when the JPG is for a page or an email. **Quality** defaults to **92**.
+7. **Set the filename.** The pattern defaults to `{"{name}"}-edited`, and JPEG uses a `.jpg` extension. `{"{name}"}` is the original name without its extension. Use `{"{name}"}` alone if you want `DSC_0042.jpg` from `DSC_0042.NEF`.
+8. **Export.** One file downloads on its own. Two or more successful files download as `lightframes-YYYY-MM-DD-N-photos.zip`. The date is UTC. The RAW on disk is not changed.
+
+The same steps, with the file picker aimed at RAW, are on [RAW to JPG](/tools/raw-to-jpg).
+
+## What actually happens when a RAW becomes a JPG?
+
+Two different jobs get called "converting". One is **developing**: turning the sensor reading into a picture. The other is a **format change**: compressing that picture into JPEG. Lightframes does both on export. It does not copy the RAW bytes into a file named `.jpg`.
+
+What the camera stored is a mosaic (one colour per photosite), usually at more than 8 bits per channel, plus the settings it recorded (white balance among them). A JPEG is an 8-bit image per channel, compressed with a lossy method, that any browser can show.
+
+Inside Lightframes the path splits by job:
+
+- **Thumbnails** come from the largest embedded JPEG in the file (a JPEG marker pair of at least 50 KB, and at least 800 px on one side). That preview is what the camera already baked. It is not the file you should treat as the conversion.
+- **The editing preview** is a LibRaw develop: linear 16-bit RGB, camera white balance, sRGB primaries (`outputColor` 1), no tone curve yet (`gamm` 1, 1), at half size so the sliders stay responsive.
+- **Export** runs that develop again at full resolution (`halfSize` off). Lightframes then applies its base tone curve and any edits you made, resizes to the size you chose, and the browser encodes the canvas as JPEG.
+
+If LibRaw cannot develop a file, export uses the image already opened for it. That is the embedded JPEG when the camera saved one. In that case you are saving the camera's 8-bit preview, and highlight recovery will not behave like a real RAW develop. The preview path is the same one described in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+
+There is no colour-space menu. LibRaw is set to sRGB primaries, and the download is an 8-bit JPEG from the browser canvas. You cannot pick Adobe RGB or ProPhoto RGB in this export.
+
+## Which quality and size settings should you use?
+
+**Quality** is a slider from **50 to 100** for JPEG and WebP. The default is **92**. PNG has no quality slider. The number is the browser's JPEG encoder setting. It does not change bit depth, and it does not put the RAW's extra headroom back into the file.
+
+What that means in practice:
+
+- **95 to 100**, with **Size** on **Original**, is the setting for a print or a file you might edit again as a JPEG. Quality 100 is still lossy JPEG and still 8 bits per channel. It is the least extra damage from compression, not a lossless copy of the RAW.
+- **85 to 92**, with **Web** (2048 px on the long edge), is enough for a page, a client preview or email. The default 92 sits in that range.
+- **50 to 80** makes a clearly smaller file. Fine detail and smooth gradients (sky, skin) show the compression first. Use it when the file has to be small, and keep the RAW so you can export again.
+
+**Size** is separate from quality. A 45 megapixel RAW exported at 2048 px on the long edge has already thrown away pixels, even at quality 100.
+
+| Use | Size in the dialog | Quality |
+| --- | --- | --- |
+| Print or archive JPG | Original (long edge up to 8192 px) | 95-100 |
+| Website, email, client preview | Web (2048 px long edge) | 85-92 |
+| Instagram frame | IG 4:5 (1080 × 1350), IG 1:1 (1080 × 1080) or Story (1080 × 1920) | 92 |
+| Your own long edge | Long edge, 800 to 8192 px, in steps of 16 | 92 unless you need smaller files |
+
+**Original** does not mean "every pixel of a 50 megapixel sensor" when that long edge is over **8192 px**. Wider files are scaled down to 8192 px. The long-edge slider stops at the same cap. At 8192 the label reads **Full**.
+
+The Instagram sizes are exact frames. The photo is fitted and letterboxed, not cropped. Choosing one of them also switches **Format** to **JPEG**. The border is white, black or a warm off-white (`#f1ece4`).
+
+**8-bit versus the RAW.** The develop starts from 16-bit linear RGB. The saved JPEG is 8 bits per channel because that is what the canvas JPEG encoder writes. The gap (often a camera recording of 12 or 14 bits, reduced to 8) is why a heavy exposure or colour move is safer on the RAW before export than on the JPG afterwards. If you need a file that is not JPEG-compressed, choose **PNG** in the same dialog. PNG is lossless at 8 bits. It is still not the RAW.
+
+## Why should you keep the RAW?
+
+The JPG is a delivery file. The RAW is the master.
+
+- The original file is never overwritten. Edits live in the browser until you export.
+- The JPG does not receive camera EXIF, GPS, the capture date or the camera model. If you need that record, it is still in the RAW.
+- A later crop, a different white balance or a larger size has to come from the RAW. Raising JPEG quality on an already exported JPG does not restore detail.
+- If LibRaw fell back to the embedded preview for one file, that JPG is the camera's preview. The RAW is still the only copy of the sensor data.
+
+Store the RAW, export the JPG you need today, and export again when the size or the look changes.
+
+## How do you batch convert a whole shoot?
+
+Select the set, then export once. Every selected photo is developed with its own edits and the same size, format and quality.
+
+1. Open the folder (**Folder** in the filmstrip, in Chrome, Edge or Brave).
+2. Press **Ctrl/Cmd+A**. Check the export title: it should read **Export N photos**, not **Export**.
+3. If the set should share one look, edit one frame, copy (**Ctrl/Cmd+C**) and paste (**Ctrl/Cmd+V**) onto the selection. Paste can bring colour across without the crop. That workflow is the [batch photo editor](/tools/batch-photo-editor).
+4. Set JPEG, the size and the quality, then click **Export N files**.
+
+Files are developed one after another, at full resolution. A long card takes a while, and it is faster on a computer than on a phone. There is no fixed count of files. The limit is memory, and the ZIP has to stay under **4 GB** (the archive stores the JPEGs, it does not deflate them). If one photo fails to encode, the export stops and the ZIP is not saved. Opening is isolated per file; export is one pass.
+
+Two files that would get the same name are split in the ZIP: the second becomes `name (2).jpg`.
+
+## What changes for CR3, NEF, ARW, DNG and the other RAW types?
+
+The steps do not change. The extension only decides whether the file opens. These are the extensions the editor accepts, and the page for each one:
+
+| Camera | Extensions | Where to convert |
+| --- | --- | --- |
+| Canon | `.cr2`, `.cr3` | [CR3 to JPG](/tools/cr3-to-jpg) |
+| Nikon | `.nef`, `.nrw` | [NEF to JPG](/tools/nef-to-jpg) |
+| Sony | `.arw` | [ARW to JPG](/tools/arw-to-jpg) |
+| DNG (cameras, phones, drones) | `.dng` | [DNG to JPG](/tools/dng-to-jpg) |
+| Fujifilm | `.raf` | [RAW to JPG](/tools/raw-to-jpg) |
+| Olympus / OM System | `.orf` | [RAW to JPG](/tools/raw-to-jpg) |
+| Panasonic | `.rw2` | [RAW to JPG](/tools/raw-to-jpg) |
+| Pentax | `.pef` | [RAW to JPG](/tools/raw-to-jpg) |
+| Samsung | `.srw` | [RAW to JPG](/tools/raw-to-jpg) |
+
+Any other RAW extension is not opened.
+
+A few notes that follow from that list, not from a separate converter per brand:
+
+- **Canon CR3 and CR2.** CR3 is the RAW from 2018 onward (EOS R and later EOS bodies). CR2 is the older DSLR RAW. C-RAW is still a CR3 file and opens the same way. Picture Styles and Canon's lens corrections are not applied.
+- **Nikon NEF and NRW.** NEF is the interchangeable-lens RAW. NRW is the Coolpix variant. Some recent Z bodies write High Efficiency NEF, which the bundled LibRaw may not develop. Those files fall back to the embedded JPEG.
+- **Sony ARW.** Alpha, and the RX and ZV cameras that shoot RAW, use `.arw`. Creative Looks and DRO are not applied. A compression the bundled decoder cannot read falls back to the embedded JPEG.
+- **DNG.** Cameras, phones and drones that write `.dng` use the same export. Phone JPEGs include the phone's own tone mapping. The DNG develop does not reproduce that. Press **Auto**, or paste one edit across the set, if you want a finished look.
+- **Fujifilm RAF, Olympus ORF, Panasonic RW2, Pentax PEF, Samsung SRW.** They open in the same editor and export the same way. There is no separate page per brand. Support for a specific body follows the bundled LibRaw build. A file it cannot develop uses the embedded JPEG when one is present.
+
+Very new cameras can lag behind that LibRaw build. The fallback is the preview, not a failed download, when the preview exists.
+
+## Common mistakes
+
+- **Renaming the file** to `.jpg` and sending it. The recipient still has a RAW.
+- **Judging the conversion by the filmstrip.** That thumbnail is the embedded JPEG. The export is a separate full-resolution develop, unless LibRaw could not read the file.
+- **Deleting the RAW** as soon as the ZIP lands. The JPG has no EXIF and no extra bit depth. You cannot rebuild the RAW from it.
+- **Leaving Size on Web** when you needed a print. 2048 px on the long edge is a screen file. Original, capped at 8192 px, is the print setting.
+- **Expecting the camera JPEG.** The develop is neutral: camera white balance, no picture style, no lens corrections. Match the look with the sliders before you export, not by re-saving the JPG.
+- **Exporting one photo by accident.** If the selection is empty, only the photo on screen is written. Select the set and check **Export N photos**.
+- **Assuming a failed file is skipped.** One encode error stops the pass. You do not get a ZIP of the ones that worked.
+- **Pushing a 50 megapixel file and expecting every pixel.** The long edge stops at 8192 px.
+
+<EditorCta lang="en" label="Convert RAW to JPG: free, no upload" editorQuery="?intent=raw" />

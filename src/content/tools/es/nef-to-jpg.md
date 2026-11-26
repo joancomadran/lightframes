@@ -41,7 +41,7 @@ faq:
     a: "No del todo. Lightframes usa el balance de blancos de la cámara y un revelado base neutro, pero no aplica los Picture Control de Nikon, el D-Lighting activo ni las correcciones de objetivo de la cámara. Ajusta los controles o aplica un preset antes de exportar para conseguir el resultado que buscas."
   - q: "¿Qué pasa con los NEF de alta eficiencia?"
     a: "Algunas Z recientes ofrecen RAW de alta eficiencia (High Efficiency), una compresión que el decodificador incluido puede no leer. Si un archivo no se puede revelar, Lightframes exporta la vista previa JPEG a tamaño completo que Nikon guarda dentro del NEF, en vez de fallar."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## Qué es un archivo NEF
@@ -110,4 +110,4 @@ Un NEF muy grande, o muchos abiertos a la vez, puede agotar la memoria del naveg
 - **Metadatos.** Los datos EXIF (fecha, cámara, objetivo, GPS) no se copian al JPG.
 - **Cámaras y modos muy recientes.** Los archivos que la versión de LibRaw incluida no puede leer usan la vista previa incrustada.
 
-Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador). La calidad, el tamaño y una sesión entera están en [cómo convertir RAW a JPG](/es/blog/convertir-raw-a-jpg).

@@ -43,7 +43,7 @@ faq:
     a: "Sí. Los .cr2 de las Canon más antiguas se convierten exactamente igual, y también los RAW de otras marcas; lo tienes en el conversor de RAW a JPG."
   - q: "¿Los colores serán iguales que los JPEG de mi Canon?"
     a: "No del todo. Lightframes usa el balance de blancos de la cámara y un revelado base neutro, pero no aplica los estilos de imagen (Picture Style) de Canon ni las correcciones de objetivo de la cámara. Ajusta los controles o aplica un preset antes de exportar para conseguir el resultado que buscas."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## Qué es un archivo CR3 y por qué cuesta compartirlo
@@ -110,4 +110,4 @@ Un CR3 muy grande, o muchos abiertos a la vez, puede agotar la memoria del naveg
 - **Metadatos.** Los datos EXIF (fecha, cámara, objetivo, GPS) no se copian al JPG.
 - **Cámaras muy recientes.** Los archivos de cámaras más nuevas que la versión de LibRaw incluida usan la vista previa incrustada.
 
-Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador).
+Si quieres editar antes de exportar, mira el [editor de fotos RAW](/es/herramientas/editor-fotos-raw) o [abre el editor](/es/editor?intent=raw). Cómo funciona el revelado está en [editar fotos RAW en el navegador](/es/blog/editar-fotos-raw-en-el-navegador). La calidad, el tamaño y una sesión entera están en [cómo convertir RAW a JPG](/es/blog/convertir-raw-a-jpg).

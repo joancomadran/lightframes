@@ -46,7 +46,7 @@ faq:
     a: "Not exactly. Lightframes develops every RAW with the same neutral base rendering and the camera's white balance, without the manufacturer's picture styles or lens corrections. Use the sliders before exporting if you want a different look."
   - q: "Is the original RAW file changed?"
     a: "No. Converting creates a new JPG file; the RAW on your disk is never modified."
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 ## What converting RAW to JPG in Lightframes means
@@ -109,7 +109,7 @@ A plain conversion gives you a faithful, neutral JPG. Editing first is worth it 
 - **Wrong colour cast:** use the white balance picker on something neutral.
 - **A consistent look for a set:** apply a [preset](/tools/photo-presets), start from the [free presets and LUTs pack](/free-presets-luts), or paste one edit across the whole selection with the [batch editor](/tools/batch-photo-editor). A [.cube LUT](/blog/what-is-a-cube-lut) keeps that colour the same on every file in the set.
 
-For the full list of controls, see the [RAW photo editor](/tools/raw-photo-editor), or [open the editor](/editor?intent=raw) with your files. How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser).
+For the full list of controls, see the [RAW photo editor](/tools/raw-photo-editor), or [open the editor](/editor?intent=raw) with your files. How the decode works is in [edit RAW photos in your browser](/blog/edit-raw-photos-in-browser). Quality, size and a full shoot are covered in [how to convert RAW to JPG](/blog/convert-raw-to-jpg).
 
 ## Limitations
 
