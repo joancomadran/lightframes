@@ -1,10 +1,17 @@
 import { fileExtension, trackPhotoLoadFailed } from './analytics'
 import { RAW_EXTENSIONS } from './rawDecode'
 
+const STANDARD_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'] as const
+
 const IMAGE_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
   'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/heic-sequence',
+  'image/heif-sequence',
   'image/x-sony-arw',
   'image/arw',
   'image/x-canon-cr2',
@@ -16,9 +23,39 @@ const IMAGE_TYPES = new Set([
   'image/x-panasonic-rw2',
 ])
 
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', ...RAW_EXTENSIONS] as const
+const IMAGE_EXTENSIONS = [...STANDARD_EXTENSIONS, ...RAW_EXTENSIONS] as const
 
 const RAW_ACCEPT = RAW_EXTENSIONS.flatMap((ext) => [ext, ext.toUpperCase()])
+const STANDARD_ACCEPT = STANDARD_EXTENSIONS.flatMap((ext) => [ext, ext.toUpperCase()])
+
+/** `accept` for the hidden file input. Extensions and MIME types, both cases. */
+export function imageInputAccept(): string {
+  return [
+    ...STANDARD_ACCEPT,
+    ...RAW_ACCEPT,
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+    'image/heic-sequence',
+    'image/heif-sequence',
+  ].join(',')
+}
+
+/** Types passed to `showOpenFilePicker`. */
+export function imagePickerAccept(): Record<string, string[]> {
+  return {
+    'image/jpeg': ['.jpg', '.jpeg', '.JPG', '.JPEG'],
+    'image/png': ['.png', '.PNG'],
+    'image/webp': ['.webp', '.WEBP'],
+    'image/heic': ['.heic', '.HEIC'],
+    'image/heif': ['.heif', '.HEIF'],
+    'application/octet-stream': RAW_ACCEPT,
+    'image/x-sony-arw': ['.arw', '.ARW'],
+    'image/x-adobe-dng': ['.dng', '.DNG'],
+  }
+}
 
 export function isSupportedImage(file: File): boolean {
   const name = file.name.toLowerCase()
@@ -74,13 +111,7 @@ async function pickWithOpenFilePicker(): Promise<OpenImagesResult | null> {
       types: [
         {
           description: 'Images',
-          accept: {
-            'image/jpeg': ['.jpg', '.jpeg'],
-            'image/png': ['.png'],
-            'application/octet-stream': RAW_ACCEPT,
-            'image/x-sony-arw': ['.arw', '.ARW'],
-            'image/x-adobe-dng': ['.dng', '.DNG'],
-          },
+          accept: imagePickerAccept(),
         },
       ],
     })
@@ -105,14 +136,7 @@ function pickFromHiddenInput(): Promise<OpenImagesResult> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = [
-      '.jpg',
-      '.jpeg',
-      '.png',
-      ...RAW_ACCEPT,
-      'image/jpeg',
-      'image/png',
-    ].join(',')
+    input.accept = imageInputAccept()
     input.multiple = true
 
     let settled = false

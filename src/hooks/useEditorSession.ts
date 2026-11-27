@@ -46,9 +46,10 @@ import {
   readPresetsFromFile,
   savePresets,
 } from "../lib/presets";
+import { isHeicFile } from "../lib/heicDecode";
+import { imageForSession } from "../lib/imageImport";
 import {
   decodeRawLinear,
-  decodeRawToJpegBlob,
   isRawFile,
 } from "../lib/rawDecode";
 import {
@@ -84,11 +85,16 @@ import { processBatchIndividually } from "../lib/processBatchIndividually.js";
 
 const ALL_SHIPPED_PRESETS = [...BUILTIN_PRESETS, ...FREE_PACK_PRESETS];
 
-function coarseFileType(file: File): "raw" | "jpeg" | "png" | "other" {
+function coarseFileType(
+  file: File,
+): "raw" | "jpeg" | "png" | "webp" | "heic" | "other" {
   if (isRawFile(file)) return "raw";
+  if (isHeicFile(file)) return "heic";
   const name = file.name.toLowerCase();
   if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "jpeg";
   if (name.endsWith(".png")) return "png";
+  if (name.endsWith(".webp") || file.type.toLowerCase() === "image/webp")
+    return "webp";
   return "other";
 }
 
@@ -147,7 +153,7 @@ async function makePhoto(
   file: File,
   edits?: EditParams,
 ): Promise<PhotoSession> {
-  const image = isRawFile(file) ? await decodeRawToJpegBlob(file) : file;
+  const image = await imageForSession(file);
   const objectUrl = URL.createObjectURL(image);
   try {
     // A supported extension/MIME type does not guarantee valid image data.
@@ -399,6 +405,10 @@ export function useEditorSession({
         const studio = unpackStudioState(snap.studio);
         setStatus(copy.status.restoring(snap.photos.length));
         const next: PhotoSession[] = [];
+        let heicIndex = 0;
+        const heicTotal = snap.photos.filter((item) =>
+          isHeicFile({ name: item.fileName || item.name, type: item.fileType }),
+        ).length;
         for (const item of snap.photos) {
           const file =
             item.file instanceof File
@@ -406,6 +416,12 @@ export function useEditorSession({
               : new File([item.file], item.fileName || item.name, {
                   type: item.fileType || "application/octet-stream",
                 });
+          if (isHeicFile(file)) {
+            heicIndex += 1;
+            setStatus(
+              copy.status.decodingHeicFile(file.name, heicIndex, heicTotal),
+            );
+          }
           const photo = await makePhoto(
             file,
             normalizeEdits(item.edits) ?? undefined,
@@ -568,19 +584,42 @@ export function useEditorSession({
 
   const loadFiles = useCallback(
     async (files: File[], edits?: EditParams): Promise<PhotoSession[]> => {
+      const heicFiles = files.filter(isHeicFile);
       const rawCount = files.filter(isRawFile).length;
       setStatus(
-        rawCount > 0
-          ? copy.status.openingRaw(rawCount)
-          : copy.status.loadingImages,
+        heicFiles.length > 0 && rawCount === 0
+          ? copy.status.decodingHeic(heicFiles.length)
+          : rawCount > 0 && heicFiles.length === 0
+            ? copy.status.openingRaw(rawCount)
+            : copy.status.loadingImages,
       );
 
-      // Keep imports sequential to avoid spiking memory with large RAW batches.
+      // Keep imports sequential to avoid spiking memory with large RAW and HEIC batches.
       // A single corrupt or unsupported file must not discard successful imports.
+      let heicIndex = 0;
       const { successful: next, failed } = await processBatchIndividually(
         files,
-        (file) => makePhoto(file, edits),
+        (file) => {
+          if (isHeicFile(file)) {
+            heicIndex += 1;
+            setStatus(
+              copy.status.decodingHeicFile(
+                file.name,
+                heicIndex,
+                heicFiles.length,
+              ),
+            );
+          }
+          return makePhoto(file, edits);
+        },
       );
+      const heicFailed = failed.filter(({ item }) => isHeicFile(item));
+      const firstHeicFailure = heicFailed[0];
+      if (heicFailed.length === 1 && firstHeicFailure) {
+        showToast(copy.status.heicCorrupt(firstHeicFailure.item.name), "error");
+      } else if (heicFailed.length > 1) {
+        showToast(copy.status.heicCorruptMany(heicFailed.length), "error");
+      }
       const failures = failed.map(({ item, error }) => {
         trackPhotoLoadFailed(item.name, coarsePhotoLoadReason(error));
         const reason =
@@ -614,7 +653,7 @@ export function useEditorSession({
       trackPhotoLoaded(types.size === 1 ? [...types][0]! : "other");
       return next;
     },
-    [syncHistoryFlags],
+    [showToast, syncHistoryFlags],
   );
 
   const handleOpen = useCallback(

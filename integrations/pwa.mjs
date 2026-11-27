@@ -1,5 +1,17 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { generateSW } from 'workbox-build'
+
+/** The HEIC decoder is a lazy chunk. Leave it out of the precache so the first visit does not download it. */
+function isHeicDecoderChunk(dir, url) {
+  if (!url.endsWith('.js')) return false
+  try {
+    return readFileSync(join(dir, url), 'utf8').includes('HEIF image not found')
+  } catch {
+    return false
+  }
+}
 
 /**
  * Writes dist/sw.js once Astro has rendered every page, so the precache covers the
@@ -21,6 +33,12 @@ export function pwa() {
           skipWaiting: true,
           clientsClaim: true,
           cleanupOutdatedCaches: true,
+          manifestTransforms: [
+            async (entries) => ({
+              manifest: entries.filter((entry) => !isHeicDecoderChunk(globDirectory, entry.url)),
+              warnings: [],
+            }),
+          ],
           runtimeCaching: [
             {
               // The inpainting runtime (~14 MB) is too big to precache: keep it once it has been used

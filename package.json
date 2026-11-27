@@ -9,7 +9,7 @@
     "check": "astro check",
     "lint": "oxlint",
     "test:collage-export": "node --test scripts/collage-export-size.test.mjs",
-    "test": "node --test scripts/*.test.mjs",
+    "test": "node --import ./scripts/register-ts.mjs --test scripts/*.test.mjs",
     "preview": "astro preview",
     "indexnow": "node scripts/indexnow.mjs",
     "build:free-pack": "node scripts/build-free-pack.mjs"
@@ -23,6 +23,7 @@
     "@fontsource-variable/figtree": "^5.3.0",
     "@vercel/analytics": "^2.0.1",
     "astro": "^7.4.1",
+    "heic-to": "^1.6.7",
     "libraw-wasm": "^1.6.0",
     "onnxruntime-web": "^1.30.0",
     "react": "^19.2.8",
