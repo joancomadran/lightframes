@@ -6,7 +6,7 @@ description: "A free Lightroom alternative for Chromebook: Lightframes runs in C
 h1: "A free Lightroom alternative for Chromebook"
 lead: "On a Chromebook, use Lightframes in Chrome when you want a free RAW and JPEG editor that imports Lightroom .xmp presets and .cube LUTs and does not upload the photos. You do not install a Linux app or a Creative Cloud plan. Adobe’s own mobile FAQ still treats raw editing on a Chromebook as a Creative Cloud feature, not part of the free Lightroom tier."
 order: 1
-updated: 2026-11-10
+updated: 2026-11-27
 faq:
   - q: "Does Lightframes need to be installed on a Chromebook?"
     a: "No. Open it in Chrome. Chrome can also install it as a PWA from the Install app button, after which editing works offline once the app has loaded."
@@ -22,9 +22,9 @@ Lightroom and Camera Raw are trademarks of Adobe. Lightframes is independent and
 
 ## What works in Chrome on a Chromebook
 
-Lightframes is a free, open-source (MIT) photo editor that runs entirely in the browser. On a Chromebook that means [Chrome](/editor): open JPEG, PNG or camera RAW, edit, and export JPEG, PNG or WebP. Photos are decoded with LibRaw compiled to WebAssembly and developed in Web Workers. They are not sent to a server.
+Lightframes is a free, open-source (MIT) photo editor that runs entirely in the browser. On a Chromebook that means [Chrome](/editor): open JPEG, PNG, WebP, HEIC or camera RAW, edit, and export JPEG, PNG or WebP. Photos are decoded with LibRaw compiled to WebAssembly and developed in Web Workers. The first HEIC you open downloads its decoder from lightframes.si. They are not sent to a server.
 
-RAW extensions the editor accepts are `.arw`, `.cr2`, `.cr3`, `.nef`, `.nrw`, `.dng`, `.raf`, `.orf`, `.rw2`, `.pef` and `.srw`. The editing preview is a half-size 16-bit decode. Export develops the sensor data again, up to 8192 px on the long edge, and falls back to the camera’s embedded JPEG if LibRaw cannot develop that file.
+Besides JPEG, PNG, WebP, `.heic` and `.heif`, RAW extensions the editor accepts are `.arw`, `.cr2`, `.cr3`, `.nef`, `.nrw`, `.dng`, `.raf`, `.orf`, `.rw2`, `.pef` and `.srw`. The editing preview is a half-size 16-bit decode. Export develops the sensor data again, up to 8192 px on the long edge, and falls back to the camera’s embedded JPEG if LibRaw cannot develop that file.
 
 Presets → Import reads a Lightroom or Camera Raw `.xmp`, a Lightframes JSON preset or a `.cube` LUT, with intensity from 0 to 100%. Copy and paste edits across the filmstrip and export a selection as a ZIP. The editor interface is English.
 

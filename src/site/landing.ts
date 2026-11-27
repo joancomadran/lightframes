@@ -48,7 +48,7 @@ export const landing = {
       steps: [
         {
           h3: 'Open your photos',
-          p: 'Open JPEG, PNG or camera RAW files, or a whole folder. They appear in the filmstrip.',
+          p: 'Open JPEG, PNG, WebP, HEIC or camera RAW files, or a whole folder. They appear in the filmstrip.',
         },
         {
           h3: 'Edit one, paste to the rest',
@@ -111,7 +111,7 @@ export const landing = {
       steps: [
         {
           h3: 'Abre tus fotos',
-          p: 'Abre archivos JPEG, PNG o RAW, o una carpeta entera. Aparecen en la tira de fotos.',
+          p: 'Abre archivos JPEG, PNG, WebP, HEIC o RAW, o una carpeta entera. Aparecen en la tira de fotos.',
         },
         {
           h3: 'Edita una y pégala en las demás',

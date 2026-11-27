@@ -4,7 +4,7 @@ slug: sobre-lightframes
 title: "Sobre Lightframes"
 description: "Quién hace Lightframes, por qué edita tus fotos en tu dispositivo y no en la nube, cómo se financia y cómo funciona este proyecto de código abierto (MIT)."
 h1: "Sobre Lightframes"
-updated: 2026-10-22
+updated: 2026-11-27
 schemaType: AboutPage
 ---
 
@@ -29,7 +29,7 @@ Lightframes va por un tercer camino: un editor completo que se abre como una web
 
 ## ¿Qué puedes hacer con él?
 
-En resumen: edición no destructiva de JPEG, PNG y RAW de cámara (Sony, Canon, Nikon, Fujifilm, Olympus, Panasonic, Pentax, Samsung y DNG), con controles de tono y color, curva de tonos, recorte y enderezado, máscaras locales, eliminación de manchas, quitar el fondo, ampliación con IA al exportar y un modo de collage y carrusel continuo para Instagram. Las [páginas de herramientas](/es/herramientas/editor-fotos-raw) y las [preguntas frecuentes](/es/preguntas-frecuentes) lo explican con detalle.
+En resumen: edición no destructiva de JPEG, PNG, WebP, HEIC y RAW de cámara (Sony, Canon, Nikon, Fujifilm, Olympus, Panasonic, Pentax, Samsung y DNG), con controles de tono y color, curva de tonos, recorte y enderezado, máscaras locales, eliminación de manchas, quitar el fondo, ampliación con IA al exportar y un modo de collage y carrusel continuo para Instagram. Las [páginas de herramientas](/es/herramientas/editor-fotos-raw) y las [preguntas frecuentes](/es/preguntas-frecuentes) lo explican con detalle.
 
 ## ¿Cómo funciona, explicado sin tecnicismos?
 
