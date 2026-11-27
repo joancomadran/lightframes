@@ -22,7 +22,7 @@
     },
     {
       "q": "¿Qué formatos abre el editor?",
-      "a": "Lightframes abre JPEG, PNG, WebP, HEIC y HEIF, además de los RAW más habituales: ARW (Sony), CR2 y CR3 (Canon), NEF y NRW (Nikon), DNG, RAF (Fujifilm), ORF (Olympus/OM System), RW2 (Panasonic), PEF (Pentax) y SRW (Samsung). WebP y HEIC se editan como cualquier foto en mapa de bits. HEIC usa el decodificador del sistema si el navegador lo ofrece; en Chrome y Firefox, la primera HEIC que abras descarga un decodificador desde lightframes.si (ese fragmento no va en la precarga offline). Los RAW se decodifican en el navegador con LibRaw compilado a WebAssembly, así que la compatibilidad RAW depende de las cámaras que admite LibRaw. La exportación es JPEG, PNG o WebP, no HEIC."
+      "a": "Lightframes abre JPEG, PNG, WebP, HEIC y HEIF, además de los RAW más habituales: ARW (Sony), CR2 y CR3 (Canon), NEF y NRW (Nikon), DNG, RAF (Fujifilm), ORF (Olympus/OM System), RW2 (Panasonic), PEF (Pentax) y SRW (Samsung). WebP y HEIC se editan como cualquier foto en mapa de bits. HEIC usa el decodificador del sistema si el navegador lo ofrece; en Chrome y Firefox, la primera HEIC que abras descarga un decodificador desde lightframes.si, así que necesita conexión. Los RAW se decodifican en el navegador con LibRaw compilado a WebAssembly, así que la compatibilidad RAW depende de las cámaras que admite LibRaw. La exportación es JPEG, PNG o WebP, no HEIC."
     },
     {
       "q": "¿En qué formatos puedo exportar las fotos?",
@@ -30,7 +30,7 @@
     },
     {
       "q": "¿Funciona sin conexión? ¿Se puede instalar como app?",
-      "a": "La edición, sí, después de abrirla una vez con conexión. Lightframes es una aplicación web progresiva (PWA) y puedes instalarla con el botón Install app o desde el menú del navegador (en iPhone y iPad, Compartir → Añadir a pantalla de inicio; en Safari para Mac, Archivo → Añadir al Dock). El borrado de objetos descarga su modelo de IA de Hugging Face la primera vez que lo usas. La eliminación de fondo, las máscaras de sujeto y la ampliación descargan sus modelos desde lightframes.si. En Chrome y Firefox, la primera HEIC que abras descarga también su decodificador desde lightframes.si. Cuando un modelo o ese decodificador ya está guardado, esa herramienta o ese formato también funciona sin conexión."
+      "a": "La edición, sí, después de abrirla una vez con conexión. Lightframes es una aplicación web progresiva (PWA) y puedes instalarla con el botón Install app o desde el menú del navegador (en iPhone y iPad, Compartir → Añadir a pantalla de inicio; en Safari para Mac, Archivo → Añadir al Dock). El borrado de objetos descarga su modelo de IA de Hugging Face la primera vez que lo usas. La eliminación de fondo, las máscaras de sujeto y la ampliación descargan sus modelos desde lightframes.si. Cuando un modelo ya está guardado, esa herramienta también funciona sin conexión. En Chrome y Firefox, abrir una HEIC necesita conexión, porque su decodificador se descarga desde lightframes.si al abrirla."
     },
     {
       "q": "¿En qué navegadores y dispositivos funciona?",
