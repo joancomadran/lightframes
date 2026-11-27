@@ -78,7 +78,7 @@ export default defineConfig({
     envPrefix: ['VITE_', 'PUBLIC_'],
     optimizeDeps: {
       // Pre-bundling moves these packages away from the .wasm files they load relative to themselves
-      exclude: ['libraw-wasm', 'onnxruntime-web'],
+      exclude: ['libraw-wasm', 'onnxruntime-web', 'heic-to'],
     },
     worker: {
       format: 'es',

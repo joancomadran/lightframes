@@ -18,7 +18,7 @@ const en = {
   empty: {
     title: 'The open-source photo editor that stays on your device',
     copy: 'Free and open source. Custom presets and copy/paste edits, right in the browser. Your photos are never uploaded — no account needed.',
-    features: ['JPEG, PNG & camera RAW', 'Presets, XMP & .cube LUTs', 'Batch edit & export'],
+    features: ['JPEG, PNG, WebP, HEIC & RAW', 'Presets, XMP & .cube LUTs', 'Batch edit & export'],
     openPhotos: 'Open photos',
     trySamples: 'Try sample photos',
     watchDemo: 'Watch demo',
@@ -49,7 +49,7 @@ const en = {
     collage: 'Collage',
     collageTitle: 'Instagram collages',
     open: 'Open',
-    openTitle: 'Open images. Hold Option/Alt to open a folder.',
+    openTitle: 'Open JPEG, PNG, WebP, HEIC or RAW. Hold Option/Alt to open a folder.',
     undo: 'Undo',
     undoTitle: 'Undo (⌘Z)',
     redo: 'Redo',
@@ -188,7 +188,7 @@ const en = {
     unflagged: 'Unflagged',
     rejected: 'Rejected',
     clear: 'Clear workspace',
-    openTitle: 'Open JPEG, PNG or RAW files',
+    openTitle: 'Open JPEG, PNG, WebP, HEIC or RAW files',
     addPhotos: 'Add photos',
     noMatch: 'No photos match this filter',
     grid: 'Show as grid',
@@ -216,6 +216,11 @@ const en = {
     undo: 'Undo',
     redo: 'Redo',
     openingRaw: (n: number) => `Opening ${n} RAW file${n === 1 ? '' : 's'}…`,
+    decodingHeic: (n: number) => (n === 1 ? 'Decoding HEIC…' : `Decoding ${n} HEIC files…`),
+    decodingHeicFile: (name: string, index: number, total: number) =>
+      total > 1 ? `Decoding ${name}… (${index}/${total})` : `Decoding ${name}…`,
+    heicCorrupt: (name: string) => `Could not decode ${name}. The HEIC file may be corrupted.`,
+    heicCorruptMany: (n: number) => `Could not decode ${n} HEIC files. They may be corrupted.`,
     loadingImages: 'Loading images…',
     couldNotOpen: (n: number) => `Could not open ${n} image${n === 1 ? '' : 's'}`,
     noneLoaded: 'No images were loaded',
@@ -223,7 +228,7 @@ const en = {
       const base = append ? `Added ${images(n, 'image', 'images')}` : `Loaded ${images(n, 'image', 'images')}`
       return failed > 0 ? `${base}; ${failed} failed` : base
     },
-    unsupportedType: "That file type isn't supported. Open a JPEG, PNG, or supported RAW.",
+    unsupportedType: "That file type isn't supported. Open a JPEG, PNG, WebP, HEIC, or supported RAW.",
     loadingSamples: 'Loading sample photos…',
     samplesFailed: 'Could not load sample photos',
     samplesReady: 'Sample photos straight from RAW — try a preset or the sliders',
@@ -270,7 +275,7 @@ const es: EditorCopy = {
   empty: {
     title: 'El editor de fotos open source que se queda en tu dispositivo',
     copy: 'Gratis y open source. Presets a tu medida y copiar y pegar ajustes, en el navegador. Tus fotos no se suben: sin cuenta.',
-    features: ['JPEG, PNG y RAW de cámara', 'Presets, XMP y LUT .cube', 'Edición y exportación por lotes'],
+    features: ['JPEG, PNG, WebP, HEIC y RAW', 'Presets, XMP y LUT .cube', 'Edición y exportación por lotes'],
     openPhotos: 'Abrir fotos',
     trySamples: 'Probar fotos de ejemplo',
     watchDemo: 'Ver la demo',
@@ -301,7 +306,7 @@ const es: EditorCopy = {
     collage: 'Collage',
     collageTitle: 'Collages de Instagram',
     open: 'Abrir',
-    openTitle: 'Abrir imágenes. Mantén pulsado Opción/Alt para abrir una carpeta.',
+    openTitle: 'Abrir JPEG, PNG, WebP, HEIC o RAW. Mantén pulsado Opción/Alt para abrir una carpeta.',
     undo: 'Deshacer',
     undoTitle: 'Deshacer (⌘Z)',
     redo: 'Rehacer',
@@ -440,7 +445,7 @@ const es: EditorCopy = {
     unflagged: 'Sin marca',
     rejected: 'Rechazadas',
     clear: 'Vaciar el espacio de trabajo',
-    openTitle: 'Abrir archivos JPEG, PNG o RAW',
+    openTitle: 'Abrir archivos JPEG, PNG, WebP, HEIC o RAW',
     addPhotos: 'Añadir fotos',
     noMatch: 'Ninguna foto coincide con este filtro',
     grid: 'Ver como cuadrícula',
@@ -470,6 +475,14 @@ const es: EditorCopy = {
     undo: 'Deshacer',
     redo: 'Rehacer',
     openingRaw: (n) => (n === 1 ? 'Abriendo 1 archivo RAW…' : `Abriendo ${n} archivos RAW…`),
+    decodingHeic: (n) => (n === 1 ? 'Decodificando HEIC…' : `Decodificando ${n} archivos HEIC…`),
+    decodingHeicFile: (name, index, total) =>
+      total > 1 ? `Decodificando ${name}… (${index}/${total})` : `Decodificando ${name}…`,
+    heicCorrupt: (name) => `No se ha podido decodificar ${name}. Puede que el archivo HEIC esté dañado.`,
+    heicCorruptMany: (n) =>
+      n === 1
+        ? 'No se ha podido decodificar 1 archivo HEIC. Puede que esté dañado.'
+        : `No se han podido decodificar ${n} archivos HEIC. Puede que estén dañados.`,
     loadingImages: 'Cargando imágenes…',
     couldNotOpen: (n) => (n === 1 ? 'No se ha podido abrir 1 imagen' : `No se han podido abrir ${n} imágenes`),
     noneLoaded: 'No se ha cargado ninguna imagen',
@@ -484,7 +497,7 @@ const es: EditorCopy = {
       if (failed === 0) return base
       return `${base}; ${failed === 1 ? '1 fallida' : `${failed} fallidas`}`
     },
-    unsupportedType: 'Ese tipo de archivo no es compatible. Abre un JPEG, un PNG o un RAW compatible.',
+    unsupportedType: 'Ese tipo de archivo no es compatible. Abre un JPEG, un PNG, un WebP, un HEIC o un RAW compatible.',
     loadingSamples: 'Cargando fotos de ejemplo…',
     samplesFailed: 'No se han podido cargar las fotos de ejemplo',
     samplesReady: 'Fotos de ejemplo reveladas en plano desde el RAW: prueba un preset o los controles',

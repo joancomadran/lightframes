@@ -234,7 +234,7 @@ export function trackEditorOpened(): void {
   emit('editor_opened')
 }
 
-export function trackPhotoLoaded(fileType: 'raw' | 'jpeg' | 'png' | 'other'): void {
+export function trackPhotoLoaded(fileType: 'raw' | 'jpeg' | 'png' | 'webp' | 'heic' | 'other'): void {
   emit('photo_loaded', { file_type: fileType })
 }
 
