@@ -4,7 +4,7 @@ slug: about
 title: "About Lightframes"
 description: "Who builds Lightframes, why it edits photos on your device instead of in the cloud, how it's funded, and how the open-source (MIT) project works."
 h1: "About Lightframes"
-updated: 2026-10-22
+updated: 2026-11-27
 schemaType: AboutPage
 ---
 
@@ -29,7 +29,7 @@ Lightframes takes a third route: a full editor that loads like a web page but do
 
 ## What can it do?
 
-In short: non-destructive editing of JPEG, PNG and camera RAW files (Sony, Canon, Nikon, Fujifilm, Olympus, Panasonic, Pentax, Samsung and DNG), with tone and colour controls, a tone curve, crop and straighten, local masks, spot removal, background removal, AI upscaling on export, and a collage and seamless Instagram carousel mode. The [tool pages](/tools/raw-photo-editor) and the [FAQ](/faq) go into detail.
+In short: non-destructive editing of JPEG, PNG, WebP, HEIC and camera RAW files (Sony, Canon, Nikon, Fujifilm, Olympus, Panasonic, Pentax, Samsung and DNG), with tone and colour controls, a tone curve, crop and straighten, local masks, spot removal, background removal, AI upscaling on export, and a collage and seamless Instagram carousel mode. The [tool pages](/tools/raw-photo-editor) and the [FAQ](/faq) go into detail.
 
 ## How does it work, in plain words?
 

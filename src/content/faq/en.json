@@ -21,8 +21,8 @@
       "a": "No. There is no sign-up, login or email required: open lightframes.si/editor and start editing. Because there is no account, your presets and session live in the browser you use."
     },
     {
-      "q": "Which RAW formats and cameras does Lightframes support?",
-      "a": "Lightframes opens JPEG, PNG and the common camera RAW formats: ARW (Sony), CR2 and CR3 (Canon), NEF and NRW (Nikon), DNG, RAF (Fujifilm), ORF (Olympus/OM System), RW2 (Panasonic), PEF (Pentax) and SRW (Samsung). RAW files are decoded in the browser with LibRaw compiled to WebAssembly, so support follows the cameras LibRaw handles."
+      "q": "Which file formats can the editor open?",
+      "a": "Lightframes opens JPEG, PNG, WebP, HEIC and HEIF, plus the common camera RAW formats: ARW (Sony), CR2 and CR3 (Canon), NEF and NRW (Nikon), DNG, RAF (Fujifilm), ORF (Olympus/OM System), RW2 (Panasonic), PEF (Pentax) and SRW (Samsung). WebP and HEIC are edited like other bitmap photos. HEIC uses the system decoder when the browser provides one; in Chrome and Firefox the first HEIC you open downloads a decoder from lightframes.si (that chunk is not in the offline precache). RAW files are decoded in the browser with LibRaw compiled to WebAssembly, so RAW support follows the cameras LibRaw handles. Export is JPEG, PNG or WebP, not HEIC."
     },
     {
       "q": "What file formats can I export to?",
@@ -30,7 +30,7 @@
     },
     {
       "q": "Does Lightframes work offline? Can I install it as an app?",
-      "a": "Editing does, after one visit online. Lightframes is a progressive web app, and you can install it from the Install app button or your browser's menu (on iPhone and iPad, Share → Add to Home Screen; in Safari on Mac, File → Add to Dock). Object removal downloads its AI model from Hugging Face the first time you use it. Background removal, subject masks and upscaling download their models from lightframes.si. After a model is cached, that tool works offline too."
+      "a": "Editing does, after one visit online. Lightframes is a progressive web app, and you can install it from the Install app button or your browser's menu (on iPhone and iPad, Share → Add to Home Screen; in Safari on Mac, File → Add to Dock). Object removal downloads its AI model from Hugging Face the first time you use it. Background removal, subject masks and upscaling download their models from lightframes.si. In Chrome and Firefox, the first HEIC you open downloads its decoder from lightframes.si too. After a model or that decoder is cached, that tool or format works offline too."
     },
     {
       "q": "Which browsers and devices does Lightframes work on?",

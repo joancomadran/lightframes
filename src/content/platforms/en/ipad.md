@@ -4,9 +4,9 @@ slug: ipad
 title: "Lightroom alternative for iPad"
 description: "A free Lightroom alternative for iPad Safari: open photos in the browser, edit on device, import .xmp. Folder picking and large RAW exports have real limits."
 h1: "A free Lightroom alternative for iPad"
-lead: "Lightframes works in iPad Safari for JPEG, PNG and RAW: you pick files with the system dialog, edits run on the iPad, and photos are not uploaded. It is a good free fit for presets and modest files. It is a poor fit for a folder of large RAWs or heavy AI, because Safari has no directory picker and a full-resolution RAW decode can run out of memory. Adobe’s Lightroom for iPad is the app to use if you want its cloud library and you have the subscription."
+lead: "Lightframes works in iPad Safari for JPEG, PNG, WebP, HEIC and RAW, including iPhone photos saved as HEIC: you pick files with the system dialog, edits run on the iPad, and photos are not uploaded. It is a good free fit for presets and modest files. It is a poor fit for a folder of large RAWs or heavy AI, because Safari has no directory picker and a full-resolution RAW decode can run out of memory. Adobe’s Lightroom for iPad is the app to use if you want its cloud library and you have the subscription."
 order: 4
-updated: 2026-11-10
+updated: 2026-11-27
 faq:
   - q: "Does the editor actually run in iPad Safari?"
     a: "Yes. It is the same editor as on desktop. iPad Safari is detected for install (Share → Add to Home Screen), touch is handled on purpose, and RAW goes through LibRaw in WebAssembly. There is no separate iPad app."
@@ -24,7 +24,7 @@ Lightroom and Camera Raw are trademarks of Adobe. Lightframes is independent and
 
 Lightframes is a free, open-source (MIT) photo editor that runs entirely in the browser. On an iPad, open the [editor](/editor) in Safari. The page treats iPadOS as iOS even when the browser reports itself as a Mac: the install hint is Share, then Add to Home Screen, and a touch listener is registered so drags on the photo are delivered. Pinch-zoom on the preview is implemented for touch.
 
-Opening photos does not use the File System Access API, which Safari does not ship. The fallback is a standard file input that accepts several JPEG, PNG or RAW files (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW). That is enough to edit a selection. It is not a folder import.
+Opening photos does not use the File System Access API, which Safari does not ship. The fallback is a standard file input that accepts JPEG, PNG, WebP, HEIC, HEIF and camera RAW files (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW). That is enough to edit a selection. It is not a folder import.
 
 RAW decode is LibRaw compiled to WebAssembly, on the device. The preview is half size, which is the path meant for editing. Export calls the full-resolution decode and can fall back to the embedded JPEG if LibRaw fails. The app classifies out-of-memory errors; it does not pretend an iPad has desktop RAM. Prefer JPEG, or one RAW at a time, if an export dies.
 

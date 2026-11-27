@@ -4,9 +4,9 @@ slug: ipad
 title: "Alternativa a Lightroom en el iPad"
 description: "Alternativa gratis a Lightroom en el iPad con Safari: abre fotos en el navegador, edita en el equipo e importa .xmp. Hay límites de carpeta y de RAW grandes."
 h1: "Alternativa gratis a Lightroom en el iPad"
-lead: "Lightframes funciona en Safari del iPad con JPEG, PNG y RAW: eliges archivos con el diálogo del sistema, la edición corre en el iPad y las fotos no se suben. Encaja como opción gratis para presets y archivos moderados. Encaja mal para una carpeta de RAW grandes o para IA pesada, porque Safari no tiene selector de carpetas y un revelado a resolución completa puede quedarse sin memoria. Lightroom de Adobe para iPad es la app si quieres su biblioteca en la nube y tienes la suscripción."
+lead: "Lightframes funciona en Safari del iPad con JPEG, PNG, WebP, HEIC y RAW, incluidas las fotos del iPhone en HEIC: eliges archivos con el diálogo del sistema, la edición corre en el iPad y las fotos no se suben. Encaja como opción gratis para presets y archivos moderados. Encaja mal para una carpeta de RAW grandes o para IA pesada, porque Safari no tiene selector de carpetas y un revelado a resolución completa puede quedarse sin memoria. Lightroom de Adobe para iPad es la app si quieres su biblioteca en la nube y tienes la suscripción."
 order: 4
-updated: 2026-11-10
+updated: 2026-11-27
 faq:
   - q: "¿El editor funciona de verdad en Safari del iPad?"
     a: "Sí. Es el mismo editor que en el escritorio. Safari del iPad se detecta para instalarlo (Compartir → Añadir a pantalla de inicio), el toque está tratado a propósito y el RAW pasa por LibRaw en WebAssembly. No hay una app distinta para iPad."
@@ -24,7 +24,7 @@ Lightroom y Camera Raw son marcas de Adobe. Lightframes es independiente y no es
 
 Lightframes es un editor de fotos gratis y open source (MIT) que funciona entero en el navegador. En un iPad, abre el [editor](/es/editor) en Safari. La página trata iPadOS como iOS aunque el navegador se anuncie como Mac: la pista de instalación es Compartir y luego Añadir a pantalla de inicio, y hay un listener de toque para que los arrastres sobre la foto lleguen. El pellizco para ampliar la vista previa está implementado.
 
-Abrir fotos no usa la File System Access API, que Safari no trae. La alternativa es un input de archivo normal que acepta varios JPEG, PNG o RAW (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW). Basta para editar una selección. No es una importación de carpeta.
+Abrir fotos no usa la File System Access API, que Safari no trae. La alternativa es un input de archivo normal que acepta JPEG, PNG, WebP, HEIC, HEIF y RAW de cámara (ARW, CR2, CR3, NEF, NRW, DNG, RAF, ORF, RW2, PEF, SRW). Basta para editar una selección. No es una importación de carpeta.
 
 El RAW lo decodifica LibRaw compilado a WebAssembly, en el dispositivo. La vista previa va a mitad de tamaño, que es el camino pensado para editar. La exportación pide el revelado a resolución completa y puede caer al JPEG incrustado si LibRaw falla. La app clasifica los errores de memoria; no finge que un iPad tiene la RAM de un escritorio. Si una exportación muere, mejor JPEG, o un RAW cada vez.
 
